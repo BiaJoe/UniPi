@@ -1,0 +1,22 @@
+module clock(); // Definiamo un modulo che testa un segnale clock
+
+    reg clock; // Registro da 1 bit per contenere il valore del clock nel tempo
+
+    initial begin
+        clock = 0; // Il valore iniziale del clock è 0
+    end
+
+    always begin
+        #10 clock = 1; // Aspetta 10 unità di tempo, poi metti clock a 1
+        #1 clock = 0;  // Poi aspetta 1 unità e metti clock a 0tro da 1 bit per contetro da 1 bit per contenere il valore del clock nel tnere il valore del clock nel t
+    end // Ripete il ciclo all'infinitotro da 1 bit per contenere il valore del clock nel t
+
+    initial begin // Questo è il main del programma di test
+        $monitor("%t %d", $time, clock); // Segnala quando cambia clock
+        $dumpfile("clock.vcd"); // Salva i dati della simulazione in un file
+        $dumpvars(0, clock); // Salva i valori delle variabili in un file
+        #30; // Aspetta 30 unità di tempo
+        $finish; // Termina la simulazione
+    end
+
+endmodule
