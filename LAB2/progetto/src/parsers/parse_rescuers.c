@@ -8,6 +8,7 @@
 #define MAX_LINE_LENGTH 1024
 #define MAX_WORD_LENGTH 64
 #define TOKEN_ENDING_CHARS "];:,="
+#define TO_IGNORE_CHARS "[ \t\r"
 
 rescuer_digital_twin_t ** parse_rescuers(){
 
@@ -30,49 +31,32 @@ rescuer_digital_twin_t ** parse_rescuers(){
 	
 }
 
-// Tokenizer: "[x][y][z]" -> {"x", "y", "z"}
+// Tokenizer: "[x][y][z] a:b,c;d;" -> {"x", "y", "z", "a", "b", "c", "d"}
 char** tokenize(char *line){
+	char *token = NULL;
+	char buffer[MAX_WORD_LENGTH];
 	const char *tec = TOKEN_ENDING_CHARS; 
+	const char *tic = TO_IGNORE_CHARS;
 	int status = 0; 
 	int i = 0;
 	int j = 0;
-	char *token = NULL;
-	while(line[i] != '\n'){
-		char buffer[MAX_WORD_LENGTH];
+	while(line[i] != '\n' && line[i] != '\0' && i < MAX_LINE_LENGTH && j < MAX_WORD_LENGTH){
 		char c = line[i];
-		if(c == ' '){
+		if(strchr(tic, c)){
 			i++;
-			continue;
+			break;
 		}
 		if(strchr(tec, c)){
-		 
+			status = 1;
+			buffer[j] = '\0';
+			i++;
+			j++;
+			break;
 		}
-
-
-		switch(c){
-			case ' ': status = 0; // Ignora gli spazi
-				break;
-			case '[': status = 1; // Inizio di un token
-				break;
-			case ']': status = 2; // Fine di un token
-				break;
-			case ';': status = 2;
-				break;
-			case ',': status = 2;
-				break;
-			case ':': status = 2;
-				break;
-			default:
-				if(status == 2){
-					// il token è finito, termino la stringa
-					buffer[i] = '\0';
-					 
-				}
-				else if(status == 1){
-					// Copia il carattere nel buffer
-					buffer[i] = c;
-				}
-		}
+		buffer[j] = c;
+		j++;
 		i++;
+
+
 	}
 }
