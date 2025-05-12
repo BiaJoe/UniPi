@@ -10,9 +10,11 @@ typedef enum {
 
 typedef struct {
 	char *rescuer_type_name;
+	int amount;
 	int speed;
 	int x;
 	int y;
+	rescuer_digital_twin_t *twins;
 } rescuer_type_t;
 
 typedef struct {
@@ -23,10 +25,9 @@ typedef struct {
 	rescuer_status_t status;
 } rescuer_digital_twin_t;
 
-char** tokenize(char* line);
-rescuer_type_t * get_rescuer_type(char** line_tokens);
+rescuer_type_t * get_rescuer_type(char *name, int amount, int speed, int x, int y);
 rescuer_digital_twin_t * get_rescuer_digital_twin(rescuer_type_t * rescuer);
-rescuer_digital_twin_t ** parse_rescuers();
+rescuer_type_t ** parse_rescuers();
 
 
 
