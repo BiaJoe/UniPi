@@ -5,7 +5,7 @@
 
 int main(){
 	int rescuer_count;
-	rescuer_type_t** rescuers =	parse_rescuers2(&rescuer_count);
+	rescuer_type_t** rescuers =	parse_rescuers(&rescuer_count);
 
 	for(int i = 0; i < rescuer_count; i++){
 		printf("rescuer %d: %s\n", i, rescuers[i]->rescuer_type_name);

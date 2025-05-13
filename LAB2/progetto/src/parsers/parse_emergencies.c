@@ -4,7 +4,7 @@
 #include <ctype.h>
 #include "../include/parsers.h"
 
-emergency_type_t** parse_emergencies(int *emergency_count){
+emergency_type_t** parse_emergencies(int *emergency_count, rescuer_type_t **rescuer_types){
 	// Apro il file di configurazione
 	FILE *emergencies_conf = fopen(EMERGENCY_TYPES_CONF, "r");
 	if(!emergencies_conf) { 
@@ -12,42 +12,25 @@ emergency_type_t** parse_emergencies(int *emergency_count){
 		exit(EXIT_FAILURE);
 	}
 
-	char *line = NULL;
-	size_t len = 0;
-	char emergency_desc[EMERGENCY_NAME_LENGTH]; // buffer per il nome dell'emergenza
-	int resquers_req_number;		// variabili temporanee per i campi dell'emergenza
+	// inizializzo l'array di emergenze dinamicamente a NULL
+	emergency_type_t **  emergency_types = init_emergency_types();
+
+	// inizializzo i rescuer
+	rescuer_request_t **rescuers = init_resquer_requests();
+
+	// variabili temporanee per i campi dell'emergenza
+	char emergency_desc[EMERGENCY_NAME_LENGTH]; 
+	int resquers_req_number;		
 	short priority;
-
-	//buffer per i nomi delle emergenze inizializzato a'\0'
-	char emergency_names_buffer[MAX_FILE_LINES][EMERGENCY_NAME_LENGTH]; 
-	for (int i = 0; i < MAX_FILE_LINES; i++) emergency_names_buffer[i][0] = '\0'; 
-	
-	// buffer per i tipi di emergenza inizializzato a 0
-	emergency_type_t emergency_types_buffer[MAX_FILE_LINES];
-	for(int i = 0; i<MAX_FILE_LINES; i++){
-		emergency_types_buffer[i].priority = 0;
-		emergency_types_buffer[i].emergency_desc = NULL;
-		emergency_types_buffer[i].rescuers = NULL;
-		emergency_types_buffer[i].rescuers_req_number = 0;
-	} 
-
-	// buffer per i nomi dei rescuer necessari inizializzato a'\0'
-	char rescuer_names_buffer[MAX_RESCUER_REQ_NUMBER_PER_EMERGENCY][MAX_RESCUER_NAME_LENGTH];
-	for (int i = 0; i < MAX_FILE_LINES; i++) rescuer_names_buffer[i][0] = '\0';
-
-	// buffer per rescuer_request_t inizializzato a 0
-	rescuer_request_t rescuer_requests_buffer[MAX_RESCUER_REQ_NUMBER_PER_EMERGENCY];
-	for(int i = 0; i<MAX_RESCUER_REQ_NUMBER_PER_EMERGENCY; i++){
-		rescuer_requests_buffer[i].type = NULL;
-		rescuer_requests_buffer[i].required_count = 0;
-		rescuer_requests_buffer[i].time_to_manage = 0;
-	}
 
 	// contatori di linee e numero di emergenze
 	int local_emergency_count = 0;
 	int line_count = 0;
 
 	// Leggo ogni riga del file e processo le informazioni contenute
+	char *line = NULL;
+	size_t len = 0;
+
 	while (getline(&line, &len, emergencies_conf) != -1) {
 		line_count++;
 
@@ -57,8 +40,7 @@ emergency_type_t** parse_emergencies(int *emergency_count){
 			exit(EXIT_FAILURE);
 		}
 
-		// Ignoro le righe vuote
-		if (line[0] == '\n') continue;
+		IGNORE_EMPITY_LINES();
 
 		// Controllo la lunghezza della riga
 		if(strlen(line) > MAX_LINE_LENGTH){
@@ -71,10 +53,21 @@ emergency_type_t** parse_emergencies(int *emergency_count){
 			line, 
 			&priority, 
 			emergency_desc, 
-			rescuer_names_buffer,
-			rescuer_requests_buffer, 
+			rescuers,
 			&resquers_req_number,
-			emergency_names_buffer
+			rescuer_types
+		);
+
+		if(get_emergency_type_by_name(emergency_desc, emergency_types)){
+			perror("Presenza di duplicati nel file di configurazione " EMERGENCY_TYPES_CONF);
+			exit(EXIT_FAILURE);
+		}
+
+		allocate_emergency_type(
+			priority,
+			emergency_desc, 
+			resquers_req_number,
+			emergency_types
 		);
 
 		local_emergency_count++;
@@ -86,16 +79,36 @@ emergency_type_t** parse_emergencies(int *emergency_count){
 
 }
 
+emergency_type_t ** init_emergency_types(){
+	// alloco l'array di emergenze
+	emergency_type_t **emergency_types = (emergency_type_t **)calloc(MAX_EMERGENCY_COUNT + 1, sizeof(emergency_type_t *));
+	if(!emergency_types) {
+		perror("Errore allocazione memoria emergenza_types");
+		exit(EXIT_FAILURE);
+	}
+
+	return emergency_types;
+}
+
+rescuer_request_t ** init_resquer_requests(){
+	// alloco l'array di rescuer_requests
+	rescuer_request_t **rescuer_requests = (rescuer_request_t **)calloc(MAX_RESCUER_REQ_NUMBER_PER_EMERGENCY, sizeof(rescuer_request_t*));
+	if(!rescuer_requests) {
+		perror("Errore allocazione memoria rescuer_requests");
+		exit(EXIT_FAILURE);
+	}
+
+	return rescuer_requests;
+}
 
 // si occupa di controllare la sintassi e di estrarre i valori di UNA riga
 void check_emergency_type_syntax_and_extract_values(
 	char *line, 
 	short *priority, 
 	char *emergency_desc, 
-	char rescuer_names_buffer[][MAX_RESCUER_NAME_LENGTH],
-	rescuer_request_t *rescuer_requests_buffer, 
+	rescuer_request_t **rescuers,
 	int *rescuer_req_number,
-	char emergency_names_buffer[][EMERGENCY_NAME_LENGTH]
+	rescuer_type_t **rescuer_types
 ){
 	char rr_string[MAX_LINE_LENGTH]; // buffer per la stringa dei rescuer
 	int local_rescuer_req_number = 0; // contatore dei rescuer
@@ -103,30 +116,20 @@ void check_emergency_type_syntax_and_extract_values(
 	int local_priority; // buffer per la priorità
 
 	// estraggo il nome dell'emergenza, la priorità e la stringa dei rescuer
-	if(sscanf(line, "[%49[^]]] [%d] %[^\n]", local_emergency_desc, &local_priority, rr_string) !=3){
+	if(sscanf(line, EMERGENCY_TYPE_SYNTAX, local_emergency_desc, &local_priority, rr_string) !=3){
 		perror("Errore di sintassi file di configurazione " EMERGENCY_TYPES_CONF);
 		exit(EXIT_FAILURE);
 	}
 
-	// Controllo che i valori siano validi
-	if(
-		strlen(local_emergency_desc) <= 0 || 
-		local_priority < MIN_PRIORITY || 
-		local_priority > MAX_PRIORITY
-	){
+	// Controllo che i valori strettamente legati all'emergenza siano validi
+	if(emergency_values_are_illegal(local_emergency_desc, local_priority)){
 		perror("Valori illegali file di configurazione " EMERGENCY_TYPES_CONF);
-		exit(EXIT_FAILURE);
-	}
-
-	// Controllo se il nome dell'emergenza è già presente nel buffer dei nomi, altrimenti lo aggiungo
-	if(emergency_arleady_exists(emergency_desc, emergency_names_buffer)){
-		perror("Nome emergenza già presente nel file di configurazione " EMERGENCY_TYPES_CONF);
 		exit(EXIT_FAILURE);
 	}
 
 	// tokenizzo la stringa dei rescuer
 	char *token = strtok(rr_string, ";");
-	char rr_name[MAX_RESCUER_NAME_LENGTH]; // buffer per il singolo nome del rescuer
+	char rr_name[MAX_RESCUER_NAME_LENGTH]; // buffer per il nome del rescuer
 	int required_count, time_to_manage; // variabili temporanee per i campi del rescuer
 
 	while(token != NULL){
@@ -141,7 +144,7 @@ void check_emergency_type_syntax_and_extract_values(
 		if(
 			sscanf(
 				token, 
-				"%49[^:]:%d:%d", 
+				RESCUER_REQUEST_SYNTAX, 
 				rr_name, 
 				required_count, 
 				time_to_manage
@@ -161,18 +164,26 @@ void check_emergency_type_syntax_and_extract_values(
 			exit(EXIT_FAILURE);
 		}
 
-		// Controllo se il nome del rescuer è già presente nel buffer. Se non lo è, lo aggiungo
-		if(rescuer_arleady_exists(rr_name, rescuer_names_buffer)){
+		// Controllo se il rescuer è già presente. Se non lo è, lo aggiungo
+		if(get_rescuer_request_by_name(rr_name, rescuers)){
 			perror("Nome rescuer già presente nella lista di rescuer richiesti per l'emergenza " EMERGENCY_TYPES_CONF);
 			exit(EXIT_FAILURE);
 		}
 
-		// Aggiungo il nome del rescuer al buffer
-		strcpy(rescuer_names_buffer[local_rescuer_req_number], rr_name);
+		// Controllo che il rescuer_type sia valido (cioè che esista in rescuer_types)
+		if(!get_rescuer_type_by_name(rr_name, rescuer_types)){
+			perror("Richiesto rescuer non presente nel file di configurazione " EMERGENCY_TYPES_CONF);
+			exit(EXIT_FAILURE);
+		}
 
-		// Aggiungo la rescuer_request al buffer
-		rescuer_requests_buffer[local_rescuer_req_number].required_count = required_count;
-		rescuer_requests_buffer[local_rescuer_req_number].time_to_manage = time_to_manage;
+		// Il rescuer richiesto è valido, quindi lo alloco e aggiungo alla lista di rescuer richiesti per l'emergenza
+		allocate_rescuer_request(
+			rr_name, 
+			required_count, 
+			time_to_manage, 
+			rescuers,
+			rescuer_types
+		);
 
 		// Incremento il contatore dei rescuer
 		local_rescuer_req_number++;
@@ -188,24 +199,72 @@ void check_emergency_type_syntax_and_extract_values(
 
 }
 
-int emergency_arleady_exists(char *name, char emercency_names_buffer[][EMERGENCY_NAME_LENGTH]){
-	int last_index = 0;
+int emergency_values_are_illegal(char *emergency_desc, short priority){
+	return (
+		strlen(emergency_desc) <= 0 || 
+		priority < MIN_EMERGENCY_PRIORITY || 
+		priority > MAX_EMERGENCY_PRIORITY
+	);
+}
 
-	for(int i = 0; i < MAX_FILE_LINES; i++){
+emergency_type_t * get_emergency_type_by_name(char *name, emergency_type_t **emergency_types){
+	for(int i = 0; emergency_types[i] != NULL; i++)
+		if(strcmp(emergency_types[i]->emergency_desc, name) == 0)
+			return emergency_types[i];
+	return NULL;
+}
 
-		// se siamo al primo posto libero (abbiamo finito i nomi da controllare)
-		if(emercency_names_buffer[i][0] == '\0'){ 
-			last_index = i;	
-			break;
-		}
+rescuer_request_t * get_rescuer_request_by_name(char *name, rescuer_request_t **rescuers){
+	for(int i = 0; rescuers[i] != NULL; i++)
+		if(strcmp(get_name_of_rescuer_requested(rescuers[i]), name) == 0)
+			return rescuers[i];
+	return NULL;
+}
 
-		// Se il nome è già presente
-		if(strcmp(name, emercency_names_buffer[i]) == 0){ 
-			return 1;
-		}
+char* get_name_of_rescuer_requested(rescuer_request_t *rescuer_request){
+	rescuer_type_t *rescuer_type = rescuer_request->type;
+	return rescuer_type->rescuer_type_name;
+}
+
+void allocate_emergency_type(
+	short priority, 
+	char *emergency_desc, 
+	int rescuer_req_number,
+	emergency_type_t **emergency_types
+){
+	int i = 0;
+	while(emergency_types[i] != NULL) i++;
+	// allco l'emergency_type_t
+	emergency_types[i] = (emergency_type_t *)malloc(sizeof(emergency_type_t));
+	if(!emergency_types[i]) {
+		perror("Errore allocazione memoria emergency_types");
+		exit(EXIT_FAILURE);
+	}
+	// alloco l'array di rescuer_requests
+	emergency_types[i]->rescuers = (rescuer_request_t **)calloc(rescuer_req_number + 1, sizeof(rescuer_request_t *));
+
+}
+
+
+allocate_rescuer_request(
+	char *rr_name, 
+	int required_count, 
+	int time_to_manage, 
+	rescuer_request_t **rescuers,
+	rescuer_type_t **rescuer_types
+){
+	int i = 0;
+	while(rescuers[i] != NULL) i++; // raggiungo il primo posto libero
+	// allco il rescuer_request_t
+	rescuers[i] = (rescuer_request_t *)malloc(sizeof(rescuer_request_t));
+	if(!rescuers[i]) {
+		perror("Errore allocazione memoria rescuer_requests");
+		exit(EXIT_FAILURE);
 	}
 
-	// Se non è presente lo aggiungo alla fine del buffer
-	strcpy(emercency_names_buffer[last_index], name);
-	return 0;
+	// popolo i campi
+	rescuers[i]->type = get_rescuer_type_by_name(rr_name, rescuer_types);
+	rescuers[i]->required_count = required_count;
+	rescuers[i]->time_to_manage = time_to_manage;
 }
+
