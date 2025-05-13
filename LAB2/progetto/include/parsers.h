@@ -15,10 +15,22 @@
 
 #define MAX_RESCUER_NAME_LENGTH 128
 #define EMERGENCY_NAME_LENGTH 64
+#define MAX_RESCUER_COUNT 64
 #define MAX_RESCUER_REQ_NUMBER_PER_EMERGENCY 16
 
 #define MIN_PRIORITY 0
 #define MAX_PRIORITY 3
+#define MIN_RESCUER_SPEED 1
+#define MAX_RESCUER_SPEED 100
+
+//ancora non usate
+#define MIN_RESCUER_AMOUNT 1
+#define MAX_RESCUER_AMOUNT 1000
+#define MIN_COORDINATE 0
+#define MAX_COORDINATE 1000
+#define MIN_TIME_TO_MANAGE 1
+#define MAX_TIME_TO_MANAGE 1000
+#define MAX_EMERGENCY_TYPES 64
 
 #define RESCUERS_SYNTAX "[%" STR(MAX_RESCUER_NAME_LENGTH) "[^]]][%d][%d][%d;%d]"
 #define EMERGENCY_TYPES_NAME_AND_PRIORITY_SYNTAX "[%" STR(EMERGENCY_NAME_LENGTH) "%" STR(MAX_RESCUER_NAME_LENGTH) "[^]]][%d][%" STR(MAX_RESCUER_NAME_LENGTH) "[^]]][%d][%d]"
@@ -116,6 +128,14 @@ typedef struct {
 
 int rescuer_arleady_exists(char *name, char rescuer_names_buffer[][MAX_RESCUER_NAME_LENGTH]);
 rescuer_type_t ** parse_rescuers(int* rescuer_types);
+
+rescuer_type_t ** parse_rescuers2(int* rescuer_types);
+rescuer_type_t ** init_rescuer_types();
+int rescuer_values_are_illegal(char *name, int amount, int speed, int x, int y);
+void allocate_rescuer_type(char *name, int amount, int speed, int x, int y, rescuer_type_t **rescuer_types);
+rescuer_type_t * get_rescuer_type_by_name(char *name, rescuer_type_t **rescuer_types);
+int get_rescuer_type_index_by_name(char *name, rescuer_type_t **rescuer_types);
+
 emergency_type_t ** parse_emergencies(int* emergency_types);
 
 void check_emergency_type_syntax_and_extract_values(
