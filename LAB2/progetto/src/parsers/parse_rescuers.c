@@ -1,8 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h> 
-#include <string.h>
-// #include <ctype.h>
-#include "../include/parsers.h"
+#include "utils.h"
 
 rescuer_type_t** parse_rescuers(int *rescuer_count){
 
@@ -14,7 +10,7 @@ rescuer_type_t** parse_rescuers(int *rescuer_count){
 	}
 
 	// inizializzo l'array di rescuer_types dinamicamente a NULL
-	rescuer_type_t **  rescuer_types = init_rescuer_types();
+	rescuer_type_t **  rescuer_types = callocate_rescuer_types();
 
 	// variabili temporanee per i campi del rescuer
 	char name[MAX_RESCUER_NAME_LENGTH]; 
@@ -38,7 +34,7 @@ rescuer_type_t** parse_rescuers(int *rescuer_count){
 		}
 
 		// Controllo che il numero massimo di rescuer non venga superato
-		if(local_rescuer_count > MAX_RESCUER_COUNT){
+		if(local_rescuer_count > MAX_RESCUER_TYPES_COUNT){
 			perror("Numero massimo di rescuer superato file di configurazione " RESCUERS_CONF);
 			exit(EXIT_FAILURE);
 		}
@@ -72,7 +68,7 @@ rescuer_type_t** parse_rescuers(int *rescuer_count){
 		}
 		
 		// i campi sono validi e il nome non è presente, alloco il rescuer nel primo posto libero
-		allocate_rescuer_type(name, amount, speed, x, y, rescuer_types); 
+		mallocate_and_populate_rescuer_type(name, amount, speed, x, y, rescuer_types); 
 
 		local_rescuer_count++;
 	}
@@ -84,81 +80,6 @@ rescuer_type_t** parse_rescuers(int *rescuer_count){
 	return rescuer_types;
 }
 
-rescuer_type_t * get_rescuer_type_by_name(char *name, rescuer_type_t **rescuer_types){
-	for(int i = 0; rescuer_types[i] != NULL; i++){
-		if(strcmp(rescuer_types[i]->rescuer_type_name, name) == 0){
-			return rescuer_types[i];
-		}
-	}
-	return NULL;
-}
-
-int get_rescuer_type_index_by_name(char *name, rescuer_type_t **rescuer_types){
-	for(int i = 0; rescuer_types[i] != NULL; i++){
-		if(strcmp(rescuer_types[i]->rescuer_type_name, name) == 0){
-			return i;
-		}
-	}
-	return -1;
-}
-
-void allocate_rescuer_type(char *name, int amount, int speed, int x, int y, rescuer_type_t **rescuer_types){
-	
-	//raggiujgo il primo posto libero in rescuer_types
-	int i = 0;
-	while(rescuer_types[i] != NULL) i++;
-
-	// allco il rescuer_type_t
-	rescuer_types[i] = (rescuer_type_t *)malloc(sizeof(rescuer_type_t));
-	if(!rescuer_types[i]) {
-		perror("Errore allocazione memoria rescuer_types");
-		exit(EXIT_FAILURE);
-	}
-
-	// alloco il nome del rescuer_type_t e lo copio
-	rescuer_types[i]->rescuer_type_name = (char *)malloc((strlen(name) + 1) * sizeof(char));
-	if(!rescuer_types[i]->rescuer_type_name) {
-		perror("Errore allocazione memoria rescuer_type_name ");
-		exit(EXIT_FAILURE);
-	}
-	strcpy(rescuer_types[i]->rescuer_type_name, name);
-
-	// popolo il resto dei campi
-	rescuer_types[i]->amount = amount;
-	rescuer_types[i]->speed = speed;
-	rescuer_types[i]->x = x;
-	rescuer_types[i]->y = y;
-
-	// alloco i rescuer_digital_twin_t (all'inizio tutti a NULL)
-	rescuer_types[i]->twins = (rescuer_digital_twin_t **)calloc(amount + 1, sizeof(rescuer_digital_twin_t*));
-	if(!rescuer_types[i]->twins) {
-		perror("Errore allocazione memoria rescuer_digital_twins ");
-		exit(EXIT_FAILURE);
-	}
-
-	// popolo i campi dei rescuer_digital_twin_t
-	for(int j = 0; j < amount; j++){
-		rescuer_types[i]->twins[j] = (rescuer_digital_twin_t *)malloc(sizeof(rescuer_digital_twin_t));
-		if(!rescuer_types[i]->twins[j]) {
-			perror("Errore allocazione memoria rescuer_digital_twin");
-			exit(EXIT_FAILURE);
-		}
-		rescuer_types[i]->twins[j]->id = j;
-		rescuer_types[i]->twins[j]->x = x;
-		rescuer_types[i]->twins[j]->y = y;
-		rescuer_types[i]->twins[j]->rescuer = rescuer_types[i];
-		rescuer_types[i]->twins[j]->status = IDLE;
-	}
-}
-
-rescuer_type_t ** init_rescuer_types(){
-	rescuer_type_t **rescuer_types = (rescuer_type_t **)calloc((MAX_FILE_LINES + 1),  sizeof(rescuer_type_t*));
-	if(!rescuer_types) {
-		perror("Errore allocazione memoria rescuer_types");
-		exit(EXIT_FAILURE);
-	}
-	return rescuer_types;
-}
 
 int rescuer_values_are_illegal(char *name, int amount, int speed, int x, int y){
 	return (
@@ -173,3 +94,4 @@ int rescuer_values_are_illegal(char *name, int amount, int speed, int x, int y){
 		y > MAX_COORDINATE 
 	);
 }
+

@@ -1,13 +1,19 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -std=c11 -Iinclude
 
-all: main
+# Get all .c files in src/server/ and src/parsers/
+SRC := $(wildcard src/server/*.c src/parsers/*.c)
 
-main: src/server/main.c src/parsers/parse_rescuers.c
-	$(CC) $(CFLAGS) -o main src/server/main.c src/parsers/parse_rescuers.c
+# Output binary
+TARGET = main
 
-run: main
-	./main
+all: $(TARGET)
+
+$(TARGET): $(SRC)
+	$(CC) $(CFLAGS) -o $(TARGET) $(SRC)
+
+run: $(TARGET)
+	./$(TARGET)
 
 clean:
-	rm -f main
+	rm -f $(TARGET)

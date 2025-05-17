@@ -1,0 +1,22 @@
+
+# Percorso dei file sorgente
+INPUT                  = ./src ./include
+
+# Output nella cartella 'docs'
+OUTPUT_DIRECTORY       = docs
+
+# Documenta anche i file header
+FILE_PATTERNS          = *.c *.h
+
+# Ricorsivamente nelle sottocartelle
+RECURSIVE              = YES
+
+# Genera anche in LaTeX (per PDF)
+GENERATE_LATEX         = YES
+
+# Documenta anche i commenti con /// o //!
+JAVADOC_AUTOBRIEF      = YES
+
+# Riconosce il codice C
+OPTIMIZE_OUTPUT_FOR_C  = YES
+

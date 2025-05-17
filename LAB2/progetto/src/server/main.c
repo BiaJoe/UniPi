@@ -1,18 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h> 
-#include "../../include/parsers.h"
+#include "utils.h"
 
 
 int main(){
-	int rescuer_count;
+	int rescuer_count = 0, emergency_count = 0;
 	rescuer_type_t** rescuers =	parse_rescuers(&rescuer_count);
+	emergency_type_t** emergency_types = parse_emergencies(&emergency_count, rescuers);
 
-	for(int i = 0; i < rescuer_count; i++){
-		printf("rescuer %d: %s\n", i, rescuers[i]->rescuer_type_name);
-		for(int j = 0; j < rescuers[i]->amount; j++){
-			printf("rescuer twin %d: %d\n", i, rescuers[i]->twins[j]->id);
-		}
-	}	
+	print_rescuers(rescuers, rescuer_count);
+	print_emergency_types(emergency_types, emergency_count);
 
-	printf("rescuer_count: %d\n", rescuer_count);
+	return 0;
 }
