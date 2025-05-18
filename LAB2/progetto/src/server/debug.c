@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h> 
-#include "../../include/debug.h"
-#include "../../include/parsers.h"
-#include "../../include/utils.h"
+#include "debug.h"
+#include "parsers.h"
+#include "utils.h"
 
-void print_rescuers(rescuer_type_t** rescuers, int rescuer_count){
+void print_rescuer_types(rescuer_type_t** rescuers, int rescuer_count){
 	printf("RESCUER COUNT: %d\n", rescuer_count);
 	for(int i = 0; i < rescuer_count; i++){
 		printf("rescuer %d: %s, [%d, %d], %d cells/s\n", i, R_NAME(i), R_X(i), R_Y(i), R_SPEED(i));
@@ -38,4 +38,8 @@ void print_emergency_types(emergency_type_t** emergency_types, int emergency_cou
 			printf("rescuer request %d: %s\n", j, get_name_of_rescuer_requested(E_RESCUERS(i,j)));
 		}
 	}
+}
+
+void print_env(char* queue, int height, int width){
+	printf("queue: %s \nheight: %d \nwidth: %d\n",queue, height, width);
 }

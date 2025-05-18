@@ -1,7 +1,9 @@
-#include <time.h>
-
 #ifndef PARSERS_H
 #define PARSERS_H
+
+#include <time.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #define RESCUERS_CONF        "conf/rescuers.conf"
 #define EMERGENCY_TYPES_CONF "conf/emergency_types.conf"
@@ -16,6 +18,7 @@
 #define MAX_RESCUER_TYPES_COUNT 64
 #define MAX_EMERGENCY_TYPES_COUNT 128
 #define MAX_RESCUER_REQ_NUMBER_PER_EMERGENCY 16
+#define MAX_ENV_FIELD_LENGTH 32
 
 #define MIN_EMERGENCY_PRIORITY 0
 #define MAX_EMERGENCY_PRIORITY 3
@@ -30,10 +33,13 @@
 #define MIN_TIME_TO_MANAGE 1
 #define MAX_TIME_TO_MANAGE 1000
 
+#define QUEUE_LENGTH_MINUS_ONE 15
+#define QUEUE "emergenze676722" // lunghezza 16
 
 #define RESCUERS_SYNTAX "[%" STR(MAX_RESCUER_NAME_LENGTH) "[^]]][%d][%d][%d;%d]"
 #define RESCUER_REQUEST_SYNTAX "%" STR(MAX_RESCUER_NAME_LENGTH) "[^:]:%d,%d"
 #define EMERGENCY_TYPE_SYNTAX "[%" STR(EMERGENCY_NAME_LENGTH) "[^]]] [%d] %" STR(MAX_RESCUER_REQUESTS_LENGTH) "[^\n]"
+#define ENV_SYNTAX ""
 
 #define IGNORE_EMPITY_LINES() if (line[0] == '\n') continue
 
@@ -156,6 +162,10 @@ void allocate_rescuer_request(
 	rescuer_request_t **rescuers,
 	rescuer_type_t **rescuer_types
 );
+
+// Funzioni per la gestione dell'ambiente
+char* parse_env(int *height, int *width);
+void my_getline(char **line, size_t *len, FILE *stream);
 
 
 #endif
