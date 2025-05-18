@@ -137,7 +137,6 @@ int rescuer_values_are_illegal(char *name, int amount, int speed, int x, int y);
 
 // Funzioni per la gestione delle emergenze
 emergency_type_t ** parse_emergencies(int* emergency_count, rescuer_type_t **rescuer_types);
-rescuer_request_t ** init_resquer_requests();
 void check_emergency_type_syntax_and_extract_values(
 	char *line, 
 	short *priority, 
@@ -148,20 +147,6 @@ void check_emergency_type_syntax_and_extract_values(
 );
 int emergency_values_are_illegal(char *emergency_desc, short priority);
 int rescuer_request_values_are_illegal(char *rr_name, int required_count, int time_to_manage);
-void allocate_emergency_type(
-    short priority, 
-    char *emergency_desc, 
-    int rescuer_req_number,
-    rescuer_request_t **rescuers,
-    emergency_type_t **emergency_types
-);
-void allocate_rescuer_request(
-	char *rr_name, 
-	int required_count, 
-	int time_to_manage, 
-	rescuer_request_t **rescuers,
-	rescuer_type_t **rescuer_types
-);
 
 // Funzioni per la gestione dell'ambiente
 char* parse_env(int *height, int *width);
