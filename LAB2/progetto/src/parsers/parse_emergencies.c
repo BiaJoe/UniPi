@@ -1,12 +1,11 @@
-#include "utils.h"
+#include "parsers.h"
+
+static int rescuer_requests_total_count = 0;
 
 emergency_type_t** parse_emergencies(int *emergency_count, rescuer_type_t **rescuer_types){
 	// Apro il file di configurazione
 	FILE *emergencies_conf = fopen(EMERGENCY_TYPES_CONF, "r");
-	if(!emergencies_conf) { 
-		perror("Errore apertura file di configurazione " EMERGENCY_TYPES_CONF);
-		exit(EXIT_FAILURE);
-	}
+	check_opened_file(emergencies_conf, EMERGENCY_TYPES_CONF);
 
 	// inizializzo l'array di emergenze dinamicamente a NULL
 	emergency_type_t ** emergency_types = callocate_emergency_types();
@@ -28,23 +27,21 @@ emergency_type_t** parse_emergencies(int *emergency_count, rescuer_type_t **resc
 		line_count++;
 
 		// Controllo che il numero massimo di emergenze non venga superato
-		if(local_emergency_count > MAX_EMERGENCY_TYPES_COUNT){
-			perror("Numero massimo di emergenze superato nel file di configurazione " EMERGENCY_TYPES_CONF);
-			exit(EXIT_FAILURE);
-		}
+		if(local_emergency_count > MAX_EMERGENCY_TYPES_COUNT)
+			log_fatal_error("Numero massimo di emergenze superato nel file di configurazione: " EMERGENCY_TYPES_CONF, FATAL_ERROR_PARSING);
 
 		// Controllo che il numero massimo di linee non venga superato
-		if(line_count > MAX_FILE_LINES){
-			perror("Numero massimo di linee superato file di configurazione " EMERGENCY_TYPES_CONF);
-			exit(EXIT_FAILURE);
-		}
-
-		IGNORE_EMPITY_LINES();
+		if(line_count > MAX_FILE_LINES)
+			log_fatal_error("Numero massimo di linee superato file di configurazione " EMERGENCY_TYPES_CONF, FATAL_ERROR_PARSING);
 
 		// Controllo la lunghezza della riga
-		if(strlen(line) > MAX_LINE_LENGTH){
-			perror("Riga troppo lunga file di configurazione " EMERGENCY_TYPES_CONF);
-			exit(EXIT_FAILURE);
+		if(strlen(line) > MAX_LINE_LENGTH)
+			log_fatal_error("Riga troppo lunga nel file di configurazione: " EMERGENCY_TYPES_CONF, FATAL_ERROR_PARSING);
+
+		//ignoro le righe vuote
+		if (line[0] == '\n') {
+			log_event(line_count, EMPTY_CONF_LINE_IGNORED, "Riga vuota ignorata: " EMERGENCY_TYPES_CONF);
+			continue;
 		}
 
 		// inizializzo dinamicamente l'array di rescuer di questa emergenza 
@@ -53,6 +50,7 @@ emergency_type_t** parse_emergencies(int *emergency_count, rescuer_type_t **resc
 
 		// Controllo che la sintassi sia corretta ed estraggo i valori
 		check_emergency_type_syntax_and_extract_values(
+			line_count,
 			line, 
 			&priority, 
 			emergency_desc, 
@@ -62,11 +60,12 @@ emergency_type_t** parse_emergencies(int *emergency_count, rescuer_type_t **resc
 		);
 
 		if(get_emergency_type_by_name(emergency_desc, emergency_types)){
-			perror("Presenza di duplicati nel file di configurazione " EMERGENCY_TYPES_CONF);
-			exit(EXIT_FAILURE);
+			log_event(line_count, DUPLICATE_EMERGENCY_TYPE_IGNORED, "Nome emergenza già presente, non aggiunta: " EMERGENCY_TYPES_CONF);
+			free_rescuer_requests(rescuers); // libero la memoria allocata per i rescuer, che non mi serve per questa riga
+			continue; // ignoro la riga
 		}
 
-		mallocate_emergency_type(
+		mallocate_and_populate_emergency_type(
 			priority,
 			emergency_desc, 
 			resquers_req_number,
@@ -75,6 +74,7 @@ emergency_type_t** parse_emergencies(int *emergency_count, rescuer_type_t **resc
 		);
 
 		local_emergency_count++;
+		log_event(local_emergency_count, EMERGENCY_PARSED, "emergenza letta: " EMERGENCY_TYPES_CONF);
 	}
 
 	*emergency_count = local_emergency_count; // restituisco il numero di emergenze lette
@@ -87,6 +87,7 @@ emergency_type_t** parse_emergencies(int *emergency_count, rescuer_type_t **resc
 
 // si occupa di controllare la sintassi e di estrarre i valori di UNA riga
 void check_emergency_type_syntax_and_extract_values(
+	int line_count,
 	char *line, 
 	short *priority, 
 	char *emergency_desc, 
@@ -100,20 +101,12 @@ void check_emergency_type_syntax_and_extract_values(
 	int local_priority = MIN_EMERGENCY_PRIORITY; 
 
 	// estraggo il nome dell'emergenza, la priorità e la stringa dei rescuer
-	if(sscanf(line, EMERGENCY_TYPE_SYNTAX, local_emergency_desc, &local_priority, rr_string) !=3){
-		perror("Errore di sintassi file di configurazione " EMERGENCY_TYPES_CONF);
-		printf("line: %s\n", line);
-		printf("local_emergency_desc: %s\n", local_emergency_desc);
-		printf("local_priority: %d\n", local_priority);
-		printf("rr_string: %s\n", rr_string);
-		exit(EXIT_FAILURE);
-	}
+	if(sscanf(line, EMERGENCY_TYPE_SYNTAX, local_emergency_desc, &local_priority, rr_string) !=3)
+		log_fatal_error("Errore di sintassi nel file di configurazione " EMERGENCY_TYPES_CONF, FATAL_ERROR_PARSING);
 
 	// Controllo che i valori strettamente legati all'emergenza siano validi
-	if(emergency_values_are_illegal(local_emergency_desc, local_priority)){
-		perror("Valori illegali file di configurazione " EMERGENCY_TYPES_CONF);
-		exit(EXIT_FAILURE);
-	}
+	if(emergency_values_are_illegal(local_emergency_desc, local_priority))
+		log_fatal_error("Valori illegali nel file di configurazione: " EMERGENCY_TYPES_CONF, FATAL_ERROR_PARSING);
 
 	// tokenizzo la stringa dei rescuer
 	char *token = strtok(rr_string, ";");
@@ -123,10 +116,8 @@ void check_emergency_type_syntax_and_extract_values(
 	while(token != NULL){
 		
 		//Controllo che il numero massimo di rescuer non venga superato
-		if(local_rescuer_req_number > MAX_RESCUER_REQ_NUMBER_PER_EMERGENCY){ // magg. stretto perché il contatore parte da 0
-			perror("Numero massimo di rescuer richiesti per una sola emergenza superato " EMERGENCY_TYPES_CONF);
-			exit(EXIT_FAILURE);
-		}
+		if(local_rescuer_req_number > MAX_RESCUER_REQ_NUMBER_PER_EMERGENCY) // magg. stretto perché il contatore parte da 0
+			log_fatal_error("Numero massimo di rescuer richiesti per una sola emergenza superato: " EMERGENCY_TYPES_CONF, FATAL_ERROR_PARSING);
 
 		// Controllo la sintassi del rescuer
 		if(
@@ -137,31 +128,25 @@ void check_emergency_type_syntax_and_extract_values(
 				&required_count, 
 				&time_to_manage
 			) != 3
-		){
-			perror("Errore di sintassi file di configurazione " EMERGENCY_TYPES_CONF);
-			exit(EXIT_FAILURE);
-		}
+		) log_fatal_error("Errore di sintassi nel file di configurazione " EMERGENCY_TYPES_CONF, FATAL_ERROR_PARSING);
 
 		// Controllo che i valori siano validi
-		if(rescuer_request_values_are_illegal(rr_name, required_count, time_to_manage)){
-			perror("Valori illegali file di configurazione " EMERGENCY_TYPES_CONF);
-			exit(EXIT_FAILURE);
-		}
+		if(rescuer_request_values_are_illegal(rr_name, required_count, time_to_manage))
+			log_fatal_error("Valori illegali nel file di configurazione: " EMERGENCY_TYPES_CONF, FATAL_ERROR_PARSING);
+
 
 		// Controllo se il rescuer è già presente. Se non lo è, lo aggiungo
 		if(get_rescuer_request_by_name(rr_name, rescuers)){
-			perror("Nome rescuer già presente nella lista di rescuer richiesti per l'emergenza " EMERGENCY_TYPES_CONF);
-			exit(EXIT_FAILURE);
+			log_event(line_count, DUPLICATE_RESCUER_REQUEST_IGNORED, "Nome rescuer richiesto più di una volta da una singola emergenza, non aggiunto: " EMERGENCY_TYPES_CONF);
+			continue; // ignoro questo token
 		}
 
 		// Controllo che il rescuer_type sia valido (cioè che esista in rescuer_types)
-		if(!get_rescuer_type_by_name(rr_name, rescuer_types)){
-			perror("Richiesto rescuer non presente nel file di configurazione " EMERGENCY_TYPES_CONF);
-			exit(EXIT_FAILURE);
-		}
+		if(!get_rescuer_type_by_name(rr_name, rescuer_types))
+			log_fatal_error("Richiesto rescuer inesistente: " EMERGENCY_TYPES_CONF, FATAL_ERROR_PARSING);
 
 		// Il rescuer richiesto è valido, quindi lo alloco e aggiungo alla lista di rescuer richiesti per l'emergenza
-		mallocate_rescuer_request(
+		mallocate_and_populate_rescuer_request(
 			rr_name, 
 			required_count, 
 			time_to_manage, 
@@ -171,6 +156,8 @@ void check_emergency_type_syntax_and_extract_values(
 
 		// Incremento il contatore dei rescuer
 		local_rescuer_req_number++;
+		rescuer_requests_total_count++; // incremento il contatore totale dei rescuer richiesti
+		log_event(rescuer_requests_total_count, RESCUER_REQUEST_ADDED, "rescuer richiesto aggiunto: " EMERGENCY_TYPES_CONF);
 
 		// Passo al token successivo
 		token = strtok(NULL, ";");
@@ -181,23 +168,7 @@ void check_emergency_type_syntax_and_extract_values(
 	*rescuer_req_number = local_rescuer_req_number; // l'ultimo incremento lo ha reso il numero corretto
 }
 
-int emergency_values_are_illegal(char *emergency_desc, short priority){
-	return (
-		strlen(emergency_desc) <= 0 || 
-		priority < MIN_EMERGENCY_PRIORITY || 
-		priority > MAX_EMERGENCY_PRIORITY
-	);
-}
 
-int rescuer_request_values_are_illegal(char *rr_name, int required_count, int time_to_manage){
-	return (
-		strlen(rr_name) <= 0 || 
-		required_count < MIN_RESCUER_REQUIRED_COUNT || 
-		required_count > MAX_RESCUER_REQUIRED_COUNT || 
-		time_to_manage < MIN_TIME_TO_MANAGE || 
-		time_to_manage > MAX_TIME_TO_MANAGE
-	);
-}
 
 
 

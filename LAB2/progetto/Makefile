@@ -17,3 +17,4 @@ run: $(TARGET)
 
 clean:
 	rm -f $(TARGET)
+	> log.txt
