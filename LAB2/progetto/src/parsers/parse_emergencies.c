@@ -138,6 +138,7 @@ void check_emergency_type_syntax_and_extract_values(
 		// Controllo se il rescuer è già presente. Se non lo è, lo aggiungo
 		if(get_rescuer_request_by_name(rr_name, rescuers)){
 			log_event(line_count, DUPLICATE_RESCUER_REQUEST_IGNORED, "Nome rescuer richiesto più di una volta da una singola emergenza, non aggiunto: " EMERGENCY_TYPES_CONF);
+			token = strtok(NULL, ";");
 			continue; // ignoro questo token
 		}
 

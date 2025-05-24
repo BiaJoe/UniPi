@@ -8,6 +8,7 @@
 
 #include "utils.h"
 
+#define NO_ID -1
 
 long get_time();
 void log_init();

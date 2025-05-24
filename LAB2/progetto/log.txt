@@ -1,56 +1,56 @@
-1747756446      lsta 0     LOGGING_STARTED                     Inizio logging
-1747756446      psta 0     PARSING_STARTED                     Inizio parsing dei file di configurazione
-1747756446      rdta 1     RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
-1747756446      rdta 2     RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
-1747756446      rdta 3     RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
-1747756446      rdta 4     RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
-1747756446      rdta 5     RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
-1747756446      rtpa 1     RESCUER_TYPE_PARSED                 Rescuer aggiunto: conf/rescuers.conf
-1747756446      rdta 6     RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
-1747756446      rdta 7     RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
-1747756446      rdta 8     RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
-1747756446      rdta 9     RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
-1747756446      rdta 10    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
-1747756446      rdta 11    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
-1747756446      rdta 12    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
-1747756446      rdta 13    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
-1747756446      rdta 14    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
-1747756446      rdta 15    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
-1747756446      rdta 16    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
-1747756446      rdta 17    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
-1747756446      rdta 18    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
-1747756446      rdta 19    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
-1747756446      rdta 20    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
-1747756446      rdta 21    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
-1747756446      rdta 22    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
-1747756446      rdta 23    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
-1747756446      rdta 24    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
-1747756446      rdta 25    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
-1747756446      rdta 26    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
-1747756446      rdta 27    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
-1747756446      rdta 28    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
-1747756446      rdta 29    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
-1747756446      rdta 30    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
-1747756446      rtpa 2     RESCUER_TYPE_PARSED                 Rescuer aggiunto: conf/rescuers.conf
-1747756446      rdta 31    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
-1747756446      rdta 32    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
-1747756446      rdta 33    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
-1747756446      rdta 34    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
-1747756446      rdta 35    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
-1747756446      rdta 36    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
-1747756446      rdta 37    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
-1747756446      rdta 38    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
-1747756446      rdta 39    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
-1747756446      rdta 40    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
-1747756446      rtpa 3     RESCUER_TYPE_PARSED                 Rescuer aggiunto: conf/rescuers.conf
-1747756446      rrad 1     RESCUER_REQUEST_ADDED               rescuer richiesto aggiunto: conf/emergency_types.conf
-1747756446      rrad 2     RESCUER_REQUEST_ADDED               rescuer richiesto aggiunto: conf/emergency_types.conf
-1747756446      empa 1     EMERGENCY_PARSED                    emergenza letta: conf/emergency_types.conf
-1747756446      rrad 3     RESCUER_REQUEST_ADDED               rescuer richiesto aggiunto: conf/emergency_types.conf
-1747756446      rrad 4     RESCUER_REQUEST_ADDED               rescuer richiesto aggiunto: conf/emergency_types.conf
-1747756446      empa 2     EMERGENCY_PARSED                    emergenza letta: conf/emergency_types.conf
-1747756446      rrad 5     RESCUER_REQUEST_ADDED               rescuer richiesto aggiunto: conf/emergency_types.conf
-1747756446      rrad 6     RESCUER_REQUEST_ADDED               rescuer richiesto aggiunto: conf/emergency_types.conf
-1747756446      empa 3     EMERGENCY_PARSED                    emergenza letta: conf/emergency_types.conf
-1747756446      pend 0     PARSING_ENDED                       Il parsing è terminato con successo!
-1747756446      lend 0     LOGGING_ENDED                       Fine del logging
+1748075361      lsta 0     LOGGING_STARTED                     Inizio logging
+1748075361      psta 0     PARSING_STARTED                     Inizio parsing dei file di configurazione
+1748075361      rdta 1     RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
+1748075361      rdta 2     RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
+1748075361      rdta 3     RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
+1748075361      rdta 4     RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
+1748075361      rdta 5     RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
+1748075361      rtpa 1     RESCUER_TYPE_PARSED                 Rescuer aggiunto: conf/rescuers.conf
+1748075361      rdta 6     RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
+1748075361      rdta 7     RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
+1748075361      rdta 8     RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
+1748075361      rdta 9     RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
+1748075361      rdta 10    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
+1748075361      rdta 11    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
+1748075361      rdta 12    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
+1748075361      rdta 13    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
+1748075361      rdta 14    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
+1748075361      rdta 15    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
+1748075361      rdta 16    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
+1748075361      rdta 17    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
+1748075361      rdta 18    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
+1748075361      rdta 19    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
+1748075361      rdta 20    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
+1748075361      rdta 21    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
+1748075361      rdta 22    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
+1748075361      rdta 23    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
+1748075361      rdta 24    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
+1748075361      rdta 25    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
+1748075361      rdta 26    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
+1748075361      rdta 27    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
+1748075361      rdta 28    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
+1748075361      rdta 29    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
+1748075361      rdta 30    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
+1748075361      rtpa 2     RESCUER_TYPE_PARSED                 Rescuer aggiunto: conf/rescuers.conf
+1748075361      rdta 31    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
+1748075361      rdta 32    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
+1748075361      rdta 33    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
+1748075361      rdta 34    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
+1748075361      rdta 35    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
+1748075361      rdta 36    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
+1748075361      rdta 37    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
+1748075361      rdta 38    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
+1748075361      rdta 39    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
+1748075361      rdta 40    RESCUER_DIGITAL_TWIN_ADDED          Gemello digitale aggiunto: conf/rescuers.conf
+1748075361      rtpa 3     RESCUER_TYPE_PARSED                 Rescuer aggiunto: conf/rescuers.conf
+1748075361      rrad 1     RESCUER_REQUEST_ADDED               rescuer richiesto aggiunto: conf/emergency_types.conf
+1748075361      rrad 2     RESCUER_REQUEST_ADDED               rescuer richiesto aggiunto: conf/emergency_types.conf
+1748075361      empa 1     EMERGENCY_PARSED                    emergenza letta: conf/emergency_types.conf
+1748075361      rrad 3     RESCUER_REQUEST_ADDED               rescuer richiesto aggiunto: conf/emergency_types.conf
+1748075361      rrad 4     RESCUER_REQUEST_ADDED               rescuer richiesto aggiunto: conf/emergency_types.conf
+1748075361      empa 2     EMERGENCY_PARSED                    emergenza letta: conf/emergency_types.conf
+1748075361      rrad 5     RESCUER_REQUEST_ADDED               rescuer richiesto aggiunto: conf/emergency_types.conf
+1748075361      rrad 6     RESCUER_REQUEST_ADDED               rescuer richiesto aggiunto: conf/emergency_types.conf
+1748075361      empa 3     EMERGENCY_PARSED                    emergenza letta: conf/emergency_types.conf
+1748075361      pend 0     PARSING_ENDED                       Il parsing è terminato con successo!
+1748075361      lend 0     LOGGING_ENDED                       Fine del logging

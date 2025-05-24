@@ -1,6 +1,7 @@
 #ifndef SERVER_H
 #define SERVER_H
 
-#include <debug.h>
+#include "messqueue.h"
+#include "debug.h"
 
 #endif

@@ -1,9 +1,11 @@
 #include "errors.h"
 
 void log_fatal_error(char *message, log_event_type_t event) {
-	log_event(0, event, message); // id = 0 perchè un errore fatale può accadere una sola volta
-	log_close();
-	exit(EXIT_FAILURE);
+	log_event(NO_ID, event, message); 
+	// NO_ID perchè un errore fatale può accadere una sola volta
+	// non si esce nè si fa log_close perchè ci pensa la funzione log_event
+	// la funzione non fa molto ma è qui per essere espansa eventualmente in futuro
+	// non genera errori in caso di errore non fatale loggato perchè è solo un wrap di log_event
 }
 
 void check_opened_file(FILE *file, char *filename) {

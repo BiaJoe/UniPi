@@ -1,5 +1,11 @@
 #include "log.h"
 
+
+#define FATAL 1
+#define NOT_FATAL 0
+#define LOG 1
+#define DONT_LOG 0
+
 static FILE *log_file = NULL;
 static mtx_t log_mutex;
 
@@ -8,38 +14,6 @@ static mtx_t log_mutex;
 // ed un codice univoco da associare ad un id numerico per non rischiare 
 // di avere ID duplicati nel file di log.
 // static log_event_info_t log_event_lookup_table[LOG_EVENT_TYPES_COUNT] = {
-// 	[NON_APPLICABLE]                  = { "NON_APPLICABLE",                  "NA"  },
-// 	[FATAL_ERROR]                     = { "FATAL_ERROR",                     "FERR" },
-// 	[FATAL_ERROR_PARSING]             = { "FATAL_ERROR_PARSING",             "FEPA" },
-// 	[FATAL_ERROR_LOGGING]             = { "FATAL_ERROR_LOGGING",             "FELO" },
-// 	[FATAL_ERROR_MEMORY]              = { "FATAL_ERROR_MEMORY",              "FEME" },
-// 	[FATAL_ERROR_FILE_OPENING]        = { "FATAL_ERROR_FILE_OPENING",        "FEFO" },
-
-// 	[EMPTY_CONF_LINE_IGNORED]         = { "EMPTY_CONF_LINE_IGNORED",         "ECLI" },
-// 	[DUPLICATE_RESCUER_REQUEST_IGNORED] = { "DUPLICATE_RESCUER_REQUEST_IGNORED", "DRRI" },
-// 	[DUPLICATE_EMERGENCY_TYPE_IGNORED] = { "DUPLICATE_EMERGENCY_TYPE_IGNORED", "DETI" },
-// 	[DUPLICATE_RESCUER_TYPE_IGNORED]  = { "DUPLICATE_RESCUER_TYPE_IGNORED",  "DRTI" },
-// 	[WRONG_EMERGENCY_REQUEST_IGNORED] = { "WRONG_EMERGENCY_REQUEST_IGNORED", "WERI" },
-
-// 	[LOGGING_STARTED]                 = { "LOGGING_STARTED",                 "LSTA" },
-// 	[LOGGING_ENDED]                   = { "LOGGING_ENDED",                   "LEND" },
-
-// 	[PARSING_STARTED]                 = { "PARSING_STARTED",                 "PSTA" },
-// 	[PARSING_ENDED]                   = { "PARSING_ENDED",                   "PEND" },
-// 	[RESCUER_TYPE_PARSED]             = { "RESCUER_TYPE_PARSED",             "RTPA" },
-// 	[RESCUER_DIGITAL_TWIN_ADDED]      = { "RESCUER_DIGITAL_TWIN_ADDED",      "RDTA" },
-// 	[EMERGENCY_PARSED]                = { "EMERGENCY_PARSED",                "EMPA" },
-// 	[RESCUER_REQUEST_ADDED]           = { "RESCUER_REQUEST_ADDED",           "RRAD" },
-
-// 	[EMERGENCY_REQUEST_RECEIVED]      = { "EMERGENCY_REQUEST_RECEIVED",      "ERRR" },
-// 	[EMERGENCY_REQUEST_PROCESSED]     = { "EMERGENCY_REQUEST_PROCESSED",     "ERPR" },
-
-// 	[MESSAGE_QUEUE]                   = { "MESSAGE_QUEUE",                   "MQUE" },
-// 	[EMERGENCY_STATUS]                = { "EMERGENCY_STATUS",                "ESTA" },
-// 	[RESCUER_STATUS]                  = { "RESCUER_STATUS",                  "RSTA" },
-// 	[EMERGENCY_REQUEST]               = { "EMERGENCY_REQUEST",               "ERRE" }
-	
-// };
 
 //idea: aggiungere un counter per ogni tipo di evento.
 //Parte da 0 e si incrementa ad ogni logging dell'evento
@@ -47,31 +21,31 @@ static mtx_t log_mutex;
 //il controllo sarebbe centralizzato.
 
 static log_event_info_t log_event_lookup_table[LOG_EVENT_TYPES_COUNT] = {
-	[NON_APPLICABLE]                  	= { "NON_APPLICABLE",                  		"N/A"  },
-	[FATAL_ERROR]                     	= { "FATAL_ERROR",                     		"ferr" },
-	[FATAL_ERROR_PARSING]             	= { "FATAL_ERROR_PARSING",             		"fepa" },
-	[FATAL_ERROR_LOGGING]             	= { "FATAL_ERROR_LOGGING",             		"felo" },
-	[FATAL_ERROR_MEMORY]              	= { "FATAL_ERROR_MEMORY",              		"feme" },
-	[FATAL_ERROR_FILE_OPENING]        	= { "FATAL_ERROR_FILE_OPENING",        		"fefo" },
-	[EMPTY_CONF_LINE_IGNORED]         	= { "EMPTY_CONF_LINE_IGNORED",         		"ecli" },
-	[DUPLICATE_RESCUER_REQUEST_IGNORED] = { "DUPLICATE_RESCUER_REQUEST_IGNORED", 	"drri" },
-	[DUPLICATE_EMERGENCY_TYPE_IGNORED] 	= { "DUPLICATE_EMERGENCY_TYPE_IGNORED",		"deti" },
-	[DUPLICATE_RESCUER_TYPE_IGNORED]  	= { "DUPLICATE_RESCUER_TYPE_IGNORED",  		"drti" },
-	[WRONG_EMERGENCY_REQUEST_IGNORED] 	= { "WRONG_EMERGENCY_REQUEST_IGNORED", 		"weri" },
-	[LOGGING_STARTED]                 	= { "LOGGING_STARTED",                 		"lsta" },
-	[LOGGING_ENDED]                   	= { "LOGGING_ENDED",                   		"lend" },
-	[PARSING_STARTED]                 	= { "PARSING_STARTED",                 		"psta" },
-	[PARSING_ENDED]                   	= { "PARSING_ENDED",                   		"pend" },
-	[RESCUER_TYPE_PARSED]             	= { "RESCUER_TYPE_PARSED",             		"rtpa" },
-	[RESCUER_DIGITAL_TWIN_ADDED]      	= { "RESCUER_DIGITAL_TWIN_ADDED",      		"rdta" },
-	[EMERGENCY_PARSED]                	= { "EMERGENCY_PARSED",                		"empa" },
-	[RESCUER_REQUEST_ADDED]           	= { "RESCUER_REQUEST_ADDED",           		"rrad" },
-	[EMERGENCY_REQUEST_RECEIVED]      	= { "EMERGENCY_REQUEST_RECEIVED",      		"errr" },
-	[EMERGENCY_REQUEST_PROCESSED]     	= { "EMERGENCY_REQUEST_PROCESSED",     		"erpr" },
-	[MESSAGE_QUEUE]                   	= { "MESSAGE_QUEUE",                   		"mque" },
-	[EMERGENCY_STATUS]                	= { "EMERGENCY_STATUS",                		"esta" },
-	[RESCUER_STATUS]                  	= { "RESCUER_STATUS",                  		"rsta" },
-	[EMERGENCY_REQUEST]               	= { "EMERGENCY_REQUEST",               		"erre" }
+	[NON_APPLICABLE]                  	= { "NON_APPLICABLE",                  		"N/A"	, 0, NOT_FATAL, LOG },
+	[FATAL_ERROR]                     	= { "FATAL_ERROR",                     		"ferr", 0, FATAL, 		LOG },
+	[FATAL_ERROR_PARSING]             	= { "FATAL_ERROR_PARSING",             		"fepa", 0, FATAL, 		LOG },
+	[FATAL_ERROR_LOGGING]             	= { "FATAL_ERROR_LOGGING",             		"felo", 0, FATAL, 		LOG },
+	[FATAL_ERROR_MEMORY]              	= { "FATAL_ERROR_MEMORY",              		"feme", 0, FATAL, 		LOG },
+	[FATAL_ERROR_FILE_OPENING]        	= { "FATAL_ERROR_FILE_OPENING",        		"fefo", 0, FATAL, 		LOG },
+	[EMPTY_CONF_LINE_IGNORED]         	= { "EMPTY_CONF_LINE_IGNORED",         		"ecli", 0, NOT_FATAL, DONT_LOG },
+	[DUPLICATE_RESCUER_REQUEST_IGNORED] = { "DUPLICATE_RESCUER_REQUEST_IGNORED", 	"drri", 0, NOT_FATAL, LOG },
+	[DUPLICATE_EMERGENCY_TYPE_IGNORED] 	= { "DUPLICATE_EMERGENCY_TYPE_IGNORED",		"deti", 0, NOT_FATAL, LOG },
+	[DUPLICATE_RESCUER_TYPE_IGNORED]  	= { "DUPLICATE_RESCUER_TYPE_IGNORED",  		"drti", 0, NOT_FATAL, LOG },
+	[WRONG_EMERGENCY_REQUEST_IGNORED] 	= { "WRONG_EMERGENCY_REQUEST_IGNORED", 		"weri", 0, NOT_FATAL, LOG },
+	[LOGGING_STARTED]                 	= { "LOGGING_STARTED",                 		"lsta", 0, NOT_FATAL, LOG },
+	[LOGGING_ENDED]											= { "LOGGING_ENDED",                   		"lend", 0, NOT_FATAL, LOG },
+	[PARSING_STARTED]                 	= { "PARSING_STARTED",                 		"psta", 0, NOT_FATAL, LOG },
+	[PARSING_ENDED]                   	= { "PARSING_ENDED",                   		"pend", 0, NOT_FATAL, LOG },
+	[RESCUER_TYPE_PARSED]             	= { "RESCUER_TYPE_PARSED",             		"rtpa", 0, NOT_FATAL, LOG },
+	[RESCUER_DIGITAL_TWIN_ADDED]      	= { "RESCUER_DIGITAL_TWIN_ADDED",      		"rdta", 0, NOT_FATAL, LOG },
+	[EMERGENCY_PARSED]                	= { "EMERGENCY_PARSED",                		"empa", 0, NOT_FATAL, LOG },
+	[RESCUER_REQUEST_ADDED]           	= { "RESCUER_REQUEST_ADDED",           		"rrad", 0, NOT_FATAL, LOG },
+	[EMERGENCY_REQUEST_RECEIVED]      	= { "EMERGENCY_REQUEST_RECEIVED",      		"errr", 0, NOT_FATAL, LOG },
+	[EMERGENCY_REQUEST_PROCESSED]     	= { "EMERGENCY_REQUEST_PROCESSED",     		"erpr", 0, NOT_FATAL, LOG },
+	[MESSAGE_QUEUE]                   	= { "MESSAGE_QUEUE",                   		"mque", 0, NOT_FATAL, LOG },
+	[EMERGENCY_STATUS]                	= { "EMERGENCY_STATUS",                		"esta", 0, NOT_FATAL, LOG },
+	[RESCUER_STATUS]                  	= { "RESCUER_STATUS",                  		"rsta", 0, NOT_FATAL, LOG },
+	[EMERGENCY_REQUEST]               	= { "EMERGENCY_REQUEST",               		"erre", 0, NOT_FATAL, LOG }
 	
 };
 
@@ -121,6 +95,10 @@ void log_close() {
 }
 
 void log_event(int id, log_event_type_t e, char *message) {
+
+	// se l'evento non è da loggare non si logga 
+	if(!log_event_lookup_table[e].to_log) return;
+
 	mtx_lock(&log_mutex);
 
 	if (!log_file) {
@@ -128,12 +106,16 @@ void log_event(int id, log_event_type_t e, char *message) {
 		exit(EXIT_FAILURE);
 	}
 
+	log_event_lookup_table[e].counter++;
+
+	int ID = (id == NO_ID) ? log_event_lookup_table[e].counter : id;
+
 	long time = get_time();
 	fprintf(
 		log_file,
 		LOG_EVENT_STRING, 
 		time, get_log_event_type_code(e), 
-		id, 
+		ID, 
 		get_log_event_type_string(e), 
 		message
 	);
@@ -141,4 +123,10 @@ void log_event(int id, log_event_type_t e, char *message) {
 	fflush(log_file);
 
 	mtx_unlock(&log_mutex);
+
+	//se l'evento è fatale dopo averlo loggato si esce
+	if(log_event_lookup_table[e].is_fatal){
+		log_close();
+		exit(EXIT_FAILURE);
+	}
 }
