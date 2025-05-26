@@ -1,5 +1,6 @@
 #include "server.h"
 
+
 int height;
 int width;
 

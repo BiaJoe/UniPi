@@ -1,20 +1,19 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -std=c11 -Iinclude 
 
-# Get all .c files in src/server/ and src/parsers/
-SRC := $(wildcard src/server/*.c src/parsers/*.c)
+SERVER_SRC := src/server.c $(wildcard src/dependencies/*.c src/parsers/*.c)
+CLIENT_SRC := src/client.c $(wildcard src/dependencies/*.c src/parsers/*.c)
 
-# Output binary
 SERVER = main
 CLIENT = client
 
 all: $(SERVER) $(CLIENT)
 
 $(SERVER): $(SRC)
-	$(CC) $(CFLAGS) -o $(SERVER) $(SRC) -lm
+	$(CC) $(CFLAGS) -o $(SERVER) $(SERVER_SRC) -lm
 
-$(CLIENT): $(CLI)
-	$(CC) $(CFLAGS) -o $(CLIENT) $(SRC)
+$(CLIENT): $(SRC)
+	$(CC) $(CFLAGS) -o $(CLIENT) $(CLIENT_SRC)
 
 run: $(SERVER)
 	./$(SERVER)
