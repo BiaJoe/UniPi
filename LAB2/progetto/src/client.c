@@ -3,8 +3,6 @@
 // client.c prende in input le emergenze e fa un minimo di error handling
 // poi invia le emergenze, ma lascia al server il compito di finire il check dei valori
 
-
-
 int main(int argc, char* argv[]){
 
 	// controllo il numero di argomenti

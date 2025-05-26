@@ -4,6 +4,7 @@
 #define _GNU_SOURCE // per usare getline
 
 #include "memory_management.h"
+#include "errors.h"
 
 
 
