@@ -29,6 +29,8 @@ void mallocate_and_populate_rescuer_request(
 	rescuer_request_t **rescuers,
 	rescuer_type_t **rescuer_types
 );
+emergency_request_t* mallocate_and_populate_emergency_request(char* name, int x, int y, time_t d);
+
 
 // liberazione
 

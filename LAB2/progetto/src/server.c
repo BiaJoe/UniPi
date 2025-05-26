@@ -1,12 +1,13 @@
 #include "server.h"
 
+int height;
+int width;
+
 int main(){
 
 	// variabili inizializzate per il parsing
 	int rescuer_count = 0;
 	int emergency_count = 0;
-	int height = 0;
-	int width = 0;
 	char* queue = NULL;
 	rescuer_type_t** rescuers = NULL;
 	emergency_type_t** emergency_types = NULL;

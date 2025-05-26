@@ -124,6 +124,16 @@ void mallocate_and_populate_rescuer_request(
 	rescuers[i]->time_to_manage = time_to_manage;
 }
 
+emergency_request_t* mallocate_and_populate_emergency_request(char* name, int x, int y, time_t d){
+	emergency_request_t *e = (emergency_request_t *)malloc(sizeof(emergency_request_t));
+	CHECK_FOR_MEMORY_ALLOCATION_ERROR(e);
+	strcpy(e->emergency_name, name);
+	e->x = x;
+	e->y = y;
+	e->timestamp = d;
+	return e;
+}
+
 void free_rescuer_requests(rescuer_request_t **rescuer_requests){
 	for(int i = 0; rescuer_requests[i] != NULL; i++){
 		// libero il puntatore al rescuer_request_t

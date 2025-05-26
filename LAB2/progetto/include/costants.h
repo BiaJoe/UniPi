@@ -5,7 +5,7 @@
 #define EMERGENCY_TYPES_CONF "conf/emergency_types.conf"
 #define ENV_CONF             "conf/env.conf"
 
-#define MAX_FILE_LINES 512
+#define MAX_FILE_LINES 1024
 #define MAX_LINE_LENGTH 1024
 
 #define MAX_RESCUER_NAME_LENGTH 128
@@ -15,6 +15,7 @@
 #define MAX_EMERGENCY_TYPES_COUNT 128
 #define MAX_RESCUER_REQ_NUMBER_PER_EMERGENCY 16
 #define MAX_ENV_FIELD_LENGTH 32
+#define MAX_EMERCENCY_REQUEST_COUNT 256 //client.c
 
 #define MIN_EMERGENCY_PRIORITY 0
 #define MAX_EMERGENCY_PRIORITY 3
@@ -24,10 +25,16 @@
 #define MAX_RESCUER_AMOUNT 1000
 #define MIN_RESCUER_REQUIRED_COUNT 1
 #define MAX_RESCUER_REQUIRED_COUNT 32
-#define MIN_COORDINATE 0
-#define MAX_COORDINATE 1000
+#define MIN_X_COORDINATE 0
+#define MAX_X_COORDINATE 1024
+#define MIN_Y_COORDINATE 0
+#define MAX_Y_COORDINATE 1024
 #define MIN_TIME_TO_MANAGE 1
 #define MAX_TIME_TO_MANAGE 1000
+
+// estratte da env.conf
+extern int height;
+extern int width;
 
 #define QUEUE_LENGTH_MINUS_ONE 15
 #define QUEUE "emergenze676722" // lunghezza 16
@@ -35,12 +42,13 @@
 #define LOG_FILE "log.txt"
 #define LONG_LENGTH 20
 #define LOG_EVENT_TYPES_COUNT 25
+
 // #define LOG_EVENT_STRING "[%ld] [%s%d] [%s] [%s]\n"
 #define LOG_EVENT_STRING "%-15ld %s %-5d %-35s %s\n"
 
 #define RESCUERS_SYNTAX "[%" STR(MAX_RESCUER_NAME_LENGTH) "[^]]][%d][%d][%d;%d]"
 #define RESCUER_REQUEST_SYNTAX "%" STR(MAX_RESCUER_NAME_LENGTH) "[^:]:%d,%d"
 #define EMERGENCY_TYPE_SYNTAX "[%" STR(EMERGENCY_NAME_LENGTH) "[^]]] [%d] %" STR(MAX_RESCUER_REQUESTS_LENGTH) "[^\n]"
-
+#define EMERGENCY_REQUEST_SYNTAX "%" STR(EMERGENCY_NAME_LENGTH) "[^ ] %d %d %ld"
 
 #endif

@@ -12,7 +12,7 @@ rescuer_type_t ** parse_rescuers(int* rescuer_types);
 emergency_type_t ** parse_emergencies(int* emergency_count, rescuer_type_t **rescuer_types);
 
 void check_emergency_type_syntax_and_extract_values(
-    int line_count, // serve per il logging
+  int line_count, // serve per il logging
 	char *line, 
 	short *priority, 
 	char *emergency_desc, 

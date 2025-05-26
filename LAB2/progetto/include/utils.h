@@ -2,8 +2,8 @@
 #define UTILS_H
 
 #include <string.h>
+#include <math.h>
 
-#include "costants.h"
 #include "structs.h"
 
 #define STR_HELPER(x) #x
@@ -37,9 +37,11 @@ rescuer_type_t * get_rescuer_type_by_name(char *name, rescuer_type_t **rescuer_t
 emergency_type_t * get_emergency_type_by_name(char *name, emergency_type_t **emergency_types);
 rescuer_request_t * get_rescuer_request_by_name(char *name, rescuer_request_t **rescuers);
 char* get_name_of_rescuer_requested(rescuer_request_t *rescuer_request);
+int my_atoi(char a[], int* err);
 
-#define ABS(x) (x) < 0 ? -(x) : (x)
-#define MANHATTAN(x1,y1,x2,y2) ABS((x1) - (x2)) + ABS((y1) - (y2))
+
+#define ABS(x) ((x) < 0 ? -(x) : (x))
+#define MANHATTAN(x1,y1,x2,y2) (ABS((x1) - (x2)) + ABS((y1) - (y2)))
 
 
 #endif

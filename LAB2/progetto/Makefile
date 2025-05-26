@@ -1,20 +1,25 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -std=c11 -Iinclude
+CFLAGS = -Wall -Wextra -std=c11 -Iinclude 
 
 # Get all .c files in src/server/ and src/parsers/
 SRC := $(wildcard src/server/*.c src/parsers/*.c)
 
 # Output binary
-TARGET = main
+SERVER = main
+CLIENT = client
 
-all: $(TARGET)
+all: $(SERVER) $(CLIENT)
 
-$(TARGET): $(SRC)
-	$(CC) $(CFLAGS) -o $(TARGET) $(SRC)
+$(SERVER): $(SRC)
+	$(CC) $(CFLAGS) -o $(SERVER) $(SRC) -lm
 
-run: $(TARGET)
-	./$(TARGET)
+$(CLIENT): $(CLI)
+	$(CC) $(CFLAGS) -o $(CLIENT) $(SRC)
+
+run: $(SERVER)
+	./$(SERVER)
 
 clean:
-	rm -f $(TARGET)
+	rm -f $(SERVER)
+	rm -f $(CLIENT)
 	> log.txt

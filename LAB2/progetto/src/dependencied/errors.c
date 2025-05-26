@@ -41,18 +41,18 @@ int rescuer_type_values_are_illegal(char *name, int amount, int speed, int x, in
 		amount > MAX_RESCUER_AMOUNT || 
 		speed < MIN_RESCUER_SPEED || 
 		speed > MAX_RESCUER_SPEED || 
-		x < MIN_COORDINATE || 
-		x > MAX_COORDINATE || 
-		y < MIN_COORDINATE || 
-		y > MAX_COORDINATE 
+		x < MIN_X_COORDINATE || 
+		x > width || 
+		y < MIN_Y_COORDINATE || 
+		y > height
 	);
 }
 
 int environment_values_are_illegal(int height, int width){
 	return (
-		height < MIN_COORDINATE || 
-		height > MAX_COORDINATE || 
-		width < MIN_COORDINATE || 
-		width > MAX_COORDINATE
+		height < MIN_Y_COORDINATE || 
+		height > MAX_Y_COORDINATE || 
+		width < MIN_X_COORDINATE || 
+		width > MAX_X_COORDINATE
 	);
 }

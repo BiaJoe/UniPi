@@ -3,14 +3,11 @@
 
 #include "log.h"
 
-
-
 #define CHECK_FOR_MEMORY_ALLOCATION_ERROR(pointer) \
 	do { \
 		if (!(pointer)) \
 			log_fatal_error("Errore allocazione memoria: " #pointer, FATAL_ERROR_MEMORY); \
 	} while (0)
-
 
 void log_fatal_error(char *message, log_event_type_t event);
 void check_opened_file(FILE *file, char *filename);
