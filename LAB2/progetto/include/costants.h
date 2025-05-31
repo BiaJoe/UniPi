@@ -17,6 +17,11 @@
 #define MAX_ENV_FIELD_LENGTH 32
 #define MAX_EMERCENCY_REQUEST_COUNT 256 //client.c
 
+// log
+#define LOG_EVENT_NAME_LENGTH 64
+#define LOG_EVENT_CODE_LENGTH 5
+#define LOG_EVENT_MESSAGE_LENGTH 256
+
 #define MIN_EMERGENCY_PRIORITY 0
 #define MAX_EMERGENCY_PRIORITY 3
 #define MIN_RESCUER_SPEED 1
@@ -43,8 +48,8 @@ extern int width;
 #define LONG_LENGTH 20
 #define LOG_EVENT_TYPES_COUNT 25
 
-// #define LOG_EVENT_STRING "[%ld] [%s%d] [%s] [%s]\n"
-#define LOG_EVENT_STRING "%-15ld %s %-5d %-35s %s\n"
+// #define LOG_EVENT_STRING_SYNTAX "[%ld] [%s%d] [%s] [%s]\n"
+#define LOG_EVENT_STRING_SYNTAX "%-15ld %s %-5d %-35s %s\n"
 
 #define RESCUERS_SYNTAX "[%" STR(MAX_RESCUER_NAME_LENGTH) "[^]]][%d][%d][%d;%d]"
 #define RESCUER_REQUEST_SYNTAX "%" STR(MAX_RESCUER_NAME_LENGTH) "[^:]:%d,%d"

@@ -5,7 +5,7 @@ static int rescuer_requests_total_count = 0;
 emergency_type_t** parse_emergencies(int *emergency_count, rescuer_type_t **rescuer_types){
 	// Apro il file di configurazione
 	FILE *emergencies_conf = fopen(EMERGENCY_TYPES_CONF, "r");
-	check_opened_file(emergencies_conf, EMERGENCY_TYPES_CONF);
+	check_opened_file_error_log(emergencies_conf);
 
 	// inizializzo l'array di emergenze dinamicamente a NULL
 	emergency_type_t ** emergency_types = callocate_emergency_types();
@@ -169,7 +169,21 @@ void check_emergency_type_syntax_and_extract_values(
 	*rescuer_req_number = local_rescuer_req_number; // l'ultimo incremento lo ha reso il numero corretto
 }
 
+int rescuer_request_values_are_illegal(char *rr_name, int required_count, int time_to_manage){
+	return (
+		strlen(rr_name) <= 0 || 
+		required_count < MIN_RESCUER_REQUIRED_COUNT || 
+		required_count > MAX_RESCUER_REQUIRED_COUNT || 
+		time_to_manage < MIN_TIME_TO_MANAGE || 
+		time_to_manage > MAX_TIME_TO_MANAGE
+	);
+}
 
-
-
+int emergency_values_are_illegal(char *emergency_desc, short priority){
+	return (
+		strlen(emergency_desc) <= 0 || 
+		priority < MIN_EMERGENCY_PRIORITY || 
+		priority > MAX_EMERGENCY_PRIORITY
+	);
+}
 

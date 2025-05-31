@@ -30,7 +30,7 @@ char* get_name_of_rescuer_requested(rescuer_request_t *rescuer_request){
 	return rescuer_type->rescuer_type_name;
 }
 
-int my_atoi(char a[], int* err){
+int my_atoi(char a[]){
 	int order = strlen(a) - 1;
 	int res = 0;
 	char c;
@@ -46,7 +46,7 @@ int my_atoi(char a[], int* err){
 
 	// controllo che la prima cifra (i = 0 o i = 1) non sia zero
 	if((a[i]) == '0'){ 
-		(*err)++;
+		errno = EINVAL;
 		return 0;
 	}
 
@@ -54,7 +54,7 @@ int my_atoi(char a[], int* err){
 	while((c = a[i]) != '\0'){
 		// controllo che la cifra sia numerica
 		if(c < '0' || c > '9'){
-			(*err)++;
+			errno = EINVAL;
 			return 0;
 		}
 		// aggiorno il risultato
@@ -65,4 +65,10 @@ int my_atoi(char a[], int* err){
 		return -res;
 	
 	return res;
+}
+
+void write_line(FILE *f, char *s) {
+	check_error_NULL(f, "file non trovato");
+	fprintf(f, s);
+	fflush(f);
 }

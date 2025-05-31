@@ -12,7 +12,6 @@
 #include "structs.h"
 
 
-#define MQ_SERVER_CLIENT "/mq_sc"
 #define MAX_MESSAGES 1024
 #define SC_QUEUE_MESSAGE_LENGTH 1024
 
@@ -25,10 +24,9 @@ typedef struct {
 	int server_number;
 } message_from_server_t;
 
-typedef struct {
-	emergency_request_t *emergency;
-	log_event_info_t *event;
-} message_from_client_t;
+
+
+
 
 
 

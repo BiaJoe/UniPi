@@ -4,7 +4,7 @@ rescuer_type_t** parse_rescuers(int *rescuer_count){
 
 	// Apro il file di configurazione
 	FILE *rescuers_conf = fopen(RESCUERS_CONF, "r");
-	check_opened_file(rescuers_conf, RESCUERS_CONF);
+	check_opened_file_error_log(rescuers_conf);
 
 	// inizializzo l'array di rescuer_types dinamicamente a NULL
 	rescuer_type_t **  rescuer_types = callocate_rescuer_types();
@@ -73,5 +73,16 @@ rescuer_type_t** parse_rescuers(int *rescuer_count){
 }
 
 
-
-
+int rescuer_type_values_are_illegal(char *name, int amount, int speed, int x, int y){
+	return (
+		strlen(name) <= 0 || 
+		amount < MIN_RESCUER_AMOUNT || 
+		amount > MAX_RESCUER_AMOUNT || 
+		speed < MIN_RESCUER_SPEED || 
+		speed > MAX_RESCUER_SPEED || 
+		x < MIN_X_COORDINATE || 
+		x > width || 
+		y < MIN_Y_COORDINATE || 
+		y > height
+	);
+}

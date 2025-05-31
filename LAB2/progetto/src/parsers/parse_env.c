@@ -4,10 +4,7 @@ char* parse_env(int *height, int *width){
 
 	// Apro il file di configurazione
 	FILE *env_conf = fopen(ENV_CONF, "r");
-	if(!env_conf) { 
-		perror("Errore apertura file di configurazione " ENV_CONF);
-		exit(EXIT_FAILURE);
-	}
+	check_opened_file_error_log(env_conf);
 
 	char *line = NULL;
 	size_t len = 0;
@@ -54,4 +51,13 @@ void my_getline(char **line, size_t *len, FILE *stream){
 	// Controllo che la riga non sia vuota
 	if((*line)[0] == '\n')
 		log_fatal_error("Riga vuota non ignorabile nel file di configurazione " ENV_CONF, FATAL_ERROR_PARSING);
+}
+
+int environment_values_are_illegal(int height, int width){
+	return (
+		height < MIN_Y_COORDINATE || 
+		height > MAX_Y_COORDINATE || 
+		width < MIN_X_COORDINATE || 
+		width > MAX_X_COORDINATE
+	);
 }

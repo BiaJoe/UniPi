@@ -4,9 +4,6 @@
 #define _GNU_SOURCE // per usare getline
 
 #include "memory_management.h"
-#include "errors.h"
-
-
 
 rescuer_type_t ** parse_rescuers(int* rescuer_types);
 
@@ -25,6 +22,11 @@ void check_emergency_type_syntax_and_extract_values(
 // Funzioni per la gestione dell'ambiente
 char* parse_env(int *height, int *width);
 void my_getline(char **line, size_t *len, FILE *stream);
+
+int rescuer_type_values_are_illegal(char *name, int amount, int speed, int x, int y);
+int rescuer_request_values_are_illegal(char *rr_name, int required_count, int time_to_manage);
+int emergency_values_are_illegal(char *emergency_desc, short priority);
+int environment_values_are_illegal(int height, int width);
 
 
 #endif

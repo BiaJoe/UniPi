@@ -1,24 +1,32 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -std=c11 -Iinclude 
 
+LOGGER_SRC := src/logger.c $(wildcard src/dependencies/*.c)
 SERVER_SRC := src/server.c $(wildcard src/dependencies/*.c src/parsers/*.c)
-CLIENT_SRC := src/client.c $(filter-out src/dependencies/errors.c, $(wildcard src/dependencies/*.c))
+CLIENT_SRC := src/client.c $(wildcard src/dependencies/*.c)
 
+LOGGER = logger
 SERVER = main
 CLIENT = client
 
-all: $(SERVER) $(CLIENT)
+.PHONY: all clean run
 
-$(SERVER): $(SRC)
+all: $(LOGGER) $(SERVER) $(CLIENT)
+
+$(LOGGER): $(LOGGER_SRC)
+	$(CC) $(CFLAGS) -o $(LOGGER) $(LOGGER_SRC) -lm
+
+$(SERVER): $(SERVER_SRC)
 	$(CC) $(CFLAGS) -o $(SERVER) $(SERVER_SRC) -lm
 
-$(CLIENT): $(SRC)
+$(CLIENT): $(CLIENT_SRC)
 	$(CC) $(CFLAGS) -o $(CLIENT) $(CLIENT_SRC) -lm
 
-run: $(SERVER)
-	./$(SERVER)
+run: $(LOGGER) $(SERVER) $(CLIENT)
+	./$(LOGGER) &
+	sleep 0.5 
+	./$(SERVER) &
 
 clean:
-	rm -f $(SERVER)
-	rm -f $(CLIENT)
+	rm -f $(LOGGER) $(SERVER) $(CLIENT)
 	> log.txt

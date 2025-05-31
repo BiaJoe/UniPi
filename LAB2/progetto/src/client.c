@@ -24,7 +24,7 @@ int main(int argc, char* argv[]){
 		switch(argv[1][1]){
 			case 'f': mode = FILE_MODE; break;
 
-			// ...espandibile per altre modalità
+			// ...espandibile ad altre modalità
 			default: DIE("opzione inesistente richiesta");
 		}
 	}
@@ -56,12 +56,13 @@ void handle_normal_mode_input(char* args[]){
 		LOG_IGNORING_ERROR("nome emergenza troppo lungo");
 		exit(EXIT_FAILURE);
 	}
+	
+	errno = 0;
+	x 		= my_atoi(args[2]);
+	y 		= my_atoi(args[3]);
+	delay = (time_t) my_atoi(args[4]);
 
-	x 		= my_atoi(args[2], &errors_occurred);
-	y 		= my_atoi(args[3], &errors_occurred);
-	delay = (time_t) my_atoi(args[4], &errors_occurred);
-
-	if(errors_occurred){
+	if(errno != 0){
 		LOG_IGNORING_ERROR("caratteri non numerici presenti nei valori numerici dell'emergenza richiesta");
 		exit(EXIT_FAILURE);
 	}

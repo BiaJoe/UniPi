@@ -90,14 +90,14 @@ typedef struct {
 // STRUTTURE PER IL LOGGING
 
 typedef struct {
-	char* name;
-	char* code;
+	char name[LOG_EVENT_NAME_LENGTH];
+	char code[LOG_EVENT_CODE_LENGTH];
 	int counter;			// quante volte è stato registrato
 	int is_fatal;			
-	int to_log;				// se va mostrato o no nel file di log
+	int is_to_log;				// se va mostrato o no nel file di log
 } log_event_info_t;
 
-typedef enum{
+typedef enum {
 
 	NON_APPLICABLE, 								  //N/A
 	
@@ -139,7 +139,6 @@ typedef enum{
 	// ...aggiungere altri tipi di log qui
 
 } log_event_type_t; ;
-
 
 
 #endif

@@ -13,8 +13,6 @@ int main(){
 	rescuer_type_t** rescuers = NULL;
 	emergency_type_t** emergency_types = NULL;
 
-	// si inizia a loggare
-	log_init(); 
 
 	// Parsing dei file di configurazione
 	log_event(0, PARSING_STARTED, "Inizio parsing dei file di configurazione");
@@ -35,7 +33,6 @@ int main(){
 	free_emergency_types(emergency_types);
 	free(queue);
 
-	log_close(); 
 
 	return 0;
 }
