@@ -1,6 +1,5 @@
 #include "server.h"
 
-
 int height;
 int width;
 
@@ -13,6 +12,8 @@ int main(){
 	rescuer_type_t** rescuers = NULL;
 	emergency_type_t** emergency_types = NULL;
 
+	// si inizia a loggare
+	log_event(NO_ID, LOGGING_STARTED, "Inizio logging");
 
 	// Parsing dei file di configurazione
 	log_event(0, PARSING_STARTED, "Inizio parsing dei file di configurazione");
@@ -24,15 +25,20 @@ int main(){
 	log_event(0, PARSING_ENDED, "Il parsing è terminato con successo!");
 
 	// Stampa delle informazioni
-	print_env(queue, height, width);
-	print_rescuer_types(rescuers, rescuer_count);
-	print_emergency_types(emergency_types, emergency_count);
+	// print_env(queue, height, width);
+	// print_rescuer_types(rescuers, rescuer_count);
+	// print_emergency_types(emergency_types, emergency_count);
 
 	// Libero la memoria
 	free_rescuer_types(rescuers);
 	free_emergency_types(emergency_types);
 	free(queue);
 
+	int a = 1, b = 10, c = 1;
+	while(1) { c = b-- / a++ - c;} // ciclo per non fare nulla
+
+	// si smette di loggare
+	log_event(NO_ID, LOGGING_ENDED, "Fine del logging");
 
 	return 0;
 }

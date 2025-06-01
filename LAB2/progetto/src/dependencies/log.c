@@ -3,10 +3,10 @@
 // questo file ha tutte le funzioni necessarie per inviare il messaggio da loggare a logger.c
 
 
-#define FATAL 1
-#define NOT_FATAL 0
-#define LOG 1
-#define DONT_LOG 0
+#define TERMINATING 		1
+#define NOT_TERMINATING 0
+#define LOG 						1
+#define DONT_LOG 				0
 
 
 // Lookup table per i possibili eventi di log,
@@ -15,48 +15,50 @@
 // di avere ID duplicati nel file di log.
 
 static log_event_info_t log_event_lookup_table[LOG_EVENT_TYPES_COUNT] = {
-	//	TIPO																		STRINGA																CODICE (per l'ID)		CONTEGGIO		FATALE?			DA LOGGARE?
-			[NON_APPLICABLE]                  	= { "NON_APPLICABLE",                  		"N/A ", 						0, 					NOT_FATAL, 	LOG 			},
-			[FATAL_ERROR]                     	= { "FATAL_ERROR",                     		"ferr", 						0, 					FATAL, 		 	LOG 			},
-			[FATAL_ERROR_PARSING]             	= { "FATAL_ERROR_PARSING",             		"fepa", 						0, 					FATAL, 		 	LOG 			},
-			[FATAL_ERROR_LOGGING]             	= { "FATAL_ERROR_LOGGING",             		"felo", 						0, 					FATAL, 		 	LOG 			},
-			[FATAL_ERROR_MEMORY]              	= { "FATAL_ERROR_MEMORY",              		"feme", 						0, 					FATAL, 		 	LOG 			},
-			[FATAL_ERROR_FILE_OPENING]        	= { "FATAL_ERROR_FILE_OPENING",        		"fefo", 						0, 					FATAL, 		 	LOG 			},
-			[EMPTY_CONF_LINE_IGNORED]         	= { "EMPTY_CONF_LINE_IGNORED",         		"ecli", 						0, 					NOT_FATAL, 	DONT_LOG 	},
-			[DUPLICATE_RESCUER_REQUEST_IGNORED] = { "DUPLICATE_RESCUER_REQUEST_IGNORED", 	"drri", 						0, 					NOT_FATAL, 	LOG 			},
-			[DUPLICATE_EMERGENCY_TYPE_IGNORED] 	= { "DUPLICATE_EMERGENCY_TYPE_IGNORED",		"deti", 						0, 					NOT_FATAL, 	LOG 			},
-			[DUPLICATE_RESCUER_TYPE_IGNORED]  	= { "DUPLICATE_RESCUER_TYPE_IGNORED",  		"drti", 						0, 					NOT_FATAL, 	LOG 			},
-			[WRONG_EMERGENCY_REQUEST_IGNORED] 	= { "WRONG_EMERGENCY_REQUEST_IGNORED", 		"weri", 						0, 					NOT_FATAL, 	LOG 			},
-			[LOGGING_STARTED]                 	= { "LOGGING_STARTED",                 		"lsta", 						0, 					NOT_FATAL, 	LOG 			},
-			[LOGGING_ENDED]											= { "LOGGING_ENDED",                   		"lend", 						0, 					NOT_FATAL, 	LOG 			},
-			[PARSING_STARTED]                 	= { "PARSING_STARTED",                 		"psta", 						0, 					NOT_FATAL, 	LOG 			},
-			[PARSING_ENDED]                   	= { "PARSING_ENDED",                   		"pend", 						0, 					NOT_FATAL, 	LOG 			},
-			[RESCUER_TYPE_PARSED]             	= { "RESCUER_TYPE_PARSED",             		"rtpa", 						0, 					NOT_FATAL, 	LOG 			},
-			[RESCUER_DIGITAL_TWIN_ADDED]      	= { "RESCUER_DIGITAL_TWIN_ADDED",      		"rdta", 						0, 					NOT_FATAL, 	LOG 			},
-			[EMERGENCY_PARSED]                	= { "EMERGENCY_PARSED",                		"empa", 						0, 					NOT_FATAL, 	LOG 			},
-			[RESCUER_REQUEST_ADDED]           	= { "RESCUER_REQUEST_ADDED",           		"rrad", 						0, 					NOT_FATAL, 	LOG 			},
-			[EMERGENCY_REQUEST_RECEIVED]      	= { "EMERGENCY_REQUEST_RECEIVED",      		"errr", 						0, 					NOT_FATAL, 	LOG 			},
-			[EMERGENCY_REQUEST_PROCESSED]     	= { "EMERGENCY_REQUEST_PROCESSED",     		"erpr", 						0, 					NOT_FATAL, 	LOG 			},
-			[MESSAGE_QUEUE]                   	= { "MESSAGE_QUEUE",                   		"mque", 						0, 					NOT_FATAL, 	LOG 			},
-			[EMERGENCY_STATUS]                	= { "EMERGENCY_STATUS",                		"esta", 						0, 					NOT_FATAL, 	LOG 			},
-			[RESCUER_STATUS]                  	= { "RESCUER_STATUS",                  		"rsta", 						0, 					NOT_FATAL, 	LOG 			},
-			[EMERGENCY_REQUEST]               	= { "EMERGENCY_REQUEST",               		"erre", 						0, 					NOT_FATAL, 	LOG 			}
-		
+	//	TIPO																		STRINGA																CODICE (per l'ID)		CONTEGGIO		FA TERMINARE IL PROGRAMMA?		DA LOGGARE?
+			[NON_APPLICABLE]                  	= { "NON_APPLICABLE",                  		"N/A ", 						0, 					NOT_TERMINATING, 							LOG 			},
+			[FATAL_ERROR]                     	= { "FATAL_ERROR",                     		"ferr", 						0, 					TERMINATING, 		 							LOG 			},
+			[FATAL_ERROR_PARSING]             	= { "FATAL_ERROR_PARSING",             		"fepa", 						0, 					TERMINATING, 		 							LOG 			},
+			[FATAL_ERROR_LOGGING]             	= { "FATAL_ERROR_LOGGING",             		"felo", 						0, 					TERMINATING, 		 							LOG 			},
+			[FATAL_ERROR_MEMORY]              	= { "FATAL_ERROR_MEMORY",              		"feme", 						0, 					TERMINATING, 		 							LOG 			},
+			[FATAL_ERROR_FILE_OPENING]        	= { "FATAL_ERROR_FILE_OPENING",        		"fefo", 						0, 					TERMINATING, 		 							LOG 			},
+			[EMPTY_CONF_LINE_IGNORED]         	= { "EMPTY_CONF_LINE_IGNORED",         		"ecli", 						0, 					NOT_TERMINATING, 							DONT_LOG 	},
+			[DUPLICATE_RESCUER_REQUEST_IGNORED] = { "DUPLICATE_RESCUER_REQUEST_IGNORED", 	"drri", 						0, 					NOT_TERMINATING, 							LOG 			},
+			[DUPLICATE_EMERGENCY_TYPE_IGNORED] 	= { "DUPLICATE_EMERGENCY_TYPE_IGNORED",		"deti", 						0, 					NOT_TERMINATING, 							LOG 			},
+			[DUPLICATE_RESCUER_TYPE_IGNORED]  	= { "DUPLICATE_RESCUER_TYPE_IGNORED",  		"drti", 						0, 					NOT_TERMINATING, 							LOG 			},
+			[WRONG_EMERGENCY_REQUEST_IGNORED] 	= { "WRONG_EMERGENCY_REQUEST_IGNORED", 		"weri", 						0, 					NOT_TERMINATING, 							LOG 			},
+			[LOGGING_STARTED]                 	= { "LOGGING_STARTED",                 		"lsta", 						0, 					NOT_TERMINATING, 							LOG 			},
+			[LOGGING_ENDED]											= { "LOGGING_ENDED",                   		"lend", 						0, 					NOT_TERMINATING, 							LOG 			},
+			[PARSING_STARTED]                 	= { "PARSING_STARTED",                 		"psta", 						0, 					NOT_TERMINATING, 							LOG 			},
+			[PARSING_ENDED]                   	= { "PARSING_ENDED",                   		"pend", 						0, 					NOT_TERMINATING, 							LOG 			},
+			[RESCUER_TYPE_PARSED]             	= { "RESCUER_TYPE_PARSED",             		"rtpa", 						0, 					NOT_TERMINATING, 							LOG 			},
+			[RESCUER_DIGITAL_TWIN_ADDED]      	= { "RESCUER_DIGITAL_TWIN_ADDED",      		"rdta", 						0, 					NOT_TERMINATING, 							LOG 			},
+			[EMERGENCY_PARSED]                	= { "EMERGENCY_PARSED",                		"empa", 						0, 					NOT_TERMINATING, 							LOG 			},
+			[RESCUER_REQUEST_ADDED]           	= { "RESCUER_REQUEST_ADDED",           		"rrad", 						0, 					NOT_TERMINATING, 							LOG 			},
+			[EMERGENCY_REQUEST_RECEIVED]      	= { "EMERGENCY_REQUEST_RECEIVED",      		"errr", 						0, 					NOT_TERMINATING, 							LOG 			},
+			[EMERGENCY_REQUEST_PROCESSED]     	= { "EMERGENCY_REQUEST_PROCESSED",     		"erpr", 						0, 					NOT_TERMINATING, 							LOG 			},
+			[MESSAGE_QUEUE]                   	= { "MESSAGE_QUEUE",                   		"mque", 						0, 					NOT_TERMINATING, 							LOG 			},
+			[EMERGENCY_STATUS]                	= { "EMERGENCY_STATUS",                		"esta", 						0, 					NOT_TERMINATING, 							LOG 			},
+			[RESCUER_STATUS]                  	= { "RESCUER_STATUS",                  		"rsta", 						0, 					NOT_TERMINATING, 							LOG 			},
+			[EMERGENCY_REQUEST]               	= { "EMERGENCY_REQUEST",               		"erre", 						0, 					NOT_TERMINATING, 							LOG 			},
+			[PROGRAM_ENDED_SUCCESSFULLY]				= { "PROGRAM_ENDED_SUCCESSFULLY",					"pesu", 						0,					TERMINATING,  								LOG				}
 	};
 
-void send_log_message(char message[LOG_EVENT_MESSAGE_LENGTH]) {
+void send_log_message(char message[]) {
 	// per non dover aprire e chiudere la coda di log ad OGNI chiamata
 	// la dichiarop statica nella funzione, cioè verrà ricordata anche tra chiamate
 	// dovrò aprirla quindi una sola volta (la prima quando if(mq == -1){...} è vero)
-	static mqd_t mq = -1;
-	struct mq_attr attr;
+	static mqd_t mq = (mqd_t)-1;
+	// struct mq_attr attr;
 
-	if(mq == -1){
-		attr.mq_flags = 0;
-		attr.mq_maxmsg = MAX_LOG_QUEUE_MESSAGES;
-		attr.mq_msgsize = MAX_LOG_EVENT_LENGTH;
-		attr.mq_curmsgs = 0;
-		check_error_mq_open(mq = mq_open(LOG_QUEUE_NAME, O_CREAT | O_WRONLY, 0644, &attr));
+	if(mq == (mqd_t)-1){
+		// attr.mq_flags = 0;
+		// attr.mq_maxmsg = MAX_LOG_QUEUE_MESSAGES;
+		// attr.mq_msgsize = MAX_LOG_EVENT_LENGTH;
+		// attr.mq_curmsgs = 0;
+		// check_error_mq_open(mq = mq_open(LOG_QUEUE_NAME, O_CREAT | O_WRONLY, 0644, &attr));
+		check_error_mq_open(mq = mq_open(LOG_QUEUE_NAME, O_WRONLY));
+
 	}
 
 	// mi assicuro che il messaggio non sia troppo lungo prima di inviarlo
@@ -67,7 +69,7 @@ void send_log_message(char message[LOG_EVENT_MESSAGE_LENGTH]) {
 
 	if(I_HAVE_TO_CLOSE_THE_LOG(message)){
 		mq_close(mq); // non faccio unlink perchè lo fa il ricevitore	
-		mq = -1;
+		mq = (mqd_t)-1;
 	}
 }
 
@@ -96,7 +98,7 @@ void log_event(int id, log_event_type_t type, char *message) {
 	send_log_message(buffer);
 
 	// se l'evento è fatale si invia anche il messaggio di stop logging
-	if(is_log_event_type_fatal(type)) 
+	if(is_log_event_type_terminating(type)) 
 		send_log_message(STOP_LOGGING_MESSAGE);
 }
 
@@ -128,9 +130,9 @@ int get_log_event_type_counter(log_event_type_t event_type) {
 	return info->counter;
 }
 
-int is_log_event_type_fatal(log_event_type_t event_type) {
+int is_log_event_type_terminating(log_event_type_t event_type) {
 	log_event_info_t *info = get_log_event_info(event_type);
-	return info->is_fatal;
+	return info->is_terminating;
 }
 
 int is_log_event_type_to_log(log_event_type_t event_type) {
@@ -153,7 +155,7 @@ void log_fatal_error(char *message, log_event_type_t event) {
 
 	// solo se l'evento è sicuramente fatale per l'applicazione 
 	// allora si termina il processo che ha loggato l'evento
-	if(is_log_event_type_fatal(event)){
+	if(is_log_event_type_terminating(event)){
 		perror(message);
 		exit(EXIT_FAILURE);
 	}

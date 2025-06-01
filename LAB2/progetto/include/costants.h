@@ -46,7 +46,6 @@ extern int width;
 
 #define LOG_FILE "log.txt"
 #define LONG_LENGTH 20
-#define LOG_EVENT_TYPES_COUNT 25
 
 // #define LOG_EVENT_STRING_SYNTAX "[%ld] [%s%d] [%s] [%s]\n"
 #define LOG_EVENT_STRING_SYNTAX "%-15ld %s %-5d %-35s %s\n"

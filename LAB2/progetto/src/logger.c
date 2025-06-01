@@ -13,13 +13,19 @@ int main(void){
 
 	//riceve i messaggi
 	mqd_t mq;
+	struct mq_attr attr;
 	char buffer[MAX_LOG_EVENT_LENGTH];
 
-	check_error_mq_open(mq = mq_open(LOG_QUEUE_NAME, O_RDONLY));
+	attr.mq_flags = 0;
+	attr.mq_maxmsg = MAX_LOG_QUEUE_MESSAGES;
+	attr.mq_msgsize = MAX_LOG_EVENT_LENGTH;
+	attr.mq_curmsgs = 0;
+
+	check_error_mq_open(mq = mq_open(LOG_QUEUE_NAME, O_CREAT | O_RDONLY, 0644, &attr));
 
 	// ricevo i messaggi, se sono il messaggio di stop esco, altrimenti li scrivo nel logfile
 	while (1) {
-		check_error_mq_recieve(mq_receive(mq, buffer, MAX_LOG_EVENT_LENGTH, NULL) < 0);
+		check_error_mq_recieve(mq_receive(mq, buffer, MAX_LOG_EVENT_LENGTH, NULL));
 		if(I_HAVE_TO_CLOSE_THE_LOG(buffer)) break;
 		write_line(log_file, buffer);
 	}
@@ -37,12 +43,10 @@ int main(void){
 // funzione che inizializza il logging, apre il file di log e scrive l'evento di inizio logging
 void log_init() {
 	check_error_NULL(log_file = fopen(LOG_FILE, "a"), "Errore apertura file di log");
-	log_event(NO_ID, LOGGING_STARTED, "Inizio logging");
 }
 
 // funzione che chiude il logging, scrive l'evento di fine logging e chiude il file di log
 void log_close() {
-	log_event(NO_ID, LOGGING_ENDED, "Fine del logging");
 	if (log_file) fclose(log_file);
 }
 

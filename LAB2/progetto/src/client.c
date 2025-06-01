@@ -50,7 +50,6 @@ void handle_normal_mode_input(char* args[]){
 	int y = 0;
 	time_t delay = 0;
 	char name[EMERGENCY_NAME_LENGTH + 1];
-	int errors_occurred = 0;
 
 	if(strlen(args[1]) > EMERGENCY_NAME_LENGTH){
 		LOG_IGNORING_ERROR("nome emergenza troppo lungo");
@@ -76,7 +75,7 @@ void handle_normal_mode_input(char* args[]){
 
 void handle_file_mode_input(char* args[]){
 	FILE* f = fopen(args[2], "r");
-	check_opened_file(f, args[2]);
+	check_error_NULL(f, "niente file...");
 
 	int x = 0;
 	int y = 0;

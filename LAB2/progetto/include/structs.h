@@ -93,9 +93,11 @@ typedef struct {
 	char name[LOG_EVENT_NAME_LENGTH];
 	char code[LOG_EVENT_CODE_LENGTH];
 	int counter;			// quante volte è stato registrato
-	int is_fatal;			
+	int is_terminating;			
 	int is_to_log;				// se va mostrato o no nel file di log
 } log_event_info_t;
+
+#define LOG_EVENT_TYPES_COUNT 26
 
 typedef enum {
 
@@ -136,8 +138,9 @@ typedef enum {
 	RESCUER_STATUS, 									//RSTA
 	EMERGENCY_REQUEST,								//ERRE
 
-	// ...aggiungere altri tipi di log qui
+	PROGRAM_ENDED_SUCCESSFULLY,				//PESU
 
+	// ...aggiungere altri tipi di log qui
 } log_event_type_t; ;
 
 

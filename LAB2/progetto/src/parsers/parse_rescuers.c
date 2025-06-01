@@ -86,3 +86,4 @@ int rescuer_type_values_are_illegal(char *name, int amount, int speed, int x, in
 		y > height
 	);
 }
+

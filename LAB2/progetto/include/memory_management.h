@@ -13,6 +13,14 @@
 
 // FUNZIONI PER LA GESTIONE DELLA MEMORIA
 
+// accedere ai nomi
+
+rescuer_type_t * get_rescuer_type_by_name(char *name, rescuer_type_t **rescuer_types);
+emergency_type_t * get_emergency_type_by_name(char *name, emergency_type_t **emergency_types);
+rescuer_request_t * get_rescuer_request_by_name(char *name, rescuer_request_t **rescuers);
+char* get_name_of_rescuer_requested(rescuer_request_t *rescuer_request);
+
+
 // allocazione
 
 rescuer_type_t ** callocate_rescuer_types();
