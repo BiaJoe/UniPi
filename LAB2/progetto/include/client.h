@@ -3,11 +3,11 @@
 
 #define _GNU_SOURCE // per usare getline
 
-#include "messqueue.h"
+#include "logger.h"
 #include "memory_management.h"
 
 #define LOG_IGNORING_ERROR(m) \
-	do { log_event(NO_ID, WRONG_EMERGENCY_REQUEST_IGNORED, "Emergenza richiesta non valida: " #m); } while (0)
+	do { log_event(NO_ID, WRONG_EMERGENCY_REQUEST_IGNORED, "il Client ignora una emergency request: " #m); } while (0)
 
 #define PRINT_CLIENT_USAGE(argv0)  \
 	do { \
@@ -28,9 +28,12 @@
 #define NORMAL_MODE 1
 #define FILE_MODE 2
 
+#define MAX_EMERGENCY_REQUEST_COUNT 256 
+#define MAX_EMERGENCY_REQUEST_LENGTH 512
+
 void handle_normal_mode_input(char* args[]);
 void handle_file_mode_input(char* args[]);
-void send_emergency_message(emergency_request_t* e);
+int send_emergency_request_message(char *name, char *x_string, char *y_string, char *delay_string);
 
 #endif
 

@@ -10,6 +10,8 @@
 
 #include "utils.h"
 
+#define LOG_FILE "log.txt"
+
 #define LOG_QUEUE_NAME "/log_queue"
 #define MAX_LOG_EVENT_LENGTH 512
 #define MAX_LOG_QUEUE_MESSAGES 10
@@ -19,7 +21,8 @@
 
 #define I_HAVE_TO_CLOSE_THE_LOG(m) ((strcmp(m, STOP_LOGGING_MESSAGE) == 0) ? 1 : 0 )
 
-void log_init();
-void log_close();
+void logger(void);
+void log_init(void);
+void log_close(void);
 
 #endif

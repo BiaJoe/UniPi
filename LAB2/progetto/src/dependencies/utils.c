@@ -1,7 +1,5 @@
 #include "utils.h"
 
-/* FUNZIONI PER ACCESSO A STRUTTURE */
-
 int my_atoi(char a[]){
 	int order = strlen(a) - 1;
 	int res = 0;
@@ -39,8 +37,9 @@ int my_atoi(char a[]){
 	return res;
 }
 
+
 void write_line(FILE *f, char *s) {
-	check_error_NULL(f, "file non trovato");
+	check_error_fopen(f);
 	fprintf(f, "%s", s);
 	fflush(f);
 }

@@ -4,13 +4,6 @@
 #include <stdlib.h>
 #include "log.h"
 
-#define CHECK_FOR_MEMORY_ALLOCATION_ERROR(pointer) \
-	do { \
-		if (!(pointer)) \
-			log_fatal_error("Errore allocazione memoria: " #pointer, FATAL_ERROR_MEMORY); \
-	} while (0)
-
-
 // FUNZIONI PER LA GESTIONE DELLA MEMORIA
 
 // accedere ai nomi

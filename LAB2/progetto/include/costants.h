@@ -15,7 +15,6 @@
 #define MAX_EMERGENCY_TYPES_COUNT 128
 #define MAX_RESCUER_REQ_NUMBER_PER_EMERGENCY 16
 #define MAX_ENV_FIELD_LENGTH 32
-#define MAX_EMERCENCY_REQUEST_COUNT 256 //client.c
 
 // log
 #define LOG_EVENT_NAME_LENGTH 64
@@ -41,18 +40,19 @@
 extern int height;
 extern int width;
 
-#define QUEUE_LENGTH_MINUS_ONE 15
-#define QUEUE "emergenze676722" // lunghezza 16
+#define EMERGENCY_QUEUE_LENGTH 16
+#define EMERGENCY_QUEUE_NAME "emergenze676722" // lunghezza 16
 
-#define LOG_FILE "log.txt"
 #define LONG_LENGTH 20
 
-// #define LOG_EVENT_STRING_SYNTAX "[%ld] [%s%d] [%s] [%s]\n"
-#define LOG_EVENT_STRING_SYNTAX "%-15ld %s %-5d %-35s %s\n"
+// sintassi varie
 
+#define LOG_EVENT_STRING_SYNTAX "%-15ld %s %-5d %-35s %s\n"
+// #define LOG_EVENT_STRING_SYNTAX "[%ld] [%s%d] [%s] [%s]\n"
 #define RESCUERS_SYNTAX "[%" STR(MAX_RESCUER_NAME_LENGTH) "[^]]][%d][%d][%d;%d]"
 #define RESCUER_REQUEST_SYNTAX "%" STR(MAX_RESCUER_NAME_LENGTH) "[^:]:%d,%d"
 #define EMERGENCY_TYPE_SYNTAX "[%" STR(EMERGENCY_NAME_LENGTH) "[^]]] [%d] %" STR(MAX_RESCUER_REQUESTS_LENGTH) "[^\n]"
 #define EMERGENCY_REQUEST_SYNTAX "%" STR(EMERGENCY_NAME_LENGTH) "[^ ] %d %d %ld"
+#define EMERGENCY_REQUEST_ARGUMENT_SEPARATOR " " // nel file si separano gli argomenti con lo spazio, questo impone che i nomi non contengano spazi tra l'altro
 
 #endif

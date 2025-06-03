@@ -37,13 +37,13 @@ rescuer_request_t * get_rescuer_request_by_name(char *name, rescuer_request_t **
 
 rescuer_type_t ** callocate_rescuer_types(){
 	rescuer_type_t **rescuer_types = (rescuer_type_t **)calloc((MAX_FILE_LINES + 1),  sizeof(rescuer_type_t*));
-	CHECK_FOR_MEMORY_ALLOCATION_ERROR(rescuer_types);
+	check_error_memory_allocation(rescuer_types);
 	return rescuer_types;
 }
 
 emergency_type_t ** callocate_emergency_types(){
 	emergency_type_t **emergency_types = (emergency_type_t **)calloc(MAX_EMERGENCY_TYPES_COUNT + 1, sizeof(emergency_type_t *));
-	CHECK_FOR_MEMORY_ALLOCATION_ERROR(emergency_types);
+	check_error_memory_allocation(emergency_types);
 
 	return emergency_types;
 }
@@ -51,7 +51,7 @@ emergency_type_t ** callocate_emergency_types(){
 rescuer_request_t ** callocate_resquer_requests(){
 	// alloco l'array di rescuer_requests
 	rescuer_request_t **rescuer_requests = (rescuer_request_t **)calloc(MAX_RESCUER_REQ_NUMBER_PER_EMERGENCY, sizeof(rescuer_request_t*));
-	CHECK_FOR_MEMORY_ALLOCATION_ERROR(rescuer_requests);
+	check_error_memory_allocation(rescuer_requests);
 	return rescuer_requests;
 }
 
@@ -69,11 +69,11 @@ void mallocate_and_populate_rescuer_type(
 
 	// allco il rescuer_type_t
 	rescuer_types[i] = (rescuer_type_t *)malloc(sizeof(rescuer_type_t));
-	CHECK_FOR_MEMORY_ALLOCATION_ERROR(rescuer_types[i]);
+	check_error_memory_allocation(rescuer_types[i]);
 
 	// alloco il nome del rescuer_type_t e lo copio
 	rescuer_types[i]->rescuer_type_name = (char *)malloc((strlen(name) + 1) * sizeof(char));
-	CHECK_FOR_MEMORY_ALLOCATION_ERROR(rescuer_types[i]->rescuer_type_name);
+	check_error_memory_allocation(rescuer_types[i]->rescuer_type_name);
 
 
 	// copio il nome
@@ -87,12 +87,12 @@ void mallocate_and_populate_rescuer_type(
 
 	// alloco i rescuer_digital_twin_t (all'inizio tutti a NULL)
 	rescuer_types[i]->twins = (rescuer_digital_twin_t **)calloc(amount + 1, sizeof(rescuer_digital_twin_t*));
-	CHECK_FOR_MEMORY_ALLOCATION_ERROR(rescuer_types[i]->twins);
+	check_error_memory_allocation(rescuer_types[i]->twins);
 
 	// alloco ogni twin e popolo i suoi campi 
 	for(int j = 0; j < amount; j++){
 		rescuer_types[i]->twins[j] = (rescuer_digital_twin_t *)malloc(sizeof(rescuer_digital_twin_t));
-		CHECK_FOR_MEMORY_ALLOCATION_ERROR(rescuer_types[i]->twins[j]);
+		check_error_memory_allocation(rescuer_types[i]->twins[j]);
 
 		rescuer_types[i]->twins[j]->id = j;
 		rescuer_types[i]->twins[j]->x = x;
@@ -117,11 +117,11 @@ void mallocate_and_populate_emergency_type(
 
 	// allco l'emergency_type_t
 	emergency_types[i] = (emergency_type_t *)malloc(sizeof(emergency_type_t));
-	CHECK_FOR_MEMORY_ALLOCATION_ERROR(emergency_types[i]);
+	check_error_memory_allocation(emergency_types[i]);
 
 	// alloco il nome dell'emergency_type_t e lo copio
 	emergency_types[i]->emergency_desc = (char *)malloc((strlen(emergency_desc) + 1) * sizeof(char));
-	CHECK_FOR_MEMORY_ALLOCATION_ERROR(emergency_types[i]->emergency_desc);
+	check_error_memory_allocation(emergency_types[i]->emergency_desc);
 	strcpy(emergency_types[i]->emergency_desc, emergency_desc);
 
 	// popolo il resto dei campi
@@ -144,7 +144,7 @@ void mallocate_and_populate_rescuer_request(
 	while(rescuers[i] != NULL) i++; // raggiungo il primo posto libero
 	// allco il rescuer_request_t
 	rescuers[i] = (rescuer_request_t *)malloc(sizeof(rescuer_request_t));
-	CHECK_FOR_MEMORY_ALLOCATION_ERROR(rescuers[i]);
+	check_error_memory_allocation(rescuers[i]);
 
 	// popolo i campi
 	rescuers[i]->type = (rescuer_type_t *)get_rescuer_type_by_name(rr_name, rescuer_types);
@@ -154,7 +154,7 @@ void mallocate_and_populate_rescuer_request(
 
 emergency_request_t* mallocate_and_populate_emergency_request(char* name, int x, int y, time_t d){
 	emergency_request_t *e = (emergency_request_t *)malloc(sizeof(emergency_request_t));
-	CHECK_FOR_MEMORY_ALLOCATION_ERROR(e);
+	check_error_memory_allocation(e);
 	strcpy(e->emergency_name, name);
 	e->x = x;
 	e->y = y;

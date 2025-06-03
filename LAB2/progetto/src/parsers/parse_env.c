@@ -1,6 +1,6 @@
 #include "parsers.h"
 
-char* parse_env(int *height, int *width){
+void parse_env(int *height, int *width){
 
 	// Apro il file di configurazione
 	FILE *env_conf = fopen(ENV_CONF, "r");
@@ -9,16 +9,14 @@ char* parse_env(int *height, int *width){
 	char *line = NULL;
 	size_t len = 0;
 
-	char* queue_name = (char *)malloc((QUEUE_LENGTH_MINUS_ONE + 1) * sizeof(char));
-	CHECK_FOR_MEMORY_ALLOCATION_ERROR(queue_name);
+	char* queue_name = (char *)malloc((EMERGENCY_QUEUE_LENGTH + 1) * sizeof(char));
+	check_error_memory_allocation(queue_name);
 	
 	// estraggo la PRIMA riga del file
 	my_getline(&line, &len, env_conf);
-	if(sscanf(line, "queue=%" STR(QUEUE_LENGTH_MINUS_ONE) "s", queue_name) != 1)
+	if(sscanf(line, "queue=%" STR(EMERGENCY_QUEUE_LENGTH) "s", queue_name) != 1)
 		log_fatal_error("Errore di sintassi nella 1a riga del file di configurazione " ENV_CONF, FATAL_ERROR_PARSING);
 
-	queue_name[QUEUE_LENGTH_MINUS_ONE] = '\0'; // aggiungo il terminatore di stringa
-	
 	// estraggo la SECONDA riga del file
 	my_getline(&line, &len, env_conf);
 	if(sscanf(line, "height=%d", height) != 1)
@@ -30,12 +28,12 @@ char* parse_env(int *height, int *width){
 		log_fatal_error("Errore di sintassi nella 3a riga del file di configurazione " ENV_CONF, FATAL_ERROR_PARSING);
 
 	// Controllo che i valori siano validi
-	if(environment_values_are_illegal(*height, *width))
+	if(environment_values_are_illegal(queue_name, *height, *width))
 		log_fatal_error("Valori illegali nel file di configurazione " ENV_CONF, FATAL_ERROR_PARSING);
 
 	free(line);
+	free(queue_name);
 	fclose(env_conf);
-	return queue_name; // restituisco il nome della coda
 }
 
 
@@ -53,11 +51,12 @@ void my_getline(char **line, size_t *len, FILE *stream){
 		log_fatal_error("Riga vuota non ignorabile nel file di configurazione " ENV_CONF, FATAL_ERROR_PARSING);
 }
 
-int environment_values_are_illegal(int height, int width){
+int environment_values_are_illegal(char *queue, int h, int w){
 	return (
-		height < MIN_Y_COORDINATE || 
-		height > MAX_Y_COORDINATE || 
-		width < MIN_X_COORDINATE || 
-		width > MAX_X_COORDINATE
+		strcmp(queue, EMERGENCY_QUEUE_NAME) != 0 ||
+		h < MIN_Y_COORDINATE || 
+		h > MAX_Y_COORDINATE || 
+		w < MIN_X_COORDINATE || 
+		w > MAX_X_COORDINATE
 	);
 }

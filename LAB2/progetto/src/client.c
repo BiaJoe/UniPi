@@ -3,11 +3,14 @@
 // client.c prende in input le emergenze e fa un minimo di error handling
 // poi invia le emergenze, ma lascia al server il compito di finire il check dei valori
 
+// coda delle emergenze
+mqd_t mq;
+
 int main(int argc, char* argv[]){
 
 	// controllo il numero di argomenti
 	if(argc != 3 && argc != 5)
-		DIE("numero di argomenti sbagliato");
+		DIE("numero di argomenti dati al programma sbagliato");
 
 	// capisco in quale modalità mi trovo
 	// in questo caso le modalità sono 2 + undefined, ma non sarebbe difficile espandere il codice
@@ -19,15 +22,20 @@ int main(int argc, char* argv[]){
 		mode = NORMAL_MODE;
 
 	if(argc == 3){
+
 		if(argv[1][0] != '-')
-			DIE("opzione di lettura non specificata");
+			DIE("opzione di inserimento (e.g. -f) non specificata");
+
 		switch(argv[1][1]){
 			case 'f': mode = FILE_MODE; break;
 
-			// ...espandibile ad altre modalità
+			// ...espandibile ad altre modalità del tipo ./client -<mode> <arg>
 			default: DIE("opzione inesistente richiesta");
 		}
 	}
+
+	// apro la coda su cui manderò la/le emergenza/e
+	check_error_mq_open(mq = mq_open(EMERGENCY_QUEUE_NAME, O_WRONLY));
 
 	switch (mode) {
 		case NORMAL_MODE: handle_normal_mode_input(argv); break;
@@ -44,67 +52,79 @@ int main(int argc, char* argv[]){
 }
 
 
-
-void handle_normal_mode_input(char* args[]){
-	int x = 0;
-	int y = 0;
-	time_t delay = 0;
-	char name[EMERGENCY_NAME_LENGTH + 1];
-
-	if(strlen(args[1]) > EMERGENCY_NAME_LENGTH){
-		LOG_IGNORING_ERROR("nome emergenza troppo lungo");
-		exit(EXIT_FAILURE);
-	}
-	
+// prende nome, coordinate e timestamp in forma di stringhe, fa qualche controllo e li spedisce
+// ritorna 0 se fallisce senza spedire, 1 se riesce
+int send_emergency_request_message(char *name, char *x_string, char *y_string, char *delay_string) {
 	errno = 0;
-	x 		= my_atoi(args[2]);
-	y 		= my_atoi(args[3]);
-	delay = (time_t) my_atoi(args[4]);
+	int x = my_atoi(x_string);
+	int y = my_atoi(y_string);
+	time_t d = (time_t) my_atoi(delay_string);
+	char buffer[MAX_EMERGENCY_REQUEST_LENGTH + 1];
 
 	if(errno != 0){
 		LOG_IGNORING_ERROR("caratteri non numerici presenti nei valori numerici dell'emergenza richiesta");
-		exit(EXIT_FAILURE);
+		return 0;
 	}
 
-	strcpy(name, args[1]); 
-	emergency_request_t *e = mallocate_and_populate_emergency_request(name, x, y, delay);
-	send_emergency_message(e);
+	if(strlen(name) > EMERGENCY_NAME_LENGTH){
+		LOG_IGNORING_ERROR("nome emergenza troppo lungo");
+		return 0;
+	}
 
-	exit(EXIT_SUCCESS);
+	if(snprintf(buffer, sizeof(buffer), "%s %d %d %ld", name, x, y, d) >= sizeof(buffer)){
+		LOG_IGNORING_ERROR("messaggio di emergenza troppo lungo");
+		return 0;
+	}
+
+	// il client garantisce la correttezza sintattica della richiesta
+	// al server spetta controllare la correttezza semantica e processare la richiesta
+	check_error_mq_send(mq_send(mq, buffer, strlen(buffer) + 1, 0));
+	return 1;
 }
 
-void handle_file_mode_input(char* args[]){
-	FILE* f = fopen(args[2], "r");
-	check_error_NULL(f, "niente file...");
+// gestisce la singola emergenza passata da terminale
+void handle_normal_mode_input(char* args[]){
+	int did_you_send_the_emergency_to_the_server = send_emergency_request_message(args[1], args[2], args[3], args[4]);
+	did_you_send_the_emergency_to_the_server ? exit(EXIT_SUCCESS) : exit(EXIT_FAILURE);
+}
 
-	int x = 0;
-	int y = 0;
-	time_t delay = 0;
-	char name[EMERGENCY_NAME_LENGTH + 1];
+// gestisce l'emergenza passata per file inviando un'emergenza alla volta riga per riga    
+void handle_file_mode_input(char* args[]){
+	FILE* emergency_requests_file = fopen(args[2], "r");
+	check_error_fopen(emergency_requests_file);
+
+	char *name, *x, *y, *d, *must_be_null;
+
 	char *line = NULL;
 	size_t len = 0;
 	int line_count = 0, emergency_count = 0;
 
-	while (getline(&line, &len, f) != -1) {
+	while (getline(&line, &len, emergency_requests_file) != -1) {
 		line_count++;
+
 		if(line_count > MAX_FILE_LINES)
 			log_fatal_error("linee massime superate nel client. Interruzione della lettura emergenze", FATAL_ERROR_PARSING);
-		if(emergency_count > MAX_EMERCENCY_REQUEST_COUNT)
-			log_fatal_error("linee massime superate nel client. Interruzione della lettura emergenze", FATAL_ERROR_PARSING);
-		if(sscanf(line, EMERGENCY_REQUEST_SYNTAX, name, &x, &y, &delay) != 4){
-			LOG_IGNORING_ERROR("sintassi della riga del file delle emergenze errata");
-			continue; // ignoro la riga
+		if(emergency_count > MAX_EMERGENCY_REQUEST_COUNT)
+			log_fatal_error("numero di emergenze richieste massime superate nel client. Interruzione della lettura emergenze", FATAL_ERROR_PARSING);
+		
+		name 					= strtok(line, EMERGENCY_REQUEST_ARGUMENT_SEPARATOR);
+		x 						= strtok(NULL, EMERGENCY_REQUEST_ARGUMENT_SEPARATOR);
+		y 						= strtok(NULL, EMERGENCY_REQUEST_ARGUMENT_SEPARATOR);
+		d 						= strtok(NULL, EMERGENCY_REQUEST_ARGUMENT_SEPARATOR);
+		must_be_null 	= strtok(NULL, EMERGENCY_REQUEST_ARGUMENT_SEPARATOR);
+
+		if(name == NULL || x == NULL || y == NULL || d == NULL || must_be_null != NULL){
+			LOG_IGNORING_ERROR("riga del file di emergenze sbagliata");
+			continue;
 		}
-		emergency_request_t *e = mallocate_and_populate_emergency_request(name, x, y, delay);
-		send_emergency_message(e);
+		
+		if(!send_emergency_request_message(name, x, y, d))
+			continue;
+
 		emergency_count++;
 	}
 
 	free(line);
-	fclose(f);
+	fclose(emergency_requests_file);
 }
 
-void send_emergency_message(emergency_request_t* e){
- // todo
- printf("[%d, %d] %ld : %s ", e->x, e->y, e->timestamp, e->emergency_name);
-}

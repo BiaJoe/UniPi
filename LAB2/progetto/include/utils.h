@@ -20,15 +20,32 @@
 
 //error checking macros (le uniche macro del progetto che non sono in all caps)
 
-#define check_error_minus_one(s,m) 	if ((s) == -1) 		{ perror(m); exit(EXIT_FAILURE); }
-#define check_error_nonzero(s,m) 		if ((s) != 0)			{ perror(m); exit(EXIT_FAILURE); }
-#define check_error_NULL(s,m) 			if ((s) == NULL) 	{ perror(m); exit(EXIT_FAILURE); }
-#define check_error_not(s,m) 				if (!(s)) 				{ perror(m); exit(EXIT_FAILURE); }
-#define check_error_condition(c, m) if ((c)) 					{ perror(m); exit(EXIT_FAILURE); }
+#define check_error(c, m) 								if ((c)) 	{ perror(m); exit(EXIT_FAILURE); }
+#define check_error_fopen(fp) 						check_error((fp) == NULL, "fopen")
+#define check_error_memory_allocation(p) 	check_error(!(p), "memory allocation")
 
-#define check_error_mq_open(mq) 	if ((mq) == (mqd_t)-1) 	{ perror("mq_open"); 		exit(EXIT_FAILURE); }
-#define check_error_mq_send(b) 		if ((b) == -1) 					{ perror("mq_send"); 		exit(EXIT_FAILURE); }
-#define check_error_mq_recieve(b) if ((b) == -1) 					{ perror("mq_receive"); exit(EXIT_FAILURE); }
+#define check_error_mq_open(mq) 					check_error((mq) == (mqd_t)-1, "mq_open") 
+#define check_error_mq_send(b) 						check_error((b) == -1, "mq_send")
+#define check_error_mq_recieve(b) 				check_error((b) == -1, "mq_receive")
+		
+#define check_error_fork(pid) 						check_error(pid < 0, "fork_failed")
+#define check_error_syscall(call, m)			check_error(call == -1, m)
+
+// #define check_error_not(s,m) 					check_error(!(s), m)
+// #define check_error_nonzero(s,m) 			check_error((s) != 0, m)
+// #define check_error_minus_one(s,m) 		check_error((s) == -1, m)
+
+// macros per i processi
+// metto due __underscore così non rischio di usare le variabili per sbaglio
+#define FORK_PROCESS(child_function_name, parent_function_name) \
+	do { 																													\
+		pid_t __fork_pid = fork(); 																	\
+		check_error_fork(__fork_pid); 															\
+		if (__fork_pid == 0) 																				\
+			child_function_name(); 																		\
+		else																												\
+			parent_function_name(); 																	\
+	} while(0) 
 
 int my_atoi(char a[]);
 void write_line(FILE *f, char *s);

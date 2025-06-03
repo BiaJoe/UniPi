@@ -49,9 +49,9 @@ void send_log_message(char message[]) {
 	// la dichiarop statica nella funzione, cioè verrà ricordata anche tra chiamate
 	// dovrò aprirla quindi una sola volta (la prima quando if(mq == -1){...} è vero)
 	static mqd_t mq = (mqd_t)-1;
-	// struct mq_attr attr;
 
-	if(mq == (mqd_t)-1){
+	// entra solo la prima volta
+	if(mq == (mqd_t)-1){ 
 		// attr.mq_flags = 0;
 		// attr.mq_maxmsg = MAX_LOG_QUEUE_MESSAGES;
 		// attr.mq_msgsize = MAX_LOG_EVENT_LENGTH;
