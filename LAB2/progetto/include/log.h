@@ -23,6 +23,7 @@ long get_time();
 log_event_info_t* get_log_event_info(log_event_type_t event_type);
 char* get_log_event_type_string(log_event_type_t event_type);
 char* get_log_event_type_code(log_event_type_t event_type);
+void increment_log_event_type_counter(log_event_type_t event_type);
 int get_log_event_type_counter(log_event_type_t event_type);
 int is_log_event_type_terminating(log_event_type_t event_type);
 int is_log_event_type_to_log(log_event_type_t event_type);

@@ -40,8 +40,9 @@
 extern int height;
 extern int width;
 
-#define EMERGENCY_QUEUE_LENGTH 16
+#define EMERGENCY_QUEUE_NAME_LENGTH 16
 #define EMERGENCY_QUEUE_NAME "emergenze676722" // lunghezza 16
+#define MAX_EMERGENCY_QUEUE_MESSAGE_LENGTH 512
 
 #define LONG_LENGTH 20
 

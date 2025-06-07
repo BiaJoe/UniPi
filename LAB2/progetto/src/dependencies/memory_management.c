@@ -162,6 +162,9 @@ emergency_request_t* mallocate_and_populate_emergency_request(char* name, int x,
 	return e;
 }
 
+
+
+
 void free_rescuer_requests(rescuer_request_t **rescuer_requests){
 	for(int i = 0; rescuer_requests[i] != NULL; i++){
 		// libero il puntatore al rescuer_request_t

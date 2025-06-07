@@ -9,12 +9,11 @@ mqd_t mq;
 int main(int argc, char* argv[]){
 
 	// controllo il numero di argomenti
-	if(argc != 3 && argc != 5)
-		DIE("numero di argomenti dati al programma sbagliato");
+	if(argc != 3 && argc != 5) DIE("numero di argomenti dati al programma sbagliato");
 
 	// capisco in quale modalità mi trovo
-	// in questo caso le modalità sono 2 + undefined, ma non sarebbe difficile espandere il codice
-	// ed aggiungerne di più in futuro
+	// in questo caso le modalità sono 2 + undefined, 
+	// ma non sarebbe difficile espandere il codice ed aggiungerne di più in futuro
 
 	int mode = UNDEFINED_MODE;
 
@@ -23,8 +22,7 @@ int main(int argc, char* argv[]){
 
 	if(argc == 3){
 
-		if(argv[1][0] != '-')
-			DIE("opzione di inserimento (e.g. -f) non specificata");
+		if(argv[1][0] != '-') DIE("opzione di inserimento (e.g. -f) non specificata");
 
 		switch(argv[1][1]){
 			case 'f': mode = FILE_MODE; break;
@@ -55,10 +53,12 @@ int main(int argc, char* argv[]){
 // prende nome, coordinate e timestamp in forma di stringhe, fa qualche controllo e li spedisce
 // ritorna 0 se fallisce senza spedire, 1 se riesce
 int send_emergency_request_message(char *name, char *x_string, char *y_string, char *delay_string) {
-	errno = 0;
+	errno = 0; // my_atoi usa errno
 	int x = my_atoi(x_string);
 	int y = my_atoi(y_string);
-	time_t d = (time_t) my_atoi(delay_string);
+	int d = my_atoi(delay_string);
+	d = ABS(d); // per sicurezza faccio il valore assoluto
+
 	char buffer[MAX_EMERGENCY_REQUEST_LENGTH + 1];
 
 	if(errno != 0){
@@ -75,6 +75,9 @@ int send_emergency_request_message(char *name, char *x_string, char *y_string, c
 		LOG_IGNORING_ERROR("messaggio di emergenza troppo lungo");
 		return 0;
 	}
+
+	// aspetto il delay prima di inviare l'emergenza, in modo da poterla subito processare nel server senza dover aspettare
+	sleep(d);
 
 	// il client garantisce la correttezza sintattica della richiesta
 	// al server spetta controllare la correttezza semantica e processare la richiesta

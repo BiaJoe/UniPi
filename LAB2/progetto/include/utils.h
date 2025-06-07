@@ -6,6 +6,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <threads.h>
 
 #include "structs.h"
 
@@ -28,8 +29,9 @@
 #define check_error_mq_send(b) 						check_error((b) == -1, "mq_send")
 #define check_error_mq_recieve(b) 				check_error((b) == -1, "mq_receive")
 		
-#define check_error_fork(pid) 						check_error(pid < 0, "fork_failed")
-#define check_error_syscall(call, m)			check_error(call == -1, m)
+#define check_error_fork(pid) 						check_error((pid) < 0, "fork_failed")
+#define check_error_syscall(call, m)			check_error((call) == -1, m)
+#define check_error_mtx_init(call)  			check_error((call) != thrd_success, "mutex init")
 
 // #define check_error_not(s,m) 					check_error(!(s), m)
 // #define check_error_nonzero(s,m) 			check_error((s) != 0, m)

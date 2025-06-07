@@ -2,6 +2,7 @@
 #define STRUCTS_H
 
 #include <time.h>
+#include <stdatomic.h>
 #include "costants.h"
 
 
@@ -82,22 +83,20 @@ typedef struct {
 	int y;
 	time_t time;
 	int rescuer_count;
-	rescuer_digital_twin_t *rescuers_dt;
+	rescuer_digital_twin_t **rescuer_twins;
 } emergency_t;
-
-
 
 // STRUTTURE PER IL LOGGING
 
 typedef struct {
-	char name[LOG_EVENT_NAME_LENGTH];
-	char code[LOG_EVENT_CODE_LENGTH];
-	int counter;			// quante volte è stato registrato
-	int is_terminating;			
-	int is_to_log;				// se va mostrato o no nel file di log
+	char name[LOG_EVENT_NAME_LENGTH];	// versione stringa del tipo
+	char code[LOG_EVENT_CODE_LENGTH];	// versione codice del tipo
+	atomic_int counter;								// quante volte è stato registrato
+	int is_terminating;								// se loggarlo vuol dire terminare il programma		
+	int is_to_log;										// se va scritto o no nel file di log
 } log_event_info_t;
 
-#define LOG_EVENT_TYPES_COUNT 26
+#define LOG_EVENT_TYPES_COUNT 27
 
 typedef enum {
 
@@ -115,8 +114,8 @@ typedef enum {
 	DUPLICATE_RESCUER_REQUEST_IGNORED,//DRRI
 	DUPLICATE_EMERGENCY_TYPE_IGNORED, //DETI
 	DUPLICATE_RESCUER_TYPE_IGNORED,		//DRTI
-	WRONG_EMERGENCY_REQUEST_IGNORED,	//WERI //quando il client invia una richiesta sbagliata
-
+	WRONG_EMERGENCY_REQUEST_IGNORED_CLIENT, //WERC
+	WRONG_EMERGENCY_REQUEST_IGNORED_SERVER, //WERS
 	// eventi di log
 	LOGGING_STARTED, 									//LSTA
 	LOGGING_ENDED,  									//LEND
@@ -141,7 +140,7 @@ typedef enum {
 	PROGRAM_ENDED_SUCCESSFULLY,				//PESU
 
 	// ...aggiungere altri tipi di log qui
-} log_event_type_t; ;
+} log_event_type_t; 
 
 
 #endif

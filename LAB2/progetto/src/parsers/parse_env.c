@@ -9,12 +9,12 @@ void parse_env(int *height, int *width){
 	char *line = NULL;
 	size_t len = 0;
 
-	char* queue_name = (char *)malloc((EMERGENCY_QUEUE_LENGTH + 1) * sizeof(char));
+	char* queue_name = (char *)malloc((EMERGENCY_QUEUE_NAME_LENGTH + 1) * sizeof(char));
 	check_error_memory_allocation(queue_name);
 	
 	// estraggo la PRIMA riga del file
 	my_getline(&line, &len, env_conf);
-	if(sscanf(line, "queue=%" STR(EMERGENCY_QUEUE_LENGTH) "s", queue_name) != 1)
+	if(sscanf(line, "queue=%" STR(EMERGENCY_QUEUE_NAME_LENGTH) "s", queue_name) != 1)
 		log_fatal_error("Errore di sintassi nella 1a riga del file di configurazione " ENV_CONF, FATAL_ERROR_PARSING);
 
 	// estraggo la SECONDA riga del file
