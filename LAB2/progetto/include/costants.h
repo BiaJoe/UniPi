@@ -5,7 +5,10 @@
 #define EMERGENCY_TYPES_CONF "conf/emergency_types.conf"
 #define ENV_CONF             "conf/env.conf"
 
-#define MAX_FILE_LINES 1024
+#define YES 1
+#define NO 	0
+
+#define MAX_FILE_LINES 	1024
 #define MAX_LINE_LENGTH 1024
 
 #define MAX_RESCUER_NAME_LENGTH 128
@@ -21,30 +24,34 @@
 #define LOG_EVENT_CODE_LENGTH 5
 #define LOG_EVENT_MESSAGE_LENGTH 256
 
+// le priorità possono essere anche diverse, ma ci sono delle condizioni da rispettare
+// 1. devono essere in ordine crescente
+// 2. devono essere consecutive, niente salti
+// il motivo sta in come è stato implementato il sistema di ordinamento delle priorità nel server
 #define MIN_EMERGENCY_PRIORITY 0
-#define MAX_EMERGENCY_PRIORITY 3
+#define MAX_EMERGENCY_PRIORITY 2
+#define PRIORITY_LEVELS 3 // 0,1,2
+
 #define MIN_RESCUER_SPEED 1
 #define MAX_RESCUER_SPEED 100
 #define MIN_RESCUER_AMOUNT 1
 #define MAX_RESCUER_AMOUNT 1000
 #define MIN_RESCUER_REQUIRED_COUNT 1
 #define MAX_RESCUER_REQUIRED_COUNT 32
-#define MIN_X_COORDINATE 0
-#define MAX_X_COORDINATE 1024
-#define MIN_Y_COORDINATE 0
-#define MAX_Y_COORDINATE 1024
+#define MIN_X_COORDINATE_ABSOLUTE_VALUE 0
+#define MAX_X_COORDINATE_ABSOLUTE_VALUE 1024
+#define MIN_Y_COORDINATE_ABSOLUTE_VALUE 0
+#define MAX_Y_COORDINATE_ABSOLUTE_VALUE 1024
 #define MIN_TIME_TO_MANAGE 1
 #define MAX_TIME_TO_MANAGE 1000
-
-// estratte da env.conf
-extern int height;
-extern int width;
 
 #define EMERGENCY_QUEUE_NAME_LENGTH 16
 #define EMERGENCY_QUEUE_NAME "emergenze676722" // lunghezza 16
 #define MAX_EMERGENCY_QUEUE_MESSAGE_LENGTH 512
+// #define MAX_EMERGENCY_QUEUE_CAPACITY 64
 
 #define LONG_LENGTH 20
+#define INVALID_TIME (time_t)(-1)
 
 // sintassi varie
 

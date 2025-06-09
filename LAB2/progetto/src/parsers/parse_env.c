@@ -54,9 +54,9 @@ void my_getline(char **line, size_t *len, FILE *stream){
 int environment_values_are_illegal(char *queue, int h, int w){
 	return (
 		strcmp(queue, EMERGENCY_QUEUE_NAME) != 0 ||
-		h < MIN_Y_COORDINATE || 
-		h > MAX_Y_COORDINATE || 
-		w < MIN_X_COORDINATE || 
-		w > MAX_X_COORDINATE
+		ABS(h) < MIN_Y_COORDINATE_ABSOLUTE_VALUE || 
+		ABS(h) > MAX_Y_COORDINATE_ABSOLUTE_VALUE || 
+		ABS(w) < MIN_X_COORDINATE_ABSOLUTE_VALUE || 
+		ABS(w) > MAX_X_COORDINATE_ABSOLUTE_VALUE
 	);
 }

@@ -21,11 +21,6 @@ void server(void){
 	// estraggo le informazioni dai file conf, le metto tutte nel server context
 	server_context_t *ctx = get_server_context();
 
-	// Stampa delle informazioni
-	// print_env(queue, height, width);
-	// print_rescuer_types(rescuers, rescuer_count);
-	// print_emergency_types(emergency_types, emergency_count);
-
 	char buffer[MAX_EMERGENCY_QUEUE_MESSAGE_LENGTH];
 
 	while (1) {
@@ -33,7 +28,7 @@ void server(void){
 		// COSA DEVO FARE????
 	}
 
-	// Libero la memoria e chiudo e unlinko la coda di messaggi
+	// Libero la memoria, chiudo e unlinko la coda di messaggi
 	cleanup_server_context(ctx);
 
 	// si smette di loggare
@@ -81,6 +76,18 @@ server_context_t *get_server_context(){
 	};
 
 	check_error_mq_open(ctx->mq = mq_open(EMERGENCY_QUEUE_NAME, O_CREAT | O_RDONLY, 0644, &attr));
+}
+
+// funzione semplice ma utile se in futuro vorrò cambiare il modo in cui sono immagazzinati i dati in ctx
+emergency_type_t **get_emergency_types_from_context(server_context_t *ctx){
+	return ctx -> emergency_types;
+}
+
+int get_server_height(server_context_t *ctx){
+	return ctx -> height;
+}
+int get_server_width(server_context_t *ctx){
+	return ctx -> width;
 }
 
 void cleanup_server_context(server_context_t *ctx){

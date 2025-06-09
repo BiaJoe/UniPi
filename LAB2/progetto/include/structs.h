@@ -2,6 +2,8 @@
 #define STRUCTS_H
 
 #include <time.h>
+#include <mqueue.h>
+#include <threads.h>
 #include <stdatomic.h>
 #include "costants.h"
 
@@ -77,7 +79,7 @@ typedef struct {
 
 
 typedef struct {
-	emergency_type_t type;
+	emergency_type_t *type;
 	emergency_status_t status;
 	int x;
 	int y;
@@ -141,6 +143,50 @@ typedef enum {
 
 	// ...aggiungere altri tipi di log qui
 } log_event_type_t; 
+
+// emergency queue
+
+// forward declaration per node e list
+struct emergency_list;
+typedef struct emergency_list emergency_list_t;
+
+typedef struct emergency_node{
+	emergency_list_t *list;
+	emergency_t *emergency;
+	struct emergency_node *prev;
+	struct emergency_node *next;
+	mtx_t node_mutex;
+} emergency_node_t;
+
+typedef struct {
+	emergency_node_t *head;
+	emergency_node_t *tail;
+	int node_amount; // inizia a 0 con head = tail = NULL
+	mtx_t list_mutex;
+} emergency_list_t;
+
+typedef struct {
+	emergency_list_t* queue[PRIORITY_LEVELS]; // arrays di puntatori, un per ogni priorità
+	emergency_list_t* finished;
+} emergency_queue_t;
+
+// server
+
+typedef struct {
+	// interi per tenere traccia di cosa succede
+	int height;
+	int width;
+	int rescuer_count;
+	int emergency_types_count;
+	int emergency_requests_count;
+
+	// puntatori alle strutture da manipolare
+	rescuer_type_t** rescuer_types;
+  emergency_type_t** emergency_types;
+	// coda per ricevere le richieste di emergenza
+	mqd_t mq;
+} server_context_t;
+
 
 
 #endif

@@ -49,6 +49,21 @@
 			parent_function_name(); 																	\
 	} while(0) 
 
+#define LOCK(m) mtx_lock(&(m))
+#define UNLOCK(m) mtx_unlock(&(m))
+
+// macro che permette di scrivere velocemente un comando singolo che richiede lock e unlock di un mutex
+// utile perchè cxon questa si scrive meno ed è impossibile dimenticarsi di unlockare
+// limnito il numero di comandi a uno solo senza un dowhile perchè non voglio rischiare
+// comportamenti inaspettati come exit, return, break
+#define LOCK_UNLOCK_1(mutex, expr) \
+	do{ \
+		LOCK(mutex); \
+		expr \
+		UNLOCK(mutex); \
+	} while(0)
+
+
 int my_atoi(char a[]);
 void write_line(FILE *f, char *s);
 

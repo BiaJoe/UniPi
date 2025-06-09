@@ -1,7 +1,6 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
-#include <mqueue.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
