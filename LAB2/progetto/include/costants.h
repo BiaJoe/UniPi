@@ -29,6 +29,7 @@
 // 2. devono essere consecutive, niente salti
 // il motivo sta in come è stato implementato il sistema di ordinamento delle priorità nel server
 #define MIN_EMERGENCY_PRIORITY 0
+#define MEDIUM_EMERGENCY_PRIORITY 1
 #define MAX_EMERGENCY_PRIORITY 2
 #define PRIORITY_LEVELS 3 // 0,1,2
 
@@ -48,6 +49,7 @@
 #define EMERGENCY_QUEUE_NAME_LENGTH 16
 #define EMERGENCY_QUEUE_NAME "emergenze676722" // lunghezza 16
 #define MAX_EMERGENCY_QUEUE_MESSAGE_LENGTH 512
+#define STOP_MESSAGE_FROM_CLIENT "-stop"
 // #define MAX_EMERGENCY_QUEUE_CAPACITY 64
 
 #define LONG_LENGTH 20

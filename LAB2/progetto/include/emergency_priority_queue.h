@@ -4,11 +4,10 @@
 #include "parsers.h"
 #include "logger.h"
 
-// estraggo i valori della richiesta stringa, ritorna 1 per successo, 0 per fallimento
-int parse_emergency_request(char *message, char* name, int *x, int *y, time_t *timestamp);
+#define MAX_TIME_IN_0_PRIORITY_BEFORE_PROMOTION	120
+#define MAX_TIME_IN_1_PRIORITY_BEFORE_TIMEOUT		30
+#define MAX_TIME_IN_2_PRIORITY_BEFORE_TIMEOUT		10
 
-// controllo se è legale
-int are_emergency_request_values_illegal(server_context_t *ctx, char* name, int x, int y, time_t timestamp);
 
 // valori della richiesta -> puntatore a struttura emergenza
 emergency_t *mallocate_emergency(server_context_t *ctx, char* name, int x, int y, time_t timestamp);
@@ -26,11 +25,15 @@ emergency_status_t get_emergency_status(emergency_t* e);
 time_t get_emergency_time(emergency_t* e);
 
 // emergenza -> nodo della lista
-emergency_node_t* mallocate_emergency_node(emergency_t *e, emergency_node_t* prev, emergency_node_t* next);
+emergency_node_t* mallocate_emergency_node(emergency_t *e);
 void free_emergency_node(emergency_node_t* n);
 
 emergency_list_t *mallocate_emergency_list();
 void free_emergency_list(emergency_list_t *el);
+
+emergency_queue_t *mallocate_emergency_queue();
+void free_emergency_queue(emergency_queue_t *q);
+
 
 // inserisce il nodo nella lista
 void append_emergency_node(emergency_list_t* el, emergency_node_t* node);
@@ -51,10 +54,6 @@ emergency_t* dequeue_emergency(emergency_queue_t* eq);
 
 // ritorna la lista richiesta contenuta nella coda
 emergency_list_t* get_list_by_priority(emergency_queue_t* eq, short priority);
-
-int is_list_empty(emergency_list_t* el);
-
-int is_queue_empty(emergency_queue_t* eq);
 
 void change_node_priority_list(emergency_queue_t* eq, emergency_node_t* node, short new_priority);
 

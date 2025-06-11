@@ -20,17 +20,16 @@ int main(int argc, char* argv[]){
 	if(argc == 5)
 		mode = NORMAL_MODE;
 
-	if(argc == 3){
-
-		if(argv[1][0] != '-') DIE("opzione di inserimento (e.g. -f) non specificata");
-
-		switch(argv[1][1]){
-			case 'f': mode = FILE_MODE; break;
-
+	if(argv[1][0] == '-')
+		switch(argv[1][1]) {
+			case FILE_MODE_CHAR: mode = FILE_MODE; break;
+			case STOP_MODE_CHAR: mode = STOP_MODE; break;
 			// ...espandibile ad altre modalità del tipo ./client -<mode> <arg>
 			default: DIE("opzione inesistente richiesta");
 		}
-	}
+
+	
+	
 
 	// apro la coda su cui manderò la/le emergenza/e
 	check_error_mq_open(mq = mq_open(EMERGENCY_QUEUE_NAME, O_WRONLY));
@@ -38,6 +37,7 @@ int main(int argc, char* argv[]){
 	switch (mode) {
 		case NORMAL_MODE: handle_normal_mode_input(argv); break;
 		case FILE_MODE: 	handle_file_mode_input(argv); break;
+		case STOP_MODE: 	handle_stop_mode_client(); break;
 		default: 					DIE("modalità di inserimento non trovata");
 	}
 
@@ -46,9 +46,17 @@ int main(int argc, char* argv[]){
 	// spetta al server controllare la SEMANTICA (se i valori x,y,timestamo sono nei limiti)
 	// se non lo sono l'emergenza viene ignorata nel server
 
+	log_event(NO_ID, MESSAGE_QUEUE_CLIENT, "il lavoro del client è finito. Il processo si chiude");
+
 	return 0;
 }
 
+
+void handle_stop_mode_client(void){
+	char *buffer = STOP_MESSAGE_FROM_CLIENT;
+	check_error_mq_send(mq_send(mq, buffer, strlen(buffer) + 1, 0));
+	log_event(NO_ID, MESSAGE_QUEUE_CLIENT, "inviato messaggio di stop dal client");
+}
 
 // prende nome, coordinate e timestamp in forma di stringhe, fa qualche controllo e li spedisce
 // ritorna 0 se fallisce senza spedire, 1 se riesce
@@ -82,17 +90,20 @@ int send_emergency_request_message(char *name, char *x_string, char *y_string, c
 	// il client garantisce la correttezza sintattica della richiesta
 	// al server spetta controllare la correttezza semantica e processare la richiesta
 	check_error_mq_send(mq_send(mq, buffer, strlen(buffer) + 1, 0));
+	log_event(NO_ID, MESSAGE_QUEUE_CLIENT, "inviata emergenza al server");
+
 	return 1;
 }
 
 // gestisce la singola emergenza passata da terminale
 void handle_normal_mode_input(char* args[]){
-	int did_you_send_the_emergency_to_the_server = send_emergency_request_message(args[1], args[2], args[3], args[4]);
-	did_you_send_the_emergency_to_the_server ? exit(EXIT_SUCCESS) : exit(EXIT_FAILURE);
+	log_event(NO_ID, MESSAGE_QUEUE_CLIENT, "avvio della modalità di inserimento diretta");
+	send_emergency_request_message(args[1], args[2], args[3], args[4]);
 }
 
 // gestisce l'emergenza passata per file inviando un'emergenza alla volta riga per riga    
 void handle_file_mode_input(char* args[]){
+	log_event(NO_ID, MESSAGE_QUEUE_CLIENT, "avvio della modalità di inserimento da file");
 	FILE* emergency_requests_file = fopen(args[2], "r");
 	check_error_fopen(emergency_requests_file);
 

@@ -98,7 +98,7 @@ typedef struct {
 	int is_to_log;										// se va scritto o no nel file di log
 } log_event_info_t;
 
-#define LOG_EVENT_TYPES_COUNT 27
+#define LOG_EVENT_TYPES_COUNT 30
 
 typedef enum {
 
@@ -118,6 +118,7 @@ typedef enum {
 	DUPLICATE_RESCUER_TYPE_IGNORED,		//DRTI
 	WRONG_EMERGENCY_REQUEST_IGNORED_CLIENT, //WERC
 	WRONG_EMERGENCY_REQUEST_IGNORED_SERVER, //WERS
+
 	// eventi di log
 	LOGGING_STARTED, 									//LSTA
 	LOGGING_ENDED,  									//LEND
@@ -130,11 +131,16 @@ typedef enum {
 	EMERGENCY_PARSED,									//EMPA		
 	RESCUER_REQUEST_ADDED,						//RRAD
 
+	SERVER, //srvr
+	CLIENT, //clnt
+
 	// eventi di gestione richieste emergenza
 	EMERGENCY_REQUEST_RECEIVED, 			//ERRR
 	EMERGENCY_REQUEST_PROCESSED,			//ERPR
 
-	MESSAGE_QUEUE, 										//MQUE
+	MESSAGE_QUEUE_CLIENT, 						//MQCL
+	MESSAGE_QUEUE_SERVER, 						//MQSE
+
 	EMERGENCY_STATUS, 								//ESTA
 	RESCUER_STATUS, 									//RSTA
 	EMERGENCY_REQUEST,								//ERRE
@@ -155,7 +161,7 @@ typedef struct emergency_node{
 	emergency_t *emergency;
 	struct emergency_node *prev;
 	struct emergency_node *next;
-	mtx_t node_mutex;
+	// mtx_t node_mutex;
 } emergency_node_t;
 
 typedef struct {
@@ -166,8 +172,8 @@ typedef struct {
 } emergency_list_t;
 
 typedef struct {
-	emergency_list_t* queue[PRIORITY_LEVELS]; // arrays di puntatori, un per ogni priorità
-	emergency_list_t* finished;
+	emergency_list_t* lists[PRIORITY_LEVELS]; // arrays di puntatori, un per ogni priorità
+	mtx_t queue_mutex;
 } emergency_queue_t;
 
 // server
@@ -183,7 +189,11 @@ typedef struct {
 	// puntatori alle strutture da manipolare
 	rescuer_type_t** rescuer_types;
   emergency_type_t** emergency_types;
-	// coda per ricevere le richieste di emergenza
+	
+	// coda per contenere le emergenze da processare
+	emergency_queue_t* queue;
+
+	// message queue per ricevere le richieste di emergenza
 	mqd_t mq;
 } server_context_t;
 
