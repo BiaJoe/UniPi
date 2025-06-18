@@ -20,6 +20,7 @@
 #define MAX_ENV_FIELD_LENGTH 32
 
 // log
+#define MAX_LOG_EVENT_LENGTH 512			// lungezza massima totale di un evento di log
 #define LOG_EVENT_NAME_LENGTH 64
 #define LOG_EVENT_CODE_LENGTH 5
 #define LOG_EVENT_MESSAGE_LENGTH 256

@@ -1,12 +1,13 @@
 #include "parsers.h"
 
-void parse_env(int *height, int *width){
+void parse_env(server_context_t *ctx){
 
 	// Apro il file di configurazione
 	FILE *env_conf = fopen(ENV_CONF, "r");
 	check_opened_file_error_log(env_conf);
 
 	char *line = NULL;
+	int height, width;
 	size_t len = 0;
 
 	char* queue_name = (char *)malloc((EMERGENCY_QUEUE_NAME_LENGTH + 1) * sizeof(char));
@@ -28,8 +29,11 @@ void parse_env(int *height, int *width){
 		log_fatal_error("Errore di sintassi nella 3a riga del file di configurazione " ENV_CONF, FATAL_ERROR_PARSING);
 
 	// Controllo che i valori siano validi
-	if(environment_values_are_illegal(queue_name, *height, *width))
+	if(environment_values_are_illegal(queue_name, height, width))
 		log_fatal_error("Valori illegali nel file di configurazione " ENV_CONF, FATAL_ERROR_PARSING);
+
+	ctx -> height = height;
+	ctx -> width  = width;
 
 	free(line);
 	free(queue_name);

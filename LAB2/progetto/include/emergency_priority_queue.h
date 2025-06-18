@@ -4,9 +4,9 @@
 #include "parsers.h"
 #include "logger.h"
 
-#define MAX_TIME_IN_0_PRIORITY_BEFORE_PROMOTION	120
-#define MAX_TIME_IN_1_PRIORITY_BEFORE_TIMEOUT		30
-#define MAX_TIME_IN_2_PRIORITY_BEFORE_TIMEOUT		10
+#define MAX_TIME_IN_MIN_PRIORITY_BEFORE_PROMOTION			120
+#define MAX_TIME_IN_MEDIUM_PRIORITY_BEFORE_TIMEOUT		30
+#define MAX_TIME_IN_MAX_PRIORITY_BEFORE_TIMEOUT				10
 
 
 // valori della richiesta -> puntatore a struttura emergenza
@@ -57,9 +57,8 @@ emergency_list_t* get_list_by_priority(emergency_queue_t* eq, short priority);
 
 void change_node_priority_list(emergency_queue_t* eq, emergency_node_t* node, short new_priority);
 
-void promote_node_priority(emergency_queue_t* eq, emergency_node_t* node); // solo da 0 a 1 e non diversamente
+int promote_to_medium_priority_if_needed(emergency_queue_t* eq, emergency_node_t* node); // solo da 0 a 1 e non diversamente
 
-// un nodo è das promuovere da 0 a 1 quando 
-int is_node_to_promote(emergency_node_t* node);
+int timeout_emergency_if_needed(emergency_queue_t* q, emergency_node_t* n);
 
 #endif

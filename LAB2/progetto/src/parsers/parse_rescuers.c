@@ -1,13 +1,16 @@
 #include "parsers.h"
 
-rescuer_type_t** parse_rescuers(int *rescuer_count){
+// conto dei gemelli digitali, necessario per il logging
+static int rescuer_digital_twins_total_count = 0;
+
+void parse_rescuers(server_context_t *ctx){
 
 	// Apro il file di configurazione
 	FILE *rescuers_conf = fopen(RESCUERS_CONF, "r");
 	check_opened_file_error_log(rescuers_conf);
 
 	// inizializzo l'array di rescuer_types dinamicamente a NULL
-	rescuer_type_t **  rescuer_types = callocate_rescuer_types();
+	rescuer_type_t **rescuer_types = callocate_rescuer_types();
 
 	// variabili temporanee per i campi del rescuer
 	char name[MAX_RESCUER_NAME_LENGTH]; 
@@ -48,7 +51,7 @@ rescuer_type_t** parse_rescuers(int *rescuer_count){
 			log_fatal_error("Errore di sintassi nel file di configurazione " RESCUERS_CONF, FATAL_ERROR_PARSING);
 
 		// Controllo che i valori siano validi
-		if(rescuer_type_values_are_illegal(name, amount, speed, x, y))
+		if(rescuer_type_values_are_illegal(ctx, name, amount, speed, x, y))
 			log_fatal_error("Valori illegali nel file di configurazione " RESCUERS_CONF, FATAL_ERROR_PARSING);
 
 		// Controllo che non ci siano duplicati, se ci sono ignoro la riga
@@ -67,23 +70,84 @@ rescuer_type_t** parse_rescuers(int *rescuer_count){
 
 	free(line);
 	fclose(rescuers_conf);
-	*rescuer_count = local_rescuer_count;
-
-	return rescuer_types;
+	ctx -> rescuer_types_count = local_rescuer_count;
+	ctx -> rescuer_types = rescuer_types;
 }
 
-
-int rescuer_type_values_are_illegal(char *name, int amount, int speed, int x, int y){
+int rescuer_type_values_are_illegal(server_context_t *ctx, char *name, int amount, int speed, int x, int y){
 	return (
 		strlen(name) <= 0 || 
 		amount < MIN_RESCUER_AMOUNT || 
 		amount > MAX_RESCUER_AMOUNT || 
 		speed < MIN_RESCUER_SPEED || 
 		speed > MAX_RESCUER_SPEED || 
-		x < MIN_X_COORDINATE || 
-		x > width || 
-		y < MIN_Y_COORDINATE || 
-		y > height
+		x < MIN_X_COORDINATE_ABSOLUTE_VALUE || 
+		x > ctx -> width || 
+		y < MIN_Y_COORDINATE_ABSOLUTE_VALUE || 
+		y > ctx -> height
 	);
 }
 
+rescuer_type_t ** callocate_rescuer_types(){
+	rescuer_type_t **rescuer_types = (rescuer_type_t **)calloc((MAX_FILE_LINES + 1),  sizeof(rescuer_type_t*));
+	check_error_memory_allocation(rescuer_types);
+	return rescuer_types;
+}
+
+void mallocate_and_populate_rescuer_type(char *name, int amount, int speed, int x, int y, rescuer_type_t **rescuer_types){
+	//raggiujgo il primo posto libero in rescuer_types
+	int i = 0;
+	while(rescuer_types[i] != NULL) i++;
+
+	// allco il rescuer_type_t
+	rescuer_types[i] = (rescuer_type_t *)malloc(sizeof(rescuer_type_t));
+	check_error_memory_allocation(rescuer_types[i]);
+
+	// alloco il nome del rescuer_type_t e lo copio
+	rescuer_types[i]->rescuer_type_name = (char *)malloc((strlen(name) + 1) * sizeof(char));
+	check_error_memory_allocation(rescuer_types[i]->rescuer_type_name);
+
+
+	// copio il nome
+	strcpy(rescuer_types[i]->rescuer_type_name, name);
+
+	// popolo il resto dei campi
+	rescuer_types[i]->amount = amount;
+	rescuer_types[i]->speed = speed;
+	rescuer_types[i]->x = x;
+	rescuer_types[i]->y = y;
+
+
+	// alloco i rescuer_digital_twin_t (all'inizio tutti a NULL)
+	rescuer_types[i]->twins = (rescuer_digital_twin_t **)calloc(amount + 1, sizeof(rescuer_digital_twin_t*));
+	check_error_memory_allocation(rescuer_types[i]->twins);
+
+	// alloco ogni twin e popolo i suoi campi 
+	for(int j = 0; j < amount; j++){
+		rescuer_types[i]->twins[j] = (rescuer_digital_twin_t *)malloc(sizeof(rescuer_digital_twin_t));
+		check_error_memory_allocation(rescuer_types[i]->twins[j]);
+
+		rescuer_types[i]->twins[j]->id = j;
+		rescuer_types[i]->twins[j]->x = x;
+		rescuer_types[i]->twins[j]->y = y;
+		rescuer_types[i]->twins[j]->rescuer = rescuer_types[i];
+		rescuer_types[i]->twins[j]->status = IDLE;
+		rescuer_types[i]->twins[j]->is_travelling = NO;
+		rescuer_types[i]->twins[j]->x_destination = x;
+		rescuer_types[i]->twins[j]->y_destination = y;
+
+		rescuer_digital_twins_total_count++;
+		log_event(rescuer_digital_twins_total_count, RESCUER_DIGITAL_TWIN_ADDED, "Gemello digitale aggiunto: " RESCUERS_CONF);
+	}
+}
+
+void free_rescuer_types(rescuer_type_t **rescuer_types){
+	for(int i = 0; rescuer_types[i] != NULL; i++){
+		free(rescuer_types[i]->rescuer_type_name);					//libero il puntatore al nome 
+		for(int j = 0; j < rescuer_types[i]->amount; j++)		// libero ogni gemello digitale
+			free(rescuer_types[i]->twins[j]);
+		free(rescuer_types[i]->twins);											// libero l'array di puntatori ai gemelli digitali		
+		free(rescuer_types[i]);															// libero il puntatore al rescuer_type_t 
+	}	
+	free(rescuer_types);																	// libero l'array di puntatori ai rescuer_types
+}

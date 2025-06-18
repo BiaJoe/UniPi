@@ -1,7 +1,7 @@
 #include "emergency_priority_queue.h"
 
 
-
+// funzioni di gestione della coda di emergenze
 
 emergency_t *mallocate_emergency(server_context_t *ctx, char* name, int x, int y, time_t timestamp){
 	emergency_t *e = (emergency_t *)malloc(sizeof(emergency_t));
@@ -36,6 +36,7 @@ void free_emergency(emergency_t* e){
 	free(e);
 }
 
+
 emergency_node_t* mallocate_emergency_node(emergency_t *e){
 	emergency_node_t* n = (emergency_node_t*)malloc(sizeof(emergency_node_t));
 	n -> list = NULL;
@@ -45,11 +46,11 @@ emergency_node_t* mallocate_emergency_node(emergency_t *e){
 	return n;
 }
 
-// libera il singolo nodo ma non l'emergenza contenuta
 void free_emergency_node(emergency_node_t* n){
 	if(!n) return;
 	free(n);
 }
+
 
 emergency_list_t *mallocate_emergency_list(){
 	emergency_list_t *el = (emergency_list_t *)malloc(sizeof(emergency_list_t));	
@@ -72,6 +73,7 @@ void free_emergency_list(emergency_list_t *list){
 	free(list);
 }
 
+
 emergency_queue_t *mallocate_emergency_queue(){
 	emergency_queue_t *q = (emergency_queue_t*)malloc(sizeof(emergency_queue_t));
 	for(int i = MIN_EMERGENCY_PRIORITY; i <= MAX_EMERGENCY_PRIORITY; i++)
@@ -87,26 +89,49 @@ void free_emergency_queue(emergency_queue_t *q){
 	free(q);
 }
 
+
 void append_emergency_node(emergency_list_t* list, emergency_node_t* node){
 	if(!list || !node){											// se ho allocato un nodo da appendere in una lista insesistente
-		if(node) free_emergency_node(node);		// e quindi non lo appendo finisco per perdere il riferimento a quel nodo per sempre
+		// if(node) free_emergency_node(node);		// e quindi non lo appendo finisco per perdere il riferimento a quel nodo per sempre
 		return;																// per cui devo liberarlo e dimenticarmene
 	}
-		if (list->node_amount == 0){					// se la lista è vuota (caso base)
-			list -> head = node;								// il nodo diventa sia capo che coda
-			list -> tail = node;
-			node -> list = list;
-			node -> prev = NULL;
-			node -> next = NULL;
-		} else {
-			list -> tail -> next = node; 				// il tail diventa il penultimo nodo che punta all'ultimo con next		
-			node -> prev = list->tail;					// l'ultimo nodo punta il penultimo con prev
-			node -> next = NULL; 								// il nodo è diventato la nuova coda
-			node -> list = list;								// la lista di appartenenza del nodo diventa list
-			list -> tail = node;								// l'ultimo nodo (tail) diventa ufficialmente node
-		}			
-		list->node_amount += 1;								// il numero di nodi aumenta di 1 !!!
+	if (list->node_amount == 0){					// se la lista è vuota (caso base)
+		list -> head = node;								// il nodo diventa sia capo che coda
+		list -> tail = node;
+		node -> list = list;
+		node -> prev = NULL;
+		node -> next = NULL;
+	} else {
+		list -> tail -> next = node; 				// il tail diventa il penultimo nodo che punta all'ultimo con next		
+		node -> prev = list->tail;					// l'ultimo nodo punta il penultimo con prev
+		node -> next = NULL; 								// il nodo è diventato la nuova coda
+		node -> list = list;								// la lista di appartenenza del nodo diventa list
+		list -> tail = node;								// l'ultimo nodo (tail) diventa ufficialmente node
+	}			
+	list->node_amount += 1;								// il numero di nodi aumenta di 1 !!!
 }
+
+void push_emergency_node(emergency_list_t* list, emergency_node_t *node){
+	if(!list || !node){											// se ho allocato un nodo da appendere in una lista insesistente
+		// if(node) free_emergency_node(node);		// e quindi non lo appendo finisco per perdere il riferimento a quel nodo per sempre
+		return;																// per cui devo liberarlo e dimenticarmene
+	}
+	if (list->node_amount == 0){					// se la lista è vuota (caso base)
+		list -> head = node;								// il nodo diventa sia capo che coda
+		list -> tail = node;
+		node -> list = list;
+		node -> prev = NULL;
+		node -> next = NULL;
+	} else {
+		list -> head -> prev = node;				// il nodo diventa il nuovo primo nodo
+		node -> next = list->head;					// il nuovo nodo punta al vecchio primo nodo
+		node -> prev = NULL;								// il nuovo nodo non ha un precedente perchè è la testa
+		node -> list = list;								// la lista di appartenenza del nodo diventa list
+		list -> head = node;								// il nuovo nodo diventa la nuova testa della lista
+	}			
+	list->node_amount += 1;								// il numero di nodi aumenta di 1 !!!
+}
+
 
 int is_the_first_node_of_the_list(emergency_node_t* node){
 	return (node->prev == NULL) ? 1 : 0 ;
@@ -132,7 +157,6 @@ void remove_emergency_node_from_its_list(emergency_node_t* node){
 		node->list->node_amount -= 1;										// decremento il numero di nodi nella lista
 }
 
-// rimuove e ritorna il nodo testa
 emergency_node_t* decapitate_emergency_list(emergency_list_t* list){
 	if(!list || list->node_amount == 0) return NULL; // controllo la vuotezza
 	emergency_node_t* head = list->head;
@@ -142,6 +166,7 @@ emergency_node_t* decapitate_emergency_list(emergency_list_t* list){
 	return head;
 }
 
+
 void enqueue_emergency(emergency_queue_t* q, emergency_t *e){
 	int p = get_emergency_priority(e);
 	if(p == INVALID_EMERGENCY_PROPERTY_NUMBER) return;		// misura di sicurezza, i controlli sono già stati fatti ma non si sa mai
@@ -149,30 +174,50 @@ void enqueue_emergency(emergency_queue_t* q, emergency_t *e){
 	append_emergency_node(q->lists[p], node);							// appendo il nodo alla lista
 }
 
-emergency_t* dequeue_emergency(emergency_queue_t* q){
+emergency_node_t* dequeue_emergency_node(emergency_queue_t* q){
 	if(!q) return NULL;
 	int p = MAX_EMERGENCY_PRIORITY;
 	emergency_node_t *h = NULL; //head
-	emergency_t *e = NULL;
 	while(p >= MIN_EMERGENCY_PRIORITY){									// tento la decapitate ad ogni priorità dalla più grande alla più piccola
 		emergency_list_t *current_list = q->lists[p--];		// dalla lista di maggiore priorità a quella di minore
 		h = decapitate_emergency_list(current_list);			// decapitate non alloca memoria, non c'è il rischio di memory leak a riassegnare h
 		if(h != NULL) break;															// se ho trovato un h valido vuol dire che ho decapitato quella lista con successo
 	}
-	e = h ? h->emergency : NULL;												// se la lista è vuota il risultato è NULL
-	free_emergency_node(h);															// il nodo non mi serve più, adesso lavoro sull'emergenza!
-	return e;					
+	return h; // ritorno il nodo decapitato, NULL se non ho trovato nulla			
 }
 
-void change_node_priority_list(emergency_queue_t* q, emergency_node_t* n, short p){
+
+void change_node_priority_list(emergency_queue_t* q, emergency_node_t* n, short newp){
 	remove_emergency_node_from_its_list(n);
-	append_emergency_node(q->lists[p], n);
+	append_emergency_node(q->lists[newp], n);
 }
 
-void promote_to_medium_priority_if_needed(emergency_queue_t* q, emergency_node_t* n){ // solo da 0 a 1 e non diversamente
-	if(time(NULL) - get_emergency_time(n->emergency) >= MAX_TIME_IN_0_PRIORITY_BEFORE_PROMOTION)
+int promote_to_medium_priority_if_needed(emergency_queue_t* q, emergency_node_t* n){ // solo da 0 a 1 e non diversamente
+	if(time(NULL) - get_emergency_time(n->emergency) >= MAX_TIME_IN_MIN_PRIORITY_BEFORE_PROMOTION){
 		change_node_priority_list(q, n, MEDIUM_EMERGENCY_PRIORITY);
+		return YES;
+	}
+	return NO;
 }
+
+int timeout_emergency_if_needed(emergency_node_t* n){
+	if(n->emergency->status == TIMEOUT) return NO;
+	time_t current_time = time(NULL);
+	time_t emergency_time = get_emergency_time(n->emergency);
+	time_t elapsed_time = current_time - emergency_time;
+	int priority = get_emergency_priority(n->emergency);
+	
+	if(
+		priority == MAX_EMERGENCY_PRIORITY && elapsed_time > MAX_TIME_IN_MAX_PRIORITY_BEFORE_TIMEOUT ||
+		priority == MEDIUM_EMERGENCY_PRIORITY && elapsed_time > MAX_TIME_IN_MEDIUM_PRIORITY_BEFORE_TIMEOUT
+	) {
+		n->emergency->status = TIMEOUT;
+		return YES;
+	};
+
+	return NO;
+}		
+
 
 int get_emergency_priority(emergency_t* e){
 	if(!e) return INVALID_EMERGENCY_PROPERTY_NUMBER;
@@ -208,3 +253,6 @@ rescuer_request_t **get_emergency_resquer_requests(emergency_t* e){
 	if(!e) return INVALID_EMERGENCY_PROPERTY_POINTER;
 	return (rescuer_request_t **) ((e -> type) -> rescuers);
 }
+
+
+

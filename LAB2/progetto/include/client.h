@@ -5,7 +5,6 @@
 
 #include <unistd.h>
 #include "logger.h"
-#include "memory_management.h"
 
 #define LOG_IGNORING_ERROR(m) \
 	do { log_event(NO_ID, WRONG_EMERGENCY_REQUEST_IGNORED_CLIENT, "il Client ignora una emergency request: " #m); } while (0)
@@ -39,7 +38,7 @@
 
 void handle_normal_mode_input(char* args[]);
 void handle_file_mode_input(char* args[]);
-int send_emergency_request_message(char *name, char *x_string, char *y_string, char *delay_string);
+int  send_emergency_request_message(char *name, char *x_string, char *y_string, char *delay_string);
 void handle_stop_mode_client(void);
 #endif
 

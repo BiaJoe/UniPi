@@ -8,6 +8,71 @@
 #include "costants.h"
 
 
+// STRUTTURE PER IL LOGGING
+
+typedef struct {
+	char name[LOG_EVENT_NAME_LENGTH];	// versione stringa del tipo
+	char code[LOG_EVENT_CODE_LENGTH];	// versione codice del tipo
+	atomic_int counter;								// quante volte è stato registrato
+	int is_terminating;								// se loggarlo vuol dire terminare il programma		
+	int is_to_log;										// se va scritto o no nel file di log
+} log_event_info_t;
+
+#define LOG_EVENT_TYPES_COUNT 32
+
+typedef enum {
+
+	NON_APPLICABLE, 								  //N/A
+	
+	// errori fatali
+	FATAL_ERROR, 											//FERR
+	FATAL_ERROR_PARSING, 							//FEPA
+	FATAL_ERROR_LOGGING, 							//FELO
+	FATAL_ERROR_MEMORY, 							//FEME
+	FATAL_ERROR_FILE_OPENING,					//FEFO
+	
+	// errori non fatali
+	EMPTY_CONF_LINE_IGNORED,					//ECLI		
+	DUPLICATE_RESCUER_REQUEST_IGNORED,//DRRI
+	WRONG_RESCUER_REQUEST_IGNORED, 		//WRRI
+	DUPLICATE_EMERGENCY_TYPE_IGNORED, //DETI
+	DUPLICATE_RESCUER_TYPE_IGNORED,		//DRTI
+	WRONG_EMERGENCY_REQUEST_IGNORED_CLIENT, //WERC
+	WRONG_EMERGENCY_REQUEST_IGNORED_SERVER, //WERS
+
+	// eventi di log
+	LOGGING_STARTED, 									//LSTA
+	LOGGING_ENDED,  									//LEND
+
+	// eventi di parsing
+	PARSING_STARTED,									//PSTA
+	PARSING_ENDED,										//PEND
+	RESCUER_TYPE_PARSED,							//RTPA
+	RESCUER_DIGITAL_TWIN_ADDED,				//RDTA
+	EMERGENCY_PARSED,									//EMPA		
+	RESCUER_REQUEST_ADDED,						//RRAD
+
+	SERVER, //srvr
+	CLIENT, //clnt
+
+	// eventi di gestione richieste emergenza
+	EMERGENCY_REQUEST_RECEIVED, 			//ERRR
+	EMERGENCY_REQUEST_PROCESSED,			//ERPR
+
+	MESSAGE_QUEUE_CLIENT, 						//MQCL
+	MESSAGE_QUEUE_SERVER, 						//MQSE
+
+	EMERGENCY_STATUS, 								//ESTA
+	RESCUER_STATUS, 									//RSTA
+	RESCUER_TRAVELLING_STATUS,         //RTST
+	EMERGENCY_REQUEST,								//ERRE
+
+	PROGRAM_ENDED_SUCCESSFULLY,				//PESU
+
+	// ...aggiungere altri tipi di log qui
+} log_event_type_t; 
+
+
 // STRUTTURE PER I RESCUER
 
 typedef enum {
@@ -37,6 +102,9 @@ struct rescuer_digital_twin {
 	int y;
 	rescuer_type_t *rescuer;
 	rescuer_status_t status;
+	int is_travelling;
+	int x_destination;
+	int y_destination;
 };
 
 
@@ -88,68 +156,6 @@ typedef struct {
 	rescuer_digital_twin_t **rescuer_twins;
 } emergency_t;
 
-// STRUTTURE PER IL LOGGING
-
-typedef struct {
-	char name[LOG_EVENT_NAME_LENGTH];	// versione stringa del tipo
-	char code[LOG_EVENT_CODE_LENGTH];	// versione codice del tipo
-	atomic_int counter;								// quante volte è stato registrato
-	int is_terminating;								// se loggarlo vuol dire terminare il programma		
-	int is_to_log;										// se va scritto o no nel file di log
-} log_event_info_t;
-
-#define LOG_EVENT_TYPES_COUNT 30
-
-typedef enum {
-
-	NON_APPLICABLE, 								  //N/A
-	
-	// errori fatali
-	FATAL_ERROR, 											//FERR
-	FATAL_ERROR_PARSING, 							//FEPA
-	FATAL_ERROR_LOGGING, 							//FELO
-	FATAL_ERROR_MEMORY, 							//FEME
-	FATAL_ERROR_FILE_OPENING,					//FEFO
-	
-	// errori non fatali
-	EMPTY_CONF_LINE_IGNORED,					//ECLI		
-	DUPLICATE_RESCUER_REQUEST_IGNORED,//DRRI
-	DUPLICATE_EMERGENCY_TYPE_IGNORED, //DETI
-	DUPLICATE_RESCUER_TYPE_IGNORED,		//DRTI
-	WRONG_EMERGENCY_REQUEST_IGNORED_CLIENT, //WERC
-	WRONG_EMERGENCY_REQUEST_IGNORED_SERVER, //WERS
-
-	// eventi di log
-	LOGGING_STARTED, 									//LSTA
-	LOGGING_ENDED,  									//LEND
-
-	// eventi di parsing
-	PARSING_STARTED,									//PSTA
-	PARSING_ENDED,										//PEND
-	RESCUER_TYPE_PARSED,							//RTPA
-	RESCUER_DIGITAL_TWIN_ADDED,				//RDTA
-	EMERGENCY_PARSED,									//EMPA		
-	RESCUER_REQUEST_ADDED,						//RRAD
-
-	SERVER, //srvr
-	CLIENT, //clnt
-
-	// eventi di gestione richieste emergenza
-	EMERGENCY_REQUEST_RECEIVED, 			//ERRR
-	EMERGENCY_REQUEST_PROCESSED,			//ERPR
-
-	MESSAGE_QUEUE_CLIENT, 						//MQCL
-	MESSAGE_QUEUE_SERVER, 						//MQSE
-
-	EMERGENCY_STATUS, 								//ESTA
-	RESCUER_STATUS, 									//RSTA
-	EMERGENCY_REQUEST,								//ERRE
-
-	PROGRAM_ENDED_SUCCESSFULLY,				//PESU
-
-	// ...aggiungere altri tipi di log qui
-} log_event_type_t; 
-
 // emergency queue
 
 // forward declaration per node e list
@@ -161,40 +167,40 @@ typedef struct emergency_node{
 	emergency_t *emergency;
 	struct emergency_node *prev;
 	struct emergency_node *next;
-	// mtx_t node_mutex;
 } emergency_node_t;
 
 typedef struct {
 	emergency_node_t *head;
 	emergency_node_t *tail;
-	int node_amount; // inizia a 0 con head = tail = NULL
-	mtx_t list_mutex;
+	int node_amount; 
+	mtx_t mutex;
 } emergency_list_t;
 
 typedef struct {
-	emergency_list_t* lists[PRIORITY_LEVELS]; // arrays di puntatori, un per ogni priorità
-	mtx_t queue_mutex;
+	emergency_list_t* lists[PRIORITY_LEVELS]; 
+	mtx_t mutex;
 } emergency_queue_t;
 
 // server
 
 typedef struct {
-	// interi per tenere traccia di cosa succede
-	int height;
+	int height;														// interi per tenere traccia di cosa succede
 	int width;
-	int rescuer_count;
+	int rescuer_types_count;
 	int emergency_types_count;
 	int emergency_requests_count;
-
-	// puntatori alle strutture da manipolare
-	rescuer_type_t** rescuer_types;
-  emergency_type_t** emergency_types;
+	rescuer_type_t** rescuer_types;				// puntatori alle strutture rescuers
+	mtx_t rescuers_mutex;									// mutex per proteggere l'accesso ai rescuer types
+  emergency_type_t** emergency_types;		// puntatori alle strutture emergency_types
+	emergency_queue_t* queue;							// coda per contenere le emergenze da processare
+	mqd_t mq;															// message queue per ricevere le emergenze dai client	
+	time_t current_time;									// tempo corrente del server
+	int tick;															// tick del server, per sincronizzare i thread
+	int tick_count_since_start;						// contatore dei tick del server, per tenere traccia di quanti tick sono stati fatti
+	mtx_t clock_mutex;										// mutex per proteggere l'accesso al tick del server
+	cnd_t clock_updated;							// condizione per comunicare al therad updater di fare l'update
 	
-	// coda per contenere le emergenze da processare
-	emergency_queue_t* queue;
 
-	// message queue per ricevere le richieste di emergenza
-	mqd_t mq;
 } server_context_t;
 
 

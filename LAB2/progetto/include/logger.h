@@ -12,7 +12,6 @@
 #define LOG_FILE "log.txt"
 
 #define LOG_QUEUE_NAME "/log_queue"
-#define MAX_LOG_EVENT_LENGTH 512
 #define MAX_LOG_QUEUE_MESSAGES 10
 
 #define NO_ID -1

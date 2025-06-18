@@ -32,6 +32,8 @@
 #define check_error_fork(pid) 						check_error((pid) < 0, "fork_failed")
 #define check_error_syscall(call, m)			check_error((call) == -1, m)
 #define check_error_mtx_init(call)  			check_error((call) != thrd_success, "mutex init")
+#define check_error_cnd_init(call)  			check_error((call) != thrd_success, "mutex init")
+
 
 // #define check_error_not(s,m) 					check_error(!(s), m)
 // #define check_error_nonzero(s,m) 			check_error((s) != 0, m)
@@ -67,9 +69,18 @@
 int my_atoi(char a[]);
 void write_line(FILE *f, char *s);
 
+// manipolazione strutture
+rescuer_type_t * get_rescuer_type_by_name(char *name, rescuer_type_t **rescuer_types);
+emergency_type_t * get_emergency_type_by_name(char *name, emergency_type_t **emergency_types);
+rescuer_request_t * get_rescuer_request_by_name(char *name, rescuer_request_t **rescuers);
+char* get_name_of_rescuer_requested(rescuer_request_t *rescuer_request);
+
+
 
 #define ABS(x) ((x) < 0 ? -(x) : (x))
 #define MANHATTAN(x1,y1,x2,y2) (ABS((x1) - (x2)) + ABS((y1) - (y2)))
+
+
 
 
 #endif

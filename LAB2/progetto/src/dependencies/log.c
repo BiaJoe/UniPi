@@ -2,13 +2,6 @@
 
 // questo file ha tutte le funzioni necessarie per inviare il messaggio da loggare a logger.c
 
-
-#define TERMINATING 		1
-#define NOT_TERMINATING 0
-#define LOG 						1
-#define DONT_LOG 				0
-
-
 // Lookup table per i possibili eventi di log,
 // necessaria perchè per ogni evento serve il suo nome
 // ed un codice univoco da associare ad un id numerico per non rischiare 
@@ -16,36 +9,38 @@
 
 static log_event_info_t log_event_lookup_table[LOG_EVENT_TYPES_COUNT] = {
 	//	TIPO																				STRINGA																					CODICE (per l'ID)		CONTEGGIO		FA TERMINARE IL PROGRAMMA?		DA LOGGARE?
-			[NON_APPLICABLE]                  				= { "NON_APPLICABLE",                  						"N/A ", 						0, 					NOT_TERMINATING, 							LOG 			},
-			[FATAL_ERROR]                     				= { "FATAL_ERROR",                     						"ferr", 						0, 					TERMINATING, 		 							LOG 			},
-			[FATAL_ERROR_PARSING]             				= { "FATAL_ERROR_PARSING",             						"fepa", 						0, 					TERMINATING, 		 							LOG 			},
-			[FATAL_ERROR_LOGGING]             				= { "FATAL_ERROR_LOGGING",             						"felo", 						0, 					TERMINATING, 		 							LOG 			},
-			[FATAL_ERROR_MEMORY]              				= { "FATAL_ERROR_MEMORY",              						"feme", 						0, 					TERMINATING, 		 							LOG 			},
-			[FATAL_ERROR_FILE_OPENING]        				= { "FATAL_ERROR_FILE_OPENING",        						"fefo", 						0, 					TERMINATING, 		 							LOG 			},
-			[EMPTY_CONF_LINE_IGNORED]         				= { "EMPTY_CONF_LINE_IGNORED",         						"ecli", 						0, 					NOT_TERMINATING, 							DONT_LOG 	},
-			[DUPLICATE_RESCUER_REQUEST_IGNORED] 			= { "DUPLICATE_RESCUER_REQUEST_IGNORED", 					"drri", 						0, 					NOT_TERMINATING, 							LOG 			},
-			[DUPLICATE_EMERGENCY_TYPE_IGNORED] 				= { "DUPLICATE_EMERGENCY_TYPE_IGNORED",						"deti", 						0, 					NOT_TERMINATING, 							LOG 			},
-			[DUPLICATE_RESCUER_TYPE_IGNORED]  				= { "DUPLICATE_RESCUER_TYPE_IGNORED",  						"drti", 						0, 					NOT_TERMINATING, 							LOG 			},
-			[WRONG_EMERGENCY_REQUEST_IGNORED_CLIENT] 	= { "WRONG_EMERGENCY_REQUEST_IGNORED_CLIENT", 		"werc", 						0, 					NOT_TERMINATING, 							LOG 			},
-			[WRONG_EMERGENCY_REQUEST_IGNORED_SERVER] 	= { "WRONG_EMERGENCY_REQUEST_IGNORED_SERVER", 		"wers", 						0, 					NOT_TERMINATING, 							LOG 			},			
-			[LOGGING_STARTED]                 				= { "LOGGING_STARTED",                 						"lsta", 						0, 					NOT_TERMINATING, 							LOG 			},
-			[LOGGING_ENDED]														= { "LOGGING_ENDED",                   						"lend", 						0, 					NOT_TERMINATING, 							LOG 			},
-			[PARSING_STARTED]                 				= { "PARSING_STARTED",                 						"psta", 						0, 					NOT_TERMINATING, 							LOG 			},
-			[PARSING_ENDED]                   				= { "PARSING_ENDED",                   						"pend", 						0, 					NOT_TERMINATING, 							LOG 			},
-			[RESCUER_TYPE_PARSED]             				= { "RESCUER_TYPE_PARSED",             						"rtpa", 						0, 					NOT_TERMINATING, 							LOG 			},
-			[RESCUER_DIGITAL_TWIN_ADDED]      				= { "RESCUER_DIGITAL_TWIN_ADDED",      						"rdta", 						0, 					NOT_TERMINATING, 							LOG 			},
-			[EMERGENCY_PARSED]                				= { "EMERGENCY_PARSED",                						"empa", 						0, 					NOT_TERMINATING, 							LOG 			},
-			[RESCUER_REQUEST_ADDED]           				= { "RESCUER_REQUEST_ADDED",           						"rrad", 						0, 					NOT_TERMINATING, 							LOG 			},
-			[SERVER]           												= { "SERVER",           													"srvr", 						0, 					NOT_TERMINATING, 							LOG 			},
-			[CLIENT]           												= { "CLIENT",           													"clnt", 						0, 					NOT_TERMINATING, 							LOG 			},
-			[EMERGENCY_REQUEST_RECEIVED]      				= { "EMERGENCY_REQUEST_RECEIVED",      						"errr", 						0, 					NOT_TERMINATING, 							LOG 			},
-			[EMERGENCY_REQUEST_PROCESSED]     				= { "EMERGENCY_REQUEST_PROCESSED",     						"erpr", 						0, 					NOT_TERMINATING, 							LOG 			},
-			[MESSAGE_QUEUE_CLIENT]                   	= { "MESSAGE_QUEUE_CLIENT",                   		"mqcl", 						0, 					NOT_TERMINATING, 							LOG 			},
-			[MESSAGE_QUEUE_SERVER]                   	= { "MESSAGE_QUEUE_SERVER",                   		"mqse", 						0, 					NOT_TERMINATING, 							LOG 			},
-			[EMERGENCY_STATUS]                				= { "EMERGENCY_STATUS",                						"esta", 						0, 					NOT_TERMINATING, 							LOG 			},
-			[RESCUER_STATUS]                  				= { "RESCUER_STATUS",                  						"rsta", 						0, 					NOT_TERMINATING, 							LOG 			},
-			[EMERGENCY_REQUEST]               				= { "EMERGENCY_REQUEST",               						"erre", 						0, 					NOT_TERMINATING, 							LOG 			},
-			[PROGRAM_ENDED_SUCCESSFULLY]							= { "PROGRAM_ENDED_SUCCESSFULLY",									"pesu", 						0,					TERMINATING,  								LOG				}
+			[NON_APPLICABLE]                  				= { "NON_APPLICABLE",                  						"N/A ", 						0, 					NO, 													YES 			},
+			[FATAL_ERROR]                     				= { "FATAL_ERROR",                     						"ferr", 						0, 					YES, 		 											YES 			},
+			[FATAL_ERROR_PARSING]             				= { "FATAL_ERROR_PARSING",             						"fepa", 						0, 					YES, 		 											YES 			},
+			[FATAL_ERROR_LOGGING]             				= { "FATAL_ERROR_LOGGING",             						"felo", 						0, 					YES, 		 											YES 			},
+			[FATAL_ERROR_MEMORY]              				= { "FATAL_ERROR_MEMORY",              						"feme", 						0, 					YES, 		 											YES 			},
+			[FATAL_ERROR_FILE_OPENING]        				= { "FATAL_ERROR_FILE_OPENING",        						"fefo", 						0, 					YES, 		 											YES 			},
+			[EMPTY_CONF_LINE_IGNORED]         				= { "EMPTY_CONF_LINE_IGNORED",         						"ecli", 						0, 					NO, 													NO 				},	
+			[DUPLICATE_RESCUER_REQUEST_IGNORED] 			= { "DUPLICATE_RESCUER_REQUEST_IGNORED", 					"drri", 						0, 					NO, 													YES 			},
+			[WRONG_RESCUER_REQUEST_IGNORED] 					= { "WRONG_RESCUER_REQUEST_IGNORED", 							"wrri", 						0, 					NO, 													YES 			},
+			[DUPLICATE_EMERGENCY_TYPE_IGNORED] 				= { "DUPLICATE_EMERGENCY_TYPE_IGNORED",						"deti", 						0, 					NO, 													YES 			},
+			[DUPLICATE_RESCUER_TYPE_IGNORED]  				= { "DUPLICATE_RESCUER_TYPE_IGNORED",  						"drti", 						0, 					NO, 													YES 			},
+			[WRONG_EMERGENCY_REQUEST_IGNORED_CLIENT] 	= { "WRONG_EMERGENCY_REQUEST_IGNORED_CLIENT", 		"werc", 						0, 					NO, 													YES 			},
+			[WRONG_EMERGENCY_REQUEST_IGNORED_SERVER] 	= { "WRONG_EMERGENCY_REQUEST_IGNORED_SERVER", 		"wers", 						0, 					NO, 													YES 			},			
+			[LOGGING_STARTED]                 				= { "LOGGING_STARTED",                 						"lsta", 						0, 					NO, 													YES 			},
+			[LOGGING_ENDED]														= { "LOGGING_ENDED",                   						"lend", 						0, 					NO, 													YES 			},
+			[PARSING_STARTED]                 				= { "PARSING_STARTED",                 						"psta", 						0, 					NO, 													YES 			},
+			[PARSING_ENDED]                   				= { "PARSING_ENDED",                   						"pend", 						0, 					NO, 													YES 			},
+			[RESCUER_TYPE_PARSED]             				= { "RESCUER_TYPE_PARSED",             						"rtpa", 						0, 					NO, 													YES 			},
+			[RESCUER_DIGITAL_TWIN_ADDED]      				= { "RESCUER_DIGITAL_TWIN_ADDED",      						"rdta", 						0, 					NO, 													YES 			},
+			[EMERGENCY_PARSED]                				= { "EMERGENCY_PARSED",                						"empa", 						0, 					NO, 													YES 			},
+			[RESCUER_REQUEST_ADDED]           				= { "RESCUER_REQUEST_ADDED",           						"rrad", 						0, 					NO, 													YES 			},
+			[SERVER]           												= { "SERVER",           													"srvr", 						0, 					NO, 													YES 			},
+			[CLIENT]           												= { "CLIENT",           													"clnt", 						0, 					NO, 													YES 			},
+			[EMERGENCY_REQUEST_RECEIVED]      				= { "EMERGENCY_REQUEST_RECEIVED",      						"errr", 						0, 					NO, 													YES 			},
+			[EMERGENCY_REQUEST_PROCESSED]     				= { "EMERGENCY_REQUEST_PROCESSED",     						"erpr", 						0, 					NO, 													YES 			},
+			[MESSAGE_QUEUE_CLIENT]                   	= { "MESSAGE_QUEUE_CLIENT",                   		"mqcl", 						0, 					NO, 													YES 			},
+			[MESSAGE_QUEUE_SERVER]                   	= { "MESSAGE_QUEUE_SERVER",                   		"mqse", 						0, 					NO, 													YES 			},
+			[EMERGENCY_STATUS]                				= { "EMERGENCY_STATUS",                						"esta", 						0, 					NO, 													YES 			},
+			[RESCUER_STATUS]                  				= { "RESCUER_STATUS",                  						"rsta", 						0, 					NO, 													YES 			},
+			[RESCUER_TRAVELLING_STATUS]               = { "RESCUER_TRAVELLING_STATUS",                  "rtst", 						0, 					NO, 													NO 				},
+			[EMERGENCY_REQUEST]               				= { "EMERGENCY_REQUEST",               						"erre", 						0, 					NO, 													YES 			},
+			[PROGRAM_ENDED_SUCCESSFULLY]							= { "PROGRAM_ENDED_SUCCESSFULLY",									"pesu", 						0,					YES,  												YES				}
 	};
 
 void send_log_message(char message[]) {
@@ -70,33 +65,33 @@ void send_log_message(char message[]) {
 	}
 }
 
-// funzione chiamata da client; server per loggare un evento
-void log_event(int id, log_event_type_t type, char *message) {
+// funzione chiamata dai processi client e server per loggare un evento
+void log_event(int id, log_event_type_t type, char *format, ...) { 	// per avere un nuymero variabile di argomenti. Ho letto come farlo su The C programming language di B. W. Kernighan e D. M. Ritchie
+	if(!is_log_event_type_to_log(type)) 															// se l'evento non è da loggare non si logga 
+		return;	
+	// formatto il messaggio da inviare					
+	char message[LOG_EVENT_MESSAGE_LENGTH];														// contiene il messaggio formattato con le variabili 
+	va_list ap;																												// punta agli argomenti variabili unnamed
+	va_start(ap, format);																							// punta al primo argomento variabile
+	vsnprintf(message, sizeof(message), format, ap);									// scrive il messaggio formattato nella stringa
+	va_end(ap);																												// cleanup
 
-	// se l'evento non è da loggare non si logga 
-	if(!is_log_event_type_to_log(type)) 
-		return;
-
-	// stringa da inviare
-	char buffer[MAX_LOG_EVENT_LENGTH];
-	
-	// popolo la stringa da inviare con i dati del log
-	snprintf(
-		buffer, 
-		MAX_LOG_EVENT_LENGTH, 
-		LOG_EVENT_STRING_SYNTAX,
-		get_time(),
-		get_log_event_type_code(type),
-		(id == NO_ID) ? get_log_event_type_counter(type) : id, 
-		get_log_event_type_string(type), 
-		message
+	char buffer[MAX_LOG_EVENT_LENGTH];				
+	snprintf(			
+		buffer, 																												// stringa che invierò a logger (message queue)
+		MAX_LOG_EVENT_LENGTH, 																					// lunghezza massima fino a cui scrivere
+		LOG_EVENT_STRING_SYNTAX,																				// formato da dare alla stringa
+		get_time(),																											// timestamp		
+		get_log_event_type_code(type),																	// codice (per rendere univoco l'ID)
+		(id == NO_ID) ? get_log_event_type_counter(type) : id, 					// id dell'evento, se è NO_ID allora uso il contatore del tipo di evento
+		get_log_event_type_string(type), 																// nome dell'evento
+		message																													// messaggio da loggare				
 	);
 
 	send_log_message(buffer);
 	increment_log_event_type_counter(type);
 
-	// se l'evento è fatale si invia anche il messaggio di stop logging
-	if(is_log_event_type_terminating(type)) 
+	if(is_log_event_type_terminating(type)) 													// se l'evento fa terminare il programma si invia anche il messaggio di stop logging per far terminare il logger
 		send_log_message(STOP_LOGGING_MESSAGE);
 }
 
