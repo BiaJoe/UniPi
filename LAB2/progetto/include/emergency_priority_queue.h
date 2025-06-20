@@ -37,6 +37,7 @@ void free_emergency_queue(emergency_queue_t *q);
 
 // inserisce il nodo nella lista
 void append_emergency_node(emergency_list_t* el, emergency_node_t* node);
+void enqueue_emergency_node(emergency_queue_t *q, emergency_node_t* node);
 
 emergency_node_t* decapitate_emergency_list(emergency_list_t* el);
 

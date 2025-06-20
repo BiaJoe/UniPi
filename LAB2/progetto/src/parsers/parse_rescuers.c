@@ -135,6 +135,7 @@ void mallocate_and_populate_rescuer_type(char *name, int amount, int speed, int 
 		rescuer_types[i]->twins[j]->is_travelling = NO;
 		rescuer_types[i]->twins[j]->x_destination = x;
 		rescuer_types[i]->twins[j]->y_destination = y;
+		rescuer_types[i]->twins[j]->emergency = NULL; 
 
 		rescuer_digital_twins_total_count++;
 		log_event(rescuer_digital_twins_total_count, RESCUER_DIGITAL_TWIN_ADDED, "Gemello digitale aggiunto: " RESCUERS_CONF);

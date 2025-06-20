@@ -6,31 +6,20 @@
 #include <string.h>
 #include <ctype.h>
 
-#define MAX_NAME_LENGTH 63
-#define STR_HELPER(x) #x
-#define STR(x) STR_HELPER(x)
-#define RESCUERS_SYNTAX "[%" STR(MAX_NAME_LENGTH) "][%d][%d][%d:%d]"
+#define ABS(x) ((x) < 0 ? -(x) : (x))
+#define MANHATTAN(x1,y1,x2,y2) (ABS((x1) - (x2)) + ABS((y1) - (y2)))
 
 
 int main(){
 
-	char buffer[64];
+	int x1 = 1;
+	int y1 = 1;
+	int x2 = 5;
+	int y2 = 5;
 
-	buffer[0] = 'H';
-	buffer[1] = 'e';
-	buffer[2] = 'l';
-	buffer[3] = 'l';		
-	buffer[4] = 'o';
-	buffer[5] = '\0';
 
-	printf("%s\n", buffer);
-
-	char * buffer2 = (char*)malloc((strlen(buffer)+1)*sizeof(char));
-	strcpy(buffer2, buffer);
-
-	printf("%s\n", buffer2);
-	free(buffer2);
-	printf(RESCUERS_SYNTAX "\n", 1, 2, 3, 4);
+	int d = MANHATTAN(x1,y1,x2,y2);
+	printf("d((%d, %d), (%d, %d)) = %d\n", x1,y1,x2,y2,d);
 
 	return 0;
 }

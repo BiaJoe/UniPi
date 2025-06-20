@@ -105,6 +105,7 @@ struct rescuer_digital_twin {
 	int is_travelling;
 	int x_destination;
 	int y_destination;
+	emergency_t *emergency;
 };
 
 
@@ -128,6 +129,7 @@ typedef struct {
 typedef enum {
 	WAITING,
 	ASSIGNED,
+	ASKING_FOR_RESCUERS,
 	IN_PROGRESS,
 	PAUSED,
 	COMPLETED,
@@ -162,11 +164,20 @@ typedef struct {
 struct emergency_list;
 typedef struct emergency_list emergency_list_t;
 
+#define UNDEFINED_TIME_FOR_RESCUERS_TO_ARRIVE -1
+
 typedef struct emergency_node{
 	emergency_list_t *list;
+	int priority; 						// campo già presente in emergency_type, ma può cambiare
+	int rescuers_are_arriving;
+	int rescuers_have_arrived;
+	int asks_for_rescuers_from_lower_priorities;
+	time_t time_estimated_for_rescuers_to_arrive;
 	emergency_t *emergency;
 	struct emergency_node *prev;
 	struct emergency_node *next;
+	mtx_t mutex;			
+	cnd_t has_been_paused;
 } emergency_node_t;
 
 typedef struct {
@@ -178,6 +189,8 @@ typedef struct {
 
 typedef struct {
 	emergency_list_t* lists[PRIORITY_LEVELS]; 
+	int is_empty;
+	cnd_t not_empty;									// condizione per notificare che la coda non è vuota
 	mtx_t mutex;
 } emergency_queue_t;
 
@@ -192,13 +205,15 @@ typedef struct {
 	rescuer_type_t** rescuer_types;				// puntatori alle strutture rescuers
 	mtx_t rescuers_mutex;									// mutex per proteggere l'accesso ai rescuer types
   emergency_type_t** emergency_types;		// puntatori alle strutture emergency_types
-	emergency_queue_t* queue;							// coda per contenere le emergenze da processare
+	emergency_queue_t* waiting_queue;			// coda per contenere le emergenze da processare
+	emergency_queue_t* working_queue;			// coda per contenere le emergenze assegnate a un thread
+	emergency_list_t* emergencies;				// lista per tenere traccia di tutte le emergenze
 	mqd_t mq;															// message queue per ricevere le emergenze dai client	
 	time_t current_time;									// tempo corrente del server
 	int tick;															// tick del server, per sincronizzare i thread
 	int tick_count_since_start;						// contatore dei tick del server, per tenere traccia di quanti tick sono stati fatti
 	mtx_t clock_mutex;										// mutex per proteggere l'accesso al tick del server
-	cnd_t clock_updated;							// condizione per comunicare al therad updater di fare l'update
+	cnd_t clock_updated;									// condizione per comunicare al therad updater di fare l'update
 	
 
 } server_context_t;

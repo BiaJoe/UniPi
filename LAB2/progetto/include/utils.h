@@ -79,6 +79,7 @@ char* get_name_of_rescuer_requested(rescuer_request_t *rescuer_request);
 
 #define ABS(x) ((x) < 0 ? -(x) : (x))
 #define MANHATTAN(x1,y1,x2,y2) (ABS((x1) - (x2)) + ABS((y1) - (y2)))
+#define MAX(a,b) ((a) > (b) ? (a) : (b))
 
 
 
