@@ -16,21 +16,21 @@ void parse_env(server_context_t *ctx){
 	// estraggo la PRIMA riga del file
 	my_getline(&line, &len, env_conf);
 	if(sscanf(line, "queue=%" STR(EMERGENCY_QUEUE_NAME_LENGTH) "s", queue_name) != 1)
-		log_fatal_error("Errore di sintassi nella 1a riga del file di configurazione " ENV_CONF, FATAL_ERROR_PARSING);
+		log_fatal_error_temporaneo("Errore di sintassi nella 1a riga del file di configurazione " ENV_CONF, FATAL_ERROR_PARSING);
 
 	// estraggo la SECONDA riga del file
 	my_getline(&line, &len, env_conf);
 	if(sscanf(line, "height=%d", height) != 1)
-		log_fatal_error("Errore di sintassi nella 2a riga del file di configurazione " ENV_CONF, FATAL_ERROR_PARSING);
+		log_fatal_error_temporaneo("Errore di sintassi nella 2a riga del file di configurazione " ENV_CONF, FATAL_ERROR_PARSING);
 
 	// estraggo la TERZA riga del file
 	my_getline(&line, &len, env_conf);
 	if(sscanf(line, "width=%d", width) != 1)
-		log_fatal_error("Errore di sintassi nella 3a riga del file di configurazione " ENV_CONF, FATAL_ERROR_PARSING);
+		log_fatal_error_temporaneo("Errore di sintassi nella 3a riga del file di configurazione " ENV_CONF, FATAL_ERROR_PARSING);
 
 	// Controllo che i valori siano validi
 	if(environment_values_are_illegal(queue_name, height, width))
-		log_fatal_error("Valori illegali nel file di configurazione " ENV_CONF, FATAL_ERROR_PARSING);
+		log_fatal_error_temporaneo("Valori illegali nel file di configurazione " ENV_CONF, FATAL_ERROR_PARSING);
 
 	ctx -> height = height;
 	ctx -> width  = width;
@@ -44,15 +44,15 @@ void parse_env(server_context_t *ctx){
 void my_getline(char **line, size_t *len, FILE *stream){
 	// Leggo la riga del file
 	if(getline(line, len, stream) == -1)
-		log_fatal_error("Errore di lettura nel file di configurazione " ENV_CONF, FATAL_ERROR_PARSING);
+		log_fatal_error_temporaneo("Errore di lettura nel file di configurazione " ENV_CONF, FATAL_ERROR_PARSING);
 	
 	// Controllo che il numero massimo di linee non venga superato
 	if(strlen(*line) > MAX_LINE_LENGTH)
-		log_fatal_error("Riga troppo lunga nel file di configurazione " ENV_CONF, FATAL_ERROR_PARSING);
+		log_fatal_error_temporaneo("Riga troppo lunga nel file di configurazione " ENV_CONF, FATAL_ERROR_PARSING);
 
 	// Controllo che la riga non sia vuota
 	if((*line)[0] == '\n')
-		log_fatal_error("Riga vuota non ignorabile nel file di configurazione " ENV_CONF, FATAL_ERROR_PARSING);
+		log_fatal_error_temporaneo("Riga vuota non ignorabile nel file di configurazione " ENV_CONF, FATAL_ERROR_PARSING);
 }
 
 int environment_values_are_illegal(char *queue, int h, int w){

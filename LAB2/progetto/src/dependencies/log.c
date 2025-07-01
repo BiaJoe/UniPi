@@ -66,33 +66,52 @@ void send_log_message(char message[]) {
 }
 
 // funzione chiamata dai processi client e server per loggare un evento
-void log_event(int id, log_event_type_t type, char *format, ...) { 	// per avere un nuymero variabile di argomenti. Ho letto come farlo su The C programming language di B. W. Kernighan e D. M. Ritchie
-	if(!is_log_event_type_to_log(type)) 															// se l'evento non è da loggare non si logga 
-		return;	
-	// formatto il messaggio da inviare					
-	char message[LOG_EVENT_MESSAGE_LENGTH];														// contiene il messaggio formattato con le variabili 
-	va_list ap;																												// punta agli argomenti variabili unnamed
-	va_start(ap, format);																							// punta al primo argomento variabile
-	vsnprintf(message, sizeof(message), format, ap);									// scrive il messaggio formattato nella stringa
-	va_end(ap);																												// cleanup
+// Ho letto come avere un nuymero variabile di argomenti su The C programming language di B. W. Kernighan e D. M. Ritchie
 
+void log_event(int id, log_event_type_t type, char *format, ...) { 	
+	if(!is_log_event_type_to_log(type)) 							// se l'evento non è da loggare non si logga 
+		return;	
+	
+	char message[LOG_EVENT_MESSAGE_LENGTH];						// contiene il messaggio formattato con le variabili 
+	va_list ap;																				// punta agli argomenti variabili unnamed
+	va_start(ap, format);															// punta al primo argomento variabile
+	vsnprintf(message, sizeof(message), format, ap);	// scrive il messaggio formattato nella stringa
+	va_end(ap);																				// cleanup
+
+	char id_string[MAX_LOG_EVENT_ID_STRING_LENGTH];		// se l'id è un caso speciale allora lo converto, altrimenti lo uso direttamente
+	switch (id) {
+		case AUTOMATIC_LOG_ID: 			snprintf(id_string, sizeof(id_string), "%d", get_log_event_type_counter(type)); break;
+		case NON_APPLICABLE_LOG_ID:	snprintf(id_string, sizeof(id_string), "%s", NON_APPLICABLE_LOG_ID_STRING); break; 	
+		default:										snprintf(id_string, sizeof(id_string), "%d", id);
+	}
+		
 	char buffer[MAX_LOG_EVENT_LENGTH];				
 	snprintf(			
-		buffer, 																												// stringa che invierò a logger (message queue)
-		MAX_LOG_EVENT_LENGTH, 																					// lunghezza massima fino a cui scrivere
-		LOG_EVENT_STRING_SYNTAX,																				// formato da dare alla stringa
-		get_time(),																											// timestamp		
-		get_log_event_type_code(type),																	// codice (per rendere univoco l'ID)
-		(id == NO_ID) ? get_log_event_type_counter(type) : id, 					// id dell'evento, se è NO_ID allora uso il contatore del tipo di evento
-		get_log_event_type_string(type), 																// nome dell'evento
-		message																													// messaggio da loggare				
+		buffer, 													// stringa che invierò a logger (message queue)
+		MAX_LOG_EVENT_LENGTH, 						// lunghezza massima fino a cui scrivere
+		LOG_EVENT_STRING_SYNTAX,					// formato da dare alla stringa
+		get_time(),												// timestamp		
+		id_string, 												// id dell'evento già elaborato sopra
+		get_log_event_type_string(type), 	// nome dell'evento
+		message														// messaggio da loggare				
 	);
 
 	send_log_message(buffer);
 	increment_log_event_type_counter(type);
 
-	if(is_log_event_type_terminating(type)) 													// se l'evento fa terminare il programma si invia anche il messaggio di stop logging per far terminare il logger
+	if(is_log_event_type_terminating(type)) // se l'evento fa terminare il programma si invia anche il messaggio di stop logging per far terminare il logger
 		send_log_message(STOP_LOGGING_MESSAGE);
+}
+
+void log_fatal_error(char *format, ...){
+	char message[LOG_EVENT_MESSAGE_LENGTH];						// contiene il messaggio formattato con le variabili 
+	va_list ap;																				// punta agli argomenti variabili unnamed
+	va_start(ap, format);															// punta al primo argomento variabile
+	vsnprintf(message, sizeof(message), format, ap);	// scrive il messaggio formattato nella stringa
+	va_end(ap);
+	log_event(NON_APPLICABLE_LOG_ID, FATAL_ERROR, message);
+	perror(message);
+	exit(EXIT_FAILURE);
 }
 
 
@@ -143,14 +162,16 @@ long get_time() {
 	return (long) time(NULL);
 } 
 
+
+
 // funzione per loggare un errore fatale e far terminare il programma
-void log_fatal_error(char *message, log_event_type_t event) {
-	// NO_ID perchè un errore fatale può accadere una sola volta
+void log_fatal_error_temporaneo(char *message, log_event_type_t event) {
+	// AUTOMATIC_LOG_ID perchè un errore fatale può accadere una sola volta
 	// non si esce nè si fa log_close perchè ci pensa la funzione log_event
 	// la funzione non fa molto ma è qui per essere espansa eventualmente in futuro
 	// e per permettere a chi leggere il codice di capire cosa sta succedendo
 	// non genera errori in caso di errore non fatale loggato perchè è solo un wrap di log_event
-	log_event(NO_ID, event, message); 
+	log_event(AUTOMATIC_LOG_ID, event, message); 
 
 	// solo se l'evento è sicuramente fatale per l'applicazione 
 	// allora si termina il processo che ha loggato l'evento

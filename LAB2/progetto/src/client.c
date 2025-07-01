@@ -46,7 +46,7 @@ int main(int argc, char* argv[]){
 	// spetta al server controllare la SEMANTICA (se i valori x,y,timestamo sono nei limiti)
 	// se non lo sono l'emergenza viene ignorata nel server
 
-	log_event(NO_ID, MESSAGE_QUEUE_CLIENT, "il lavoro del client è finito. Il processo si chiude");
+	log_event(AUTOMATIC_LOG_ID, MESSAGE_QUEUE_CLIENT, "il lavoro del client è finito. Il processo si chiude");
 
 	return 0;
 }
@@ -55,7 +55,7 @@ int main(int argc, char* argv[]){
 void handle_stop_mode_client(void){
 	char *buffer = STOP_MESSAGE_FROM_CLIENT;
 	check_error_mq_send(mq_send(mq, buffer, strlen(buffer) + 1, 0));
-	log_event(NO_ID, MESSAGE_QUEUE_CLIENT, "inviato messaggio di stop dal client");
+	log_event(AUTOMATIC_LOG_ID, MESSAGE_QUEUE_CLIENT, "inviato messaggio di stop dal client");
 }
 
 // prende nome, coordinate e timestamp in forma di stringhe, fa qualche controllo e li spedisce
@@ -90,20 +90,20 @@ int send_emergency_request_message(char *name, char *x_string, char *y_string, c
 	// il client garantisce la correttezza sintattica della richiesta
 	// al server spetta controllare la correttezza semantica e processare la richiesta
 	check_error_mq_send(mq_send(mq, buffer, strlen(buffer) + 1, 0));
-	log_event(NO_ID, MESSAGE_QUEUE_CLIENT, "inviata emergenza al server");
+	log_event(AUTOMATIC_LOG_ID, MESSAGE_QUEUE_CLIENT, "inviata emergenza al server");
 
 	return 1;
 }
 
 // gestisce la singola emergenza passata da terminale
 void handle_normal_mode_input(char* args[]){
-	log_event(NO_ID, MESSAGE_QUEUE_CLIENT, "avvio della modalità di inserimento diretta");
+	log_event(AUTOMATIC_LOG_ID, MESSAGE_QUEUE_CLIENT, "avvio della modalità di inserimento diretta");
 	send_emergency_request_message(args[1], args[2], args[3], args[4]);
 }
 
 // gestisce l'emergenza passata per file inviando un'emergenza alla volta riga per riga    
 void handle_file_mode_input(char* args[]){
-	log_event(NO_ID, MESSAGE_QUEUE_CLIENT, "avvio della modalità di inserimento da file");
+	log_event(AUTOMATIC_LOG_ID, MESSAGE_QUEUE_CLIENT, "avvio della modalità di inserimento da file");
 	FILE* emergency_requests_file = fopen(args[2], "r");
 	check_error_fopen(emergency_requests_file);
 
@@ -117,9 +117,9 @@ void handle_file_mode_input(char* args[]){
 		line_count++;
 
 		if(line_count > MAX_FILE_LINES)
-			log_fatal_error("linee massime superate nel client. Interruzione della lettura emergenze", FATAL_ERROR_PARSING);
+			log_fatal_error_temporaneo("linee massime superate nel client. Interruzione della lettura emergenze", FATAL_ERROR_PARSING);
 		if(emergency_count > MAX_EMERGENCY_REQUEST_COUNT)
-			log_fatal_error("numero di emergenze richieste massime superate nel client. Interruzione della lettura emergenze", FATAL_ERROR_PARSING);
+			log_fatal_error_temporaneo("numero di emergenze richieste massime superate nel client. Interruzione della lettura emergenze", FATAL_ERROR_PARSING);
 		
 		name 					= strtok(line, EMERGENCY_REQUEST_ARGUMENT_SEPARATOR);
 		x 						= strtok(NULL, EMERGENCY_REQUEST_ARGUMENT_SEPARATOR);

@@ -82,6 +82,16 @@ typedef enum {
 	RETURNING_TO_BASE
 } rescuer_status_t;
 
+typedef struct {	// struttura per la computazione del percorso di ogni rescuer
+	int x_target;
+	int y_target;
+	int dx;					// distanze tra partenza e arrivo in x e y
+	int dy;
+	int sx;					// direzioni: x e y aumentano o diminuiscono?
+	int sy;
+	int err;				// l'errore di Bresenham: permette di decidere se muoversi sulla x o sulla y
+} bresenham_trajectory_t;
+
 // Foreward declaration per rescuer_digital_twin
 // per evitare dipendenze circolari
 struct rescuer_digital_twin; 
@@ -103,13 +113,9 @@ struct rescuer_digital_twin {
 	rescuer_type_t *rescuer;
 	rescuer_status_t status;
 	int is_travelling;
-	int x_destination;
-	int y_destination;
+	bresenham_trajectory_t *trajectory;
 	emergency_t *emergency;
 };
-
-
-
 
 // STRUTTURE PER LE EMERGENZE
 
@@ -150,6 +156,7 @@ typedef struct {
 
 typedef struct {
 	emergency_type_t *type;
+	int id;
 	emergency_status_t status;
 	int x;
 	int y;
@@ -202,12 +209,13 @@ typedef struct {
 	int rescuer_types_count;
 	int emergency_types_count;
 	int emergency_requests_count;
+	int valid_emergency_request_count;
 	rescuer_type_t** rescuer_types;				// puntatori alle strutture rescuers
 	mtx_t rescuers_mutex;									// mutex per proteggere l'accesso ai rescuer types
   emergency_type_t** emergency_types;		// puntatori alle strutture emergency_types
 	emergency_queue_t* waiting_queue;			// coda per contenere le emergenze da processare
 	emergency_queue_t* working_queue;			// coda per contenere le emergenze assegnate a un thread
-	emergency_list_t* emergencies;				// lista per tenere traccia di tutte le emergenze
+	emergency_list_t* completed_emergencies;				// lista per tenere traccia di tutte le emergenze completate
 	mqd_t mq;															// message queue per ricevere le emergenze dai client	
 	time_t current_time;									// tempo corrente del server
 	int tick;															// tick del server, per sincronizzare i thread

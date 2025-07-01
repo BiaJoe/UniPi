@@ -10,6 +10,10 @@
 
 #define MAX_FILE_LINES 	1024
 #define MAX_LINE_LENGTH 1024
+#define MAX_RESCUER_CONF_LINES 128
+#define MAX_RESCUER_CONF_LINE_LENGTH 512
+#define MAX_EMERGENCY_CONF_LINES 256
+#define MAX_EMERGENCY_CONF_LINE_LENGTH 512
 
 #define MAX_RESCUER_NAME_LENGTH 128
 #define EMERGENCY_NAME_LENGTH 64
@@ -21,6 +25,7 @@
 
 // log
 #define MAX_LOG_EVENT_LENGTH 512			// lungezza massima totale di un evento di log
+#define MAX_LOG_EVENT_ID_STRING_LENGTH 16
 #define LOG_EVENT_NAME_LENGTH 64
 #define LOG_EVENT_CODE_LENGTH 5
 #define LOG_EVENT_MESSAGE_LENGTH 256
@@ -58,12 +63,12 @@
 
 // sintassi varie
 
-#define LOG_EVENT_STRING_SYNTAX "%-15ld %s %-5d %-35s %s\n"
-// #define LOG_EVENT_STRING_SYNTAX "[%ld] [%s%d] [%s] [%s]\n"
+#define LOG_EVENT_STRING_SYNTAX "%-15ld %-5s %-35s %s\n"
+// #define LOG_EVENT_STRING_SYNTAX "[%ld] [%d] [%s] [%s]\n"
 #define RESCUERS_SYNTAX "[%" STR(MAX_RESCUER_NAME_LENGTH) "[^]]][%d][%d][%d;%d]"
 #define RESCUER_REQUEST_SYNTAX "%" STR(MAX_RESCUER_NAME_LENGTH) "[^:]:%d,%d"
-#define EMERGENCY_TYPE_SYNTAX "[%" STR(EMERGENCY_NAME_LENGTH) "[^]]] [%d] %" STR(MAX_RESCUER_REQUESTS_LENGTH) "[^\n]"
+#define EMERGENCY_TYPE_SYNTAX "[%" STR(EMERGENCY_NAME_LENGTH) "[^]]] [%hd] %" STR(MAX_RESCUER_REQUESTS_LENGTH) "[^\n]"
 #define EMERGENCY_REQUEST_SYNTAX "%" STR(EMERGENCY_NAME_LENGTH) "[^ ] %d %d %ld"
 #define EMERGENCY_REQUEST_ARGUMENT_SEPARATOR " " // nel file si separano gli argomenti con lo spazio, questo impone che i nomi non contengano spazi tra l'altro
-
+#define RESCUER_REQUESTS_SEPARATOR ";"
 #endif

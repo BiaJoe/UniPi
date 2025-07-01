@@ -14,10 +14,11 @@
 #define check_opened_file_error_log(fp) \
 	do { \
 		if(!fp) \
-			log_fatal_error("errore apertura file:" #fp, FATAL_ERROR_FILE_OPENING); \
+			log_fatal_error("errore apertura file"); \
 	}while(0);
 
-
+// una macro per standardizzare il formato degli errori in linee di file
+#define LINE_FILE_ERROR_STRING "Errore a linea %d in file %s: "
 
 // log.c serve per inviare messaggi di log a logger.c, che li scriverà su file
 
@@ -31,7 +32,7 @@ int is_log_event_type_terminating(log_event_type_t event_type);
 int is_log_event_type_to_log(log_event_type_t event_type);
 
 void log_event(int id, log_event_type_t event_type, char *message, ...);
-void log_fatal_error(char *message, log_event_type_t event);
+void log_fatal_error_temporaneo(char *message, log_event_type_t event);
 
 void send_log_message(char message[]);
 

@@ -18,6 +18,7 @@ emergency_t *mallocate_emergency(server_context_t *ctx, char* name, int x, int y
 	rescuer_digital_twin_t **rescuer_twins = (rescuer_digital_twin_t **)calloc(rescuer_count + 1, sizeof(rescuer_digital_twin_t *));
 	check_error_memory_allocation(rescuer_twins);
 
+	e->id = ctx->valid_emergency_request_count;
 	e->type = type;
 	e->status = status;
 	e->x = x;
@@ -180,8 +181,10 @@ emergency_node_t* decapitate_emergency_list(emergency_list_t* list){
 
 void enqueue_emergency_node(emergency_queue_t* q, emergency_node_t *n){
 	if(!q || !n) return; 																		// se la coda o il nodo sono null non faccio nulla
-	if(q->is_empty) q->is_empty = NO;												// se la coda era vuota, ora non lo è più
-	int p = n->priority; 					
+	if(q->is_empty){
+		q->is_empty = NO;
+		cnd_signal(&q->not_empty); 														// segnalo che la coda non è più vuota, un worker thread può processare l'emergenza
+	}	int p = n->priority; 					
 	append_emergency_node(q->lists[p], n);									// appendo il nodo alla lista
 }
 

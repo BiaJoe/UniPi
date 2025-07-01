@@ -7,7 +7,7 @@
 #include "logger.h"
 
 #define LOG_IGNORING_ERROR(m) \
-	do { log_event(NO_ID, WRONG_EMERGENCY_REQUEST_IGNORED_CLIENT, "il Client ignora una emergency request: " #m); } while (0)
+	do { log_event(AUTOMATIC_LOG_ID, WRONG_EMERGENCY_REQUEST_IGNORED_CLIENT, "il Client ignora una emergency request: " #m); } while (0)
 
 #define PRINT_CLIENT_USAGE(argv0)  \
 	do { \

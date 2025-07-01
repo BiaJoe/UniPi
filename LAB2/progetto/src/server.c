@@ -13,9 +13,9 @@ int main(void){
 
 void server(void){
 	
-	log_event(NO_ID, LOGGING_STARTED, "Inizio logging");		// si inizia a loggare
+	log_event(AUTOMATIC_LOG_ID, LOGGING_STARTED, "Inizio logging");		// si inizia a loggare
 	server_context_t *ctx = get_server_context();						// estraggo le informazioni dai file conf, le metto tutte nel server context
-	log_event(NO_ID, SERVER, "tutte le variabili sono state ottenute dal server: adesso il sistema è a regime!");
+	log_event(AUTOMATIC_LOG_ID, SERVER, "tutte le variabili sono state ottenute dal server: adesso il sistema è a regime!");
 	
 	// faccio partire i thread 
 
@@ -45,32 +45,29 @@ int emergency_request_values_are_illegal(server_context_t *ctx, char* name, int 
 // le inserisce nella queue
 
 void trhead_receiver(server_context_t *ctx){
-	log_event(NO_ID, MESSAGE_QUEUE_SERVER, "inizio della ricezione delle emergenze!");
+	log_event(AUTOMATIC_LOG_ID, MESSAGE_QUEUE_SERVER, "inizio della ricezione delle emergenze!");
 	char buffer[MAX_EMERGENCY_QUEUE_MESSAGE_LENGTH];
 
 	while (1) {
 		check_error_mq_recieve(mq_receive(ctx->mq, buffer, MAX_EMERGENCY_QUEUE_MESSAGE_LENGTH, NULL));
 		if(IS_STOP_MESSAGE(buffer)) close_server(ctx);
+		ctx->emergency_requests_count++;
 		char *name; int x, y; time_t time;
 		if(!parse_emergency_request(buffer, name, &x, &y, &time) || emergency_request_values_are_illegal(ctx, name, x, y, time)){ 
-			LOG_IGNORE_EMERGENCY_REQUEST("emergenza rifiutata perchè conteneva valori illegali");
+			log_event(ctx->emergency_requests_count, WRONG_EMERGENCY_REQUEST_IGNORED_SERVER, "emergenza %s (%d, %d) %ld rifiutata perchè conteneva valori illegali", name, x, y, time);
 			continue;
 		}
+		ctx->valid_emergency_request_count++;
 		
-		emergency_queue_t *q = get_waiting_emergency_queue_from_context(ctx);
+		emergency_queue_t *q = ctx->waiting_queue;
 		emergency_t *e = mallocate_emergency(ctx, name, x, y, time);
 		emergency_node_t *n = mallocate_emergency_node(e); 	
 
 		lock_queue(q);
 		enqueue_emergency_node(q, n);
-		cnd_signal(&q->not_empty); 												// segnalo che la coda non è più vuota, un worker thread può processare l'emergenza
-		unlock_queue(q);
+		unlock_queue(q);										
 
-		lock_list(ctx->emergencies); 												
-		append_emergency_node(ctx->emergencies, n); 			// aggiungo l'emergenza alla lista di tutte le emergenze emergenze
-		unlock_list(ctx->emergencies); 											
-
-		log_event(NO_ID, EMERGENCY_REQUEST_RECEIVED, "emergenza ricevuta e messa in attesa di essere processata!");
+		log_event(AUTOMATIC_LOG_ID, EMERGENCY_REQUEST_RECEIVED, "emergenza %s (%d, %d) %ld ricevuta e messa in attesa di essere processata!", name, x, y, time);
 	}
 }
 
@@ -112,7 +109,7 @@ void promote_waiting_emergencies_if_needed_blocking(server_context_t *ctx){
 		// promuovo le emergenze da min priority a medium priority se sono in coda da troppo tempo
 		while(m != NULL){																									
 			if(promote_to_medium_priority_if_needed(q, n)) {				
-				log_event(NO_ID, EMERGENCY_STATUS, "emergenza promossa da priorità minima alla priorità superiore perchè in attesa da troppo tempo");
+				log_event(AUTOMATIC_LOG_ID, EMERGENCY_STATUS, "emergenza promossa da priorità minima alla priorità superiore perchè in attesa da troppo tempo");
 				n = m;
 				if(m) m = m->next; 	// se non siamo all'ultimo nodo (se ci siamo alla prossima guardia del while si esce)
 				continue; 
@@ -134,7 +131,7 @@ void timeout_waitintg_emergencies_if_needed_blocking(server_context_t *ctx){
 			emergency_node_t *n = q->lists[i]->head;
 			while(n != NULL){
 				if(timeout_waiting_emergency_if_needed(q, n)) 
-					log_event(NO_ID, EMERGENCY_STATUS, "emergenza messa in timeout perchè ha aspettato troppo tempo");
+					log_event(AUTOMATIC_LOG_ID, EMERGENCY_STATUS, "emergenza messa in timeout perchè ha aspettato troppo tempo");
 				n = n->next;
 			}
 		}
@@ -151,7 +148,7 @@ void timeout_assigned_emergencies_if_needed_blocking(server_context_t *ctx){
 			while(n != NULL){
 				lock_node(n);
 				if(timeout_working_emergency_if_needed(w, n)) 
-					log_event(NO_ID, EMERGENCY_STATUS, "emergenza messa in timeout perchè non ci sono abbasrtanza rescuers disponibili per arrivare in tempo");
+					log_event(AUTOMATIC_LOG_ID, EMERGENCY_STATUS, "emergenza messa in timeout perchè non ci sono abbasrtanza rescuers disponibili per arrivare in tempo");
 				unlock_node(n);
 					n = n->next;
 			}
@@ -193,15 +190,15 @@ void thread_updater(void *arg){
 		while(!server_is_ticking(ctx)) wait_for_a_tick(ctx); 										// attendo che il server ticki				
 		untick(ctx); 																														// il server ha tickato, lo sblocco		
 		unlock_server_clock(ctx); 																				
-		log_event(NO_ID, SERVER, "inizio aggiornamento del server...");
+		log_event(AUTOMATIC_LOG_ID, SERVER, "inizio aggiornamento del server...");
 		
 		update_rescuers_positions_on_the_map_blocking(ctx); 										// aggiorno le posizioni dei rescuers sulla mappa
 		promote_waiting_emergencies_if_needed_blocking(ctx); 					
 		timeout_waitintg_emergencies_if_needed_blocking(ctx);
 		// timeout_assigned_emergencies_if_needed_blocking(ctx);								// ci pensano gli workers
-		reallocate_rescuers_to_assigned_emergencies_if_needed_blocking(ctx); 	// metto in pausa emergenze a bassa priorità per fare spazio per quelle più importanti
-		
-		log_event(NO_ID, SERVER, "lo stato del server è stato aggiornato con successo!");
+		reallocate_rescuers_to_assigned_emergencies_if_needed_blocking(ctx); 		// metto in pausa emergenze a bassa priorità per fare spazio per quelle più importanti
+
+		log_event(AUTOMATIC_LOG_ID, SERVER, "lo stato del server è stato aggiornato con successo!");
 	}
 }
 
@@ -281,7 +278,7 @@ time_t get_time_before_timeout(emergency_node_t *n){
 
 void timeout_emergency_logging(emergency_t *e){
 	if(e->status == TIMEOUT) return; 								// se l'emergenza è già in timeout non faccio nulla
-	log_event(NO_ID, EMERGENCY_STATUS, "emergenza messa in timeout perchè i rescuers non hanno tempo di arrivare");
+	log_event(AUTOMATIC_LOG_ID, EMERGENCY_STATUS, "emergenza messa in timeout perchè i rescuers non hanno tempo di arrivare");
 	e->status = TIMEOUT; 														// metto l'emergenza in timeout
 }
 
@@ -301,7 +298,7 @@ void thread_worker(void *arg){
 			wait_until_an_emergency_occurs(waiting_queue); 
 		lock_queue(working_queue); 									
 		n = assign_hottest_node(waiting_queue, working_queue); 														// metto il nodo più caldo nella coda di lavoro	
-		log_event(NO_ID, EMERGENCY_REQUEST_PROCESSED, "emergenza assegnata a un thread worker, inizia la ricerca per dei rescuer");
+		log_event(AUTOMATIC_LOG_ID, EMERGENCY_REQUEST_PROCESSED, "emergenza assegnata a un thread worker, inizia la ricerca per dei rescuer");
 		unlock_queue(working_queue); 	
 		unlock_queue(waiting_queue); 	
 
@@ -325,29 +322,40 @@ void thread_worker(void *arg){
 
 
 
+int compute_step_from_A_to_B(int xA, int yA, int xB, int yB, int cells_per_step, int *x_step, int *y_step){
+	float dx = (float)ABS(xA - xB);
+	float dy = (float)ABS(yA - yB);
+	float m, float_x_step, float_y_step;
 
+	if(dx == 0){
+		x_step = 0;
+		y_step = cells_per_step;
+	}
+}
 
 
 int update_rescuer_digital_twin_position(rescuer_digital_twin_t *t){
 	if(t->status == IDLE || t->status == ON_SCENE) // se non deve muoversi non faccio nulla
 		return NO; 																	// la posizione non va aggiornata perch§e il rescuer non deve muoversi
-	
-	int xA, xB, yA, yB, dx, dy, d, cpt, m, vx, vy;
+	int cells_to_walk_on_the_X_axis;
+	int cells_to_walk_on_the_Y_axis;
+	int we_have_arrived = compute_step_from_A_to_B(
+		t->x,
+		t->y,
+		t->x_destination,
+		t->y_destination,
+		t->rescuer->speed,
+		&cells_to_walk_on_the_X_axis,
+		&cells_to_walk_on_the_Y_axis
+	);
 
-	xA = t->x;													// coordinate attuali
+	xA = ;							// coordinate attuali
 	yA = t->y;
-	xB = t->x_destination;							// coordinate obiettivo
+	xB = t->x_destination;	// coordinate obiettivo
 	yB = t->y_destination;
-	dx = ABS(xA - xB);									// distanza asse X (delta x)
-	dy = ABS(yA - yB);									// distanza asse Y (delta y)
-	d  = dx + dy;												// uso la formula di Manhattan in due parti perchè mi servono anche i valori intermedi
-	
-	/*
-	come trovare x e y in funzione di c e m, cioè il numero di celle che voglio percorrere e il coefficiente angolare tra i due punti 
-	y = mx
-	x + y = c
-	=> x * (1 + m) = c  =>  x = c / (1 + m)	 =>  y = c - x					
-	*/
+	dx = (float) ABS(xA - xB);			// distanza asse X (delta x)
+	dy = (float) ABS(yA - yB);			// distanza asse Y (delta y)
+	d  = (int)(dx + dy);						// uso la formula di Manhattan in due parti perchè mi servono anche i valori intermedi
 	
 	cpt = t->rescuer->speed; 							// cells per tick
 	m   = (dx != 0) ? dy / dx : 0;				// coefficiente angolare della retta da percorrere, se la retta è verticale si applica l'eccezione
@@ -420,8 +428,8 @@ void send_rescuer_digital_twin_to_scene(rescuer_digital_twin_t *t, emergency_t *
 
 
 void close_server(server_context_t *ctx){
-	log_event(NO_ID, SERVER, "lavoro finito. Il server si avvia alla chiusura.");
-	log_event(NO_ID, LOGGING_ENDED, "Fine del logging");
+	log_event(AUTOMATIC_LOG_ID, SERVER, "lavoro finito. Il server si avvia alla chiusura.");
+	log_event(AUTOMATIC_LOG_ID, LOGGING_ENDED, "Fine del logging");
 	cleanup_server_context(ctx);
 	exit(EXIT_SUCCESS);
 }
@@ -438,15 +446,16 @@ server_context_t *get_server_context(){
 	emergency_type_t** emergency_types = NULL;
 
 	// Parsing dei file di configurazione
-	log_event(NO_ID, PARSING_STARTED, "Inizio parsing dei file di configurazione");
+	log_event(AUTOMATIC_LOG_ID, PARSING_STARTED, "Inizio parsing dei file di configurazione");
 	parse_env(ctx);
 	parse_rescuers(ctx);
 	parse_emergencies(ctx);
-	log_event(NO_ID, PARSING_ENDED, "Il parsing è terminato con successo!");
+	log_event(AUTOMATIC_LOG_ID, PARSING_ENDED, "Il parsing è terminato con successo!");
 
 	// popolo ctx
 	ctx -> current_time = current_time; 
 	ctx -> emergency_requests_count = 0; 	// all'inizio non ci sono state ancora richieste
+	ctx -> valid_emergency_request_count = 0;
 	ctx -> tick = NO;											
 	ctx -> tick_count_since_start = 0; 		// il server non ha ancora fatto nessun tick
 	ctx -> waiting_queue = mallocate_emergency_queue();

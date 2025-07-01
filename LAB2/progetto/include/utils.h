@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <threads.h>
+#include <ctype.h>
 
 #include "structs.h"
 
@@ -68,6 +69,7 @@
 
 int my_atoi(char a[]);
 void write_line(FILE *f, char *s);
+int is_line_empty(char *line);
 
 // manipolazione strutture
 rescuer_type_t * get_rescuer_type_by_name(char *name, rescuer_type_t **rescuer_types);
