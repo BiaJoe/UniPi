@@ -14,6 +14,8 @@
 #define MAX_RESCUER_CONF_LINE_LENGTH 512
 #define MAX_EMERGENCY_CONF_LINES 256
 #define MAX_EMERGENCY_CONF_LINE_LENGTH 512
+#define MAX_ENV_CONF_LINES 12
+#define MAX_ENV_CONF_LINE_LENGTH 128
 
 #define MAX_RESCUER_NAME_LENGTH 128
 #define EMERGENCY_NAME_LENGTH 64
@@ -71,4 +73,15 @@
 #define EMERGENCY_REQUEST_SYNTAX "%" STR(EMERGENCY_NAME_LENGTH) "[^ ] %d %d %ld"
 #define EMERGENCY_REQUEST_ARGUMENT_SEPARATOR " " // nel file si separano gli argomenti con lo spazio, questo impone che i nomi non contengano spazi tra l'altro
 #define RESCUER_REQUESTS_SEPARATOR ";"
+
+#define ENV_CONF_VALID_LINES_COUNT 3
+#define ENV_CONF_QUEUE_SYNTAX 	"queue=%" STR(EMERGENCY_QUEUE_NAME_LENGTH) "s"
+#define ENV_CONF_HEIGHT_SYNTAX 	"height=%d"
+#define ENV_CONF_WIDTH_SYNTAX 	"width=%d"
+#define ENV_CONF_QUEUE_TURN			0
+#define ENV_CONF_HEIGHT_TURN		1
+#define ENV_CONF_WIDTH_TURN			2
+
+
+
 #endif
