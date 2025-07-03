@@ -4,32 +4,34 @@ static int rescuer_digital_twins_total_count = 0;								// conto dei gemelli di
 
 void parse_rescuers(server_context_t *ctx){
 	parsing_state_t *ps = mallocate_parsing_state(RESCUERS_CONF);
-	rescuer_type_t **rescuer_types = callocate_rescuer_types();		// alloco i rescuer types tutti a NULL
-	char name[MAX_RESCUER_NAME_LENGTH]; 													// variabili temporanee per i campi del rescuer
-	int amount, speed, x, y;						
+	rescuer_type_t **rescuer_types = callocate_rescuer_types();		
+	rescuer_type_fields_t fields = {0};		
+
+	fields.max_x_coordinate = ctx->width;		// inizializzo le massime coordinate per evitare di scomodare
+	fields.max_y_coordinate = ctx->height;	// il campo ctx durante il parsing. 
 	
-	while (go_to_next_line(ps)) {		// Leggo ogni riga del file e processo le informazioni contenute
+	while (go_to_next_line(ps)) {						// Leggo ogni riga del file e processo le informazioni contenute
 		log_and_fail_if_file_line_cant_be_processed(ps, MAX_RESCUER_CONF_LINES, MAX_RESCUER_TYPES_COUNT, MAX_RESCUER_CONF_LINE_LENGTH);
 		if(check_and_log_if_line_is_empty(ps)) 
 			continue;
-		check_and_extract_rescuer_type_fields_from_line(ps, ctx->width, ctx->height, name, &amount, &speed, &x, &y);
-		if(check_and_log_if_rescuer_type_already_parsed(ps, rescuer_types, name)) 
+		if(!check_and_extract_rescuer_type_fields_from_line(ps, rescuer_types, &fields))
 			continue;
-		rescuer_types[ps->parsed_so_far] = mallocate_and_populate_rescuer_type(name, amount, speed, x, y); 							// i campi sono validi e il nome non è presente, alloco il rescuer 
-		log_event(ps->line_number, RESCUER_TYPE_PARSED, "Rescuer %s con base in (%d, %d) e %d gemelli digitali aggiunto!", name, x, y, amount);
-		ps->parsed_so_far++;
+		rescuer_types[ps->parsed_so_far++] = mallocate_and_populate_rescuer_type(&fields); 							// i campi sono validi e il nome non è presente, alloco il rescuer 
+		log_event(ps->line_number, RESCUER_TYPE_PARSED, "Rescuer %s con base in (%d, %d) e %d gemelli digitali aggiunto!", fields.name, fields.x, fields.y, fields.amount);
 	}
 	ctx -> rescuer_types_count = ps->parsed_so_far;
 	ctx -> rescuer_types = rescuer_types;
 	free_parsing_state(ps);
 }
 
-void check_and_extract_rescuer_type_fields_from_line(parsing_state_t *ps, int maxx, int maxy, char *name, int *amount, int *speed, int *x, int *y){
-	if(
-		sscanf(ps->line, RESCUERS_SYNTAX, name, amount, speed, x, y) != 5 ||																									
-		rescuer_type_values_are_illegal(name, *amount, *speed, *x, *y, maxx, maxy)
-	)																													
-		log_fatal_error(LINE_FILE_ERROR_STRING "%s", ps->line_number, ps->filename, ps->line);
+int check_and_extract_rescuer_type_fields_from_line(parsing_state_t *ps, rescuer_type_t **rescuer_types, rescuer_type_fields_t *fields){
+	if (sscanf(ps->line, RESCUERS_SYNTAX, fields->name, &(fields->amount), &(fields->speed), &(fields->x), &(fields->y)) != 5)																													
+		log_fatal_error(LINE_FILE_ERROR_STRING "sintassi. %s", ps->line_number, ps->filename, ps->line);
+	if (rescuer_type_values_are_illegal(fields))
+		log_fatal_error(LINE_FILE_ERROR_STRING "valori illegali. %s", ps->line_number, ps->filename, ps->line);
+	if(check_and_log_if_rescuer_type_already_parsed(ps, rescuer_types, fields->name))
+		return NO;
+	return YES;
 }
 
 int check_and_log_if_rescuer_type_already_parsed(parsing_state_t *ps, rescuer_type_t **types, char* name){
@@ -40,17 +42,17 @@ int check_and_log_if_rescuer_type_already_parsed(parsing_state_t *ps, rescuer_ty
 	return NO;
 }
 
-int rescuer_type_values_are_illegal(char *name, int amount, int speed, int x, int y, int maxx, int maxy){
+int rescuer_type_values_are_illegal(rescuer_type_fields_t *fields){
 	return (
-		strlen(name) <= 0 || 
-		amount < MIN_RESCUER_AMOUNT || 
-		amount > MAX_RESCUER_AMOUNT || 
-		speed < MIN_RESCUER_SPEED || 
-		speed > MAX_RESCUER_SPEED || 
-		x < MIN_X_COORDINATE_ABSOLUTE_VALUE || 
-		x > maxx || 
-		y < MIN_Y_COORDINATE_ABSOLUTE_VALUE || 
-		y > maxy
+		strlen(fields->name) <= 0 || 
+		fields->amount < MIN_RESCUER_AMOUNT || 
+		fields->amount > MAX_RESCUER_AMOUNT || 
+		fields->speed < MIN_RESCUER_SPEED || 
+		fields->speed > MAX_RESCUER_SPEED || 
+		fields->x < MIN_X_COORDINATE_ABSOLUTE_VALUE || 
+		fields->x > fields->max_x_coordinate || 
+		fields->y < MIN_Y_COORDINATE_ABSOLUTE_VALUE || 
+		fields->y > fields->max_y_coordinate
 	);
 }
 
@@ -60,16 +62,16 @@ rescuer_type_t ** callocate_rescuer_types(){
 	return rescuer_types;
 }
 
-rescuer_type_t *mallocate_and_populate_rescuer_type(char *name, int amount, int speed, int x, int y){
+rescuer_type_t *mallocate_and_populate_rescuer_type(rescuer_type_fields_t *fields){
 	rescuer_type_t *r = (rescuer_type_t *)malloc(sizeof(rescuer_type_t));
 	check_error_memory_allocation(r);
-	r->rescuer_type_name = (char *)malloc((strlen(name) + 1) * sizeof(char));	// alloco il nome del rescuer_type_t e lo copio
+	r->rescuer_type_name = (char *)malloc((strlen(fields->name) + 1) * sizeof(char));	// alloco il nome del rescuer_type_t e lo copio
 	check_error_memory_allocation(r->rescuer_type_name);
-	strcpy(r->rescuer_type_name, name);																				// popolo i campi del rescuer type
-	r->amount = amount;									
-	r->speed = speed;										
-	r->x = x;											
-	r->y = y;
+	strcpy(r->rescuer_type_name, fields->name);																				// popolo i campi del rescuer type
+	r->amount = fields->amount;									
+	r->speed = fields->speed;										
+	r->x = fields->x;											
+	r->y = fields->y;
 	r->twins = callocate_and_populate_rescuer_digital_twins(r);
 	return r;
 }
