@@ -13,11 +13,12 @@ int main(void){
 
 void server(void){
 	
-	log_event(AUTOMATIC_LOG_ID, LOGGING_STARTED, "Inizio logging");		// si inizia a loggare
-	server_context_t *ctx = get_server_context();						// estraggo le informazioni dai file conf, le metto tutte nel server context
-	log_event(AUTOMATIC_LOG_ID, SERVER, "tutte le variabili sono state ottenute dal server: adesso il sistema è a regime!");
+	log_event(NON_APPLICABLE_LOG_ID, LOGGING_STARTED, "Inizio logging");		// si inizia a loggare
+	server_context_t *ctx = get_server_context();														// estraggo le informazioni dai file conf, le metto tutte nel server context
+	log_event(NON_APPLICABLE_LOG_ID, SERVER, "tutte le variabili sono state ottenute dal server: adesso il sistema è a regime!");
 	
 	// faccio partire i thread 
+	start_server(ctx);
 
 	close_server(ctx);
 }
@@ -321,73 +322,99 @@ void thread_worker(void *arg){
 }
 
 
+// funzione riciclabile per ogni entità che segue la linea di bresenham. 
+int compute_bresenham_step(int x, int y, bresenham_trajectory_t *trajectory, int cells_per_step, int *x_step, int *y_step){
+	if(!trajectory) return NO;
+	if(cells_per_step < 0) return YES;
 
-int compute_step_from_A_to_B(int xA, int yA, int xB, int yB, int cells_per_step, int *x_step, int *y_step){
-	float dx = (float)ABS(xA - xB);
-	float dy = (float)ABS(yA - yB);
-	float m, float_x_step, float_y_step;
-
-	if(dx == 0){
-		x_step = 0;
-		y_step = cells_per_step;
+	int xA = x;
+	int yA = y;
+	int xB = trajectory->x_target;
+	int yB = trajectory->y_target;
+	int dx = trajectory->dx;
+	int dy = trajectory->dy;
+	int sx = trajectory->sx;
+	int sy = trajectory->sy;
+	
+	for (int i = 0; i < cells_per_step; i++){			// faccio un passo alla volta percorrendo la linea di Bresenham 
+		if (xA == xB && yA == yB) 									// siamo arrivati
+			return YES;				
+		int e2 = 2 * trajectory->err;								// l'errore serve a dirci se siamo più lontani sulla x o sulla y 
+		if (e2 >= -dy) {														// se siamo più lontani sulla x facciamo un passo sulla x
+			trajectory->err -= dy;										// aggiorno l'errore 
+			xA += sx;																	// faccio un passo sull'asse x
+			(*x_step) += sx;													// aggiorno il numero di passi fatti sull'asse x
+		}
+		else if (e2 <= dx) {												// se invece siamo più lontani sulla y si fa la stessa cosa ma sulla y
+			trajectory->err += dx;
+			yA += sy;		
+			(*y_step) += sy;					
+		}
 	}
+
+	return (xA == xB && yA == yB);								// siamo arrivati?
 }
 
 
 int update_rescuer_digital_twin_position(rescuer_digital_twin_t *t){
-	if(t->status == IDLE || t->status == ON_SCENE) // se non deve muoversi non faccio nulla
-		return NO; 																	// la posizione non va aggiornata perch§e il rescuer non deve muoversi
+	if(!t || t->status == IDLE || t->status == ON_SCENE) // se non deve muoversi non faccio nulla
+		return NO; // la posizione non va aggiornata
+	
+	t->is_travelling = YES; // ci accede il gemello vede che sta viaggiando
+
+	int xA = t->x;
+	int yA = t->y;
 	int cells_to_walk_on_the_X_axis;
 	int cells_to_walk_on_the_Y_axis;
-	int we_have_arrived = compute_step_from_A_to_B(
+	int we_have_arrived = compute_bresenham_step(
 		t->x,
 		t->y,
-		t->x_destination,
-		t->y_destination,
+		t->trajectory,
 		t->rescuer->speed,
 		&cells_to_walk_on_the_X_axis,
 		&cells_to_walk_on_the_Y_axis
 	);
 
-	xA = ;							// coordinate attuali
-	yA = t->y;
-	xB = t->x_destination;	// coordinate obiettivo
-	yB = t->y_destination;
-	dx = (float) ABS(xA - xB);			// distanza asse X (delta x)
-	dy = (float) ABS(yA - yB);			// distanza asse Y (delta y)
-	d  = (int)(dx + dy);						// uso la formula di Manhattan in due parti perchè mi servono anche i valori intermedi
-	
-	cpt = t->rescuer->speed; 							// cells per tick
-	m   = (dx != 0) ? dy / dx : 0;				// coefficiente angolare della retta da percorrere, se la retta è verticale si applica l'eccezione
-	vx  = (dx != 0) ? cpt / (m + 1) : 0;	// celle da percorrere sulla x
-	vy  = cpt - vx;												// celle da percorrere sulla y
+	t->x += cells_to_walk_on_the_X_axis;
+	t->y += cells_to_walk_on_the_Y_axis;
 
-	if(d < cpt) {													// se mi basta meno di un tick sono già arrivato, aggiorno le coordinate
-		t->x = xB;  
-		t->y = yB;
-		t->is_travelling = NO; 							// non sto più viaggiando
-		if(t->status == EN_ROUTE_TO_SCENE) {										
-			t->status = ON_SCENE;
-			log_event(t->id, RESCUER_STATUS, "il rescuer %s [%d] è arrivato alla scena dell'emergenza (%d, %d) !", t->rescuer->rescuer_type_name, t->id, xB, yB);
-		}
-		if(t->status == RETURNING_TO_BASE){
-		 	t->status = IDLE;
-			log_event(t->id, RESCUER_STATUS, "il rescuer %s [%d] è tornato sano e salvo alla base (%d, %d) :)", t->rescuer->rescuer_type_name, t->id, xB, yB);
-		}		
-	} else {															// non sono ancora arrivato, faccio un passo nella direzione calcolata
-		t->x += vx;
-		t->y += vy; 
-		t-> is_travelling = YES;						// sta ancora viaggiando
-		log_event(t->id, RESCUER_TRAVELLING_STATUS, "il rescuer %s [%d] si è spostato da (%d, %d) a (%d, %d)", t->rescuer->rescuer_type_name, t->id, xA, yA, xB, yB);
+	if (!we_have_arrived){
+		log_event(t->id, RESCUER_TRAVELLING_STATUS, "il rescuer %s [%d] si è spostato da (%d, %d) a (%d, %d)", t->rescuer->rescuer_type_name, t->id, xA, yA, t->x, t->y);
+		return YES; // ho aggiornato la posizione
 	}
+	
+	t->is_travelling = NO; 			
+
+	if(t->status == EN_ROUTE_TO_SCENE) {										
+		t->status = ON_SCENE;
+		log_event(t->id, RESCUER_STATUS, "il rescuer %s [%d] è arrivato alla scena dell'emergenza (%d, %d) !!!!", t->rescuer->rescuer_type_name, t->id, t->x, t->x);
+	}
+
+	if(t->status == RETURNING_TO_BASE){
+		t->status = IDLE;
+		log_event(t->id, RESCUER_STATUS, "il rescuer %s [%d] è tornato sano e salvo alla base (%d, %d) :)", t->rescuer->rescuer_type_name, t->id, t->x, t->x);
+	}		
 
 	return YES; // ho aggiornato la posizione del gemello digitale
 }
 
-void change_rescuer_digital_twin_destination(rescuer_digital_twin_t *t, int x, int y){
-	if(t->x == x && t->y == y) return; // se non è cambiata la destinazione non faccio nulla
-	t->x_destination = x;
-	t->y_destination = y;
+// funzione isolata perchè riciclabile in altre occasioni. Ricalcola la traiettoria di un corpo in movimento in base alle coordinate attuali e quelle da raggiungere
+void change_bresenham_trajectory(bresenham_trajectory_t *t, int current_x, int current_y, int new_x, int new_y){
+	if(!t) return;
+	t->x_target = new_x;							// le coordinate da raggiungere cambiano
+	t->y_target = new_y;							// con loro si aggiorna il resto della traiettoria
+	t->dx = ABS(new_x - current_x);				
+	t->dy = ABS(new_y - current_y);
+	t->sx = (current_x < new_x) ? 1 : -1;
+	t->sy = (current_y < new_y) ? 1 : -1;
+	t->err = t->dx - t->dy;
+}
+
+
+void change_rescuer_digital_twin_destination(rescuer_digital_twin_t *t, int new_x, int new_y){
+	if(!t || t->x == new_x && t->y == new_y) return; 		// se non è cambiata la destinazione non faccio nulla
+	change_bresenham_trajectory(t->trajectory, t->x, t->y, new_x, new_y);
+	t->is_travelling = YES;
 }
 
 void send_rescuer_digital_twin_back_to_base(rescuer_digital_twin_t *t){

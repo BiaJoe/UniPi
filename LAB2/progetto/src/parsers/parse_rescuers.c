@@ -96,7 +96,8 @@ rescuer_digital_twin_t *mallocate_rescuer_digital_twin(rescuer_type_t* r){
 	t->status 				= IDLE;
 	t->is_travelling 	= NO;
 	t->emergency 			= NULL; 
-	t->trajectory			= mallocate_bresenham_trajectory(); 	// non inizializzato perchè nessun valore è sensato prima di aver dato una destinazione reale
+	t->trajectory			= (bresenham_trajectory_t *)malloc(sizeof(bresenham_trajectory_t)); 	// non inizializzato perchè nessun valore è sensato prima di aver dato una destinazione reale
+	check_error_memory_allocation(t->trajectory);
 	return t;
 }
 

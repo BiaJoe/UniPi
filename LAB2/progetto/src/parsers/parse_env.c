@@ -1,11 +1,5 @@
 #include "parsers.h"
 
-typedef struct {
-	char queue_name[EMERGENCY_QUEUE_NAME_LENGTH + 1];
-	int height;
-	int width;
-} enviroment_fields_t;
-
 void parse_env(server_context_t *ctx){
 	parsing_state_t *ps = mallocate_parsing_state(ENV_CONF);
 	enviroment_fields_t e = {0};

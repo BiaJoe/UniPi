@@ -7,16 +7,11 @@ emergency_t *mallocate_emergency(server_context_t *ctx, char* name, int x, int y
 	check_error_memory_allocation(e);
 	emergency_type_t *type = get_emergency_type_by_name(name, get_emergency_types_from_server_context(ctx));
 	emergency_status_t status = WAITING;
-	// calcolo il numero di rescuer totali
-	// per ogni rescuer request dell'emergency_type 
-	// ci sono required_count twins da aggiungere
 	int rescuer_count = 0;
-	for(int i = 0; i < type->rescuers_req_number; i++)
+	for(int i = 0; i < type->rescuers_req_number; i++)		// calcola il numero totale di rescuer che servono all'emergenza
 		rescuer_count += type->rescuers[i]->required_count;
-	// alloco l'array di twins tutti a null perchè ancora non li ho cercati tra i twin disponibili
-	// aggiungo 1 così è anche null-terminated
 	rescuer_digital_twin_t **rescuer_twins = (rescuer_digital_twin_t **)calloc(rescuer_count + 1, sizeof(rescuer_digital_twin_t *));
-	check_error_memory_allocation(rescuer_twins);
+	check_error_memory_allocation(rescuer_twins);					// alloca il numero necessario di rescuers (per ora tutti a NULL)
 
 	e->id = ctx->valid_emergency_request_count;
 	e->type = type;
@@ -40,7 +35,7 @@ void free_emergency(emergency_t* e){
 emergency_node_t* mallocate_emergency_node(emergency_t *e){
 	emergency_node_t* n = (emergency_node_t*)malloc(sizeof(emergency_node_t));
 	n -> list = NULL;
-	n -> priority = e->type->priority;	// prendo la priorità dall'emergency_type
+	n -> priority = e->type->priority;	// prendo la priorità dall'emergency_type 
 	n -> rescuers_are_arriving = NO;
 	n -> rescuers_have_arrived = NO;
 	n -> asks_for_rescuers_from_lower_priorities = NO;
@@ -80,12 +75,11 @@ void free_emergency_list(emergency_list_t *list){
 	free(list);
 }
 
-
 emergency_queue_t *mallocate_emergency_queue(){
 	emergency_queue_t *q = (emergency_queue_t*)malloc(sizeof(emergency_queue_t));
 	for(int i = MIN_EMERGENCY_PRIORITY; i <= MAX_EMERGENCY_PRIORITY; i++)
 		q->lists[i] = mallocate_emergency_list();
-	q->is_empty = YES; 																// inizialmente la coda è vuota
+	q->is_empty = YES; 																
 	check_error_cnd_init(cnd_init(&(q->not_empty)));	
 	check_error_mtx_init(mtx_init(&(q->mutex), mtx_plain));
 	return q;
@@ -103,49 +97,40 @@ void free_emergency_queue(emergency_queue_t *q){
 	free(q);
 }
 
-
+// inserisce un nodo in fondo alla lista
 void append_emergency_node(emergency_list_t* list, emergency_node_t* node){
-	if(!list || !node){											// se ho allocato un nodo da appendere in una lista insesistente
-		// if(node) free_emergency_node(node);		// e quindi non lo appendo finisco per perdere il riferimento a quel nodo per sempre
-		return;																// per cui devo liberarlo e dimenticarmene
+	if(!list || !node){										// se ho allocato un nodo da appendere in una lista insesistente
+		return;															// per cui devo liberarlo e dimenticarmene
 	}
-	if (list->node_amount == 0){					// se la lista è vuota (caso base)
+	if (list->node_amount == 0){					// se la lista è vuota 
 		list -> head = node;								// il nodo diventa sia capo che coda
-		list -> tail = node;
-		node -> list = list;
 		node -> prev = NULL;
-		node -> next = NULL;
 	} else {
 		list -> tail -> next = node; 				// il tail diventa il penultimo nodo che punta all'ultimo con next		
 		node -> prev = list->tail;					// l'ultimo nodo punta il penultimo con prev
-		node -> next = NULL; 								// il nodo è diventato la nuova coda
-		node -> list = list;								// la lista di appartenenza del nodo diventa list
-		list -> tail = node;								// l'ultimo nodo (tail) diventa ufficialmente node
 	}			
-	list->node_amount += 1;								// il numero di nodi aumenta di 1 !!!
+	node -> next = NULL; 									// il nodo non ha nodi dopo di lui
+	node -> list = list;									// la lista di appartenenza del nodo diventa list
+	list -> tail = node;									// l'ultimo nodo (tail) diventa ufficialmente node
+	list -> node_amount += 1;							// il numero di nodi aumenta di 1 !!!
 }
 
 void push_emergency_node(emergency_list_t* list, emergency_node_t *node){
-	if(!list || !node){											// se ho allocato un nodo da appendere in una lista insesistente
-		// if(node) free_emergency_node(node);		// e quindi non lo appendo finisco per perdere il riferimento a quel nodo per sempre
-		return;																// per cui devo liberarlo e dimenticarmene
+	if(!list || !node){										// se ho allocato un nodo da appendere in una lista insesistente
+		return;															// per cui devo liberarlo e dimenticarmene
 	}
-	if (list->node_amount == 0){					// se la lista è vuota (caso base)
-		list -> head = node;								// il nodo diventa sia capo che coda
+	if (list->node_amount == 0){					// se la lista è vuota il nodo diventa sia capo che coda				
 		list -> tail = node;
-		node -> list = list;
-		node -> prev = NULL;
 		node -> next = NULL;
 	} else {
 		list -> head -> prev = node;				// il nodo diventa il nuovo primo nodo
 		node -> next = list->head;					// il nuovo nodo punta al vecchio primo nodo
-		node -> prev = NULL;								// il nuovo nodo non ha un precedente perchè è la testa
-		node -> list = list;								// la lista di appartenenza del nodo diventa list
-		list -> head = node;								// il nuovo nodo diventa la nuova testa della lista
 	}			
+	list -> head = node;									// il nuovo nodo diventa la nuova testa della lista
+	node -> list = list;									// la lista di appartenenza del nodo diventa list
+	node -> prev = NULL;									// il nuovo nodo non ha un precedente perchè è la testa
 	list->node_amount += 1;								// il numero di nodi aumenta di 1 !!!
 }
-
 
 int is_the_first_node_of_the_list(emergency_node_t* node){
 	return (node->prev == NULL) ? YES : NO ;
@@ -184,7 +169,8 @@ void enqueue_emergency_node(emergency_queue_t* q, emergency_node_t *n){
 	if(q->is_empty){
 		q->is_empty = NO;
 		cnd_signal(&q->not_empty); 														// segnalo che la coda non è più vuota, un worker thread può processare l'emergenza
-	}	int p = n->priority; 					
+	}	
+	int p = n->priority; 					
 	append_emergency_node(q->lists[p], n);									// appendo il nodo alla lista
 }
 
