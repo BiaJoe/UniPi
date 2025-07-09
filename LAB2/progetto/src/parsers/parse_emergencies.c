@@ -153,18 +153,5 @@ rescuer_request_t *mallocate_and_populate_rescuer_request(char *name, int requir
 	return r;
 }
 
-void free_rescuer_requests(rescuer_request_t **rescuer_requests){
-	for(int i = 0; rescuer_requests[i] != NULL; i++)
-		free(rescuer_requests[i]);	// libero il puntatore al rescuer_request_t
-	free(rescuer_requests);
-}
 
-void free_emergency_types(emergency_type_t **emergency_types){
-	for(int i = 0; emergency_types[i] != NULL; i++){
-		free(emergency_types[i]->emergency_desc);							// libero il puntatore al nome 
-		free_rescuer_requests(emergency_types[i]->rescuers); 	// libero ogni rescuer_request_t
-		free(emergency_types[i]);															// libero il puntatore alla singola istanza emergency_type_t 
-	}
-	free(emergency_types);	// libero l'array di puntatori agli emergency_types
-}
 

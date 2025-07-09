@@ -6,6 +6,7 @@
 // necessaria perchè per ogni evento serve il suo nome
 // ed un codice univoco da associare ad un id numerico per non rischiare 
 // di avere ID duplicati nel file di log.
+// il codice non lo userò perchè non fa parte delle specifiche richieste, ma è un'opzione
 
 static log_event_info_t log_event_lookup_table[LOG_EVENT_TYPES_COUNT] = {
 	//	TIPO																				STRINGA																					CODICE (per l'ID)		CONTEGGIO		FA TERMINARE IL PROGRAMMA?		DA LOGGARE?
@@ -43,10 +44,14 @@ static log_event_info_t log_event_lookup_table[LOG_EVENT_TYPES_COUNT] = {
 			[PROGRAM_ENDED_SUCCESSFULLY]							= { "PROGRAM_ENDED_SUCCESSFULLY",									"pesu", 						0,					YES,  												YES				}
 	};
 
+// funzione che invia il messaggio da loggare al processo logger.c 
+// attraverso la message queue
+// se si vuol far terminare il logging è sufficiente loggare un evento "terminatore"
+// ad esempio PROGRAM_ENDED_SUCCESSFULLY fa terminare il programma
 void send_log_message(char message[]) {
 	// per non dover aprire e chiudere la coda di log ad OGNI chiamata
 	// la dichiarop statica nella funzione, cioè verrà ricordata anche tra chiamate
-	// dovrò aprirla quindi una sola volta (la prima quando if(mq == -1){...} è vero)
+	// dovrò aprirla quindi una sola volta (la prima, quando if(mq == -1){...} è vero)
 	static mqd_t mq = (mqd_t)-1;
 
 	// entra solo la prima volta
@@ -66,8 +71,8 @@ void send_log_message(char message[]) {
 }
 
 // funzione chiamata dai processi client e server per loggare un evento
-// Ho letto come avere un nuymero variabile di argomenti su The C programming language di B. W. Kernighan e D. M. Ritchie
-
+// Ho letto come avere un numero variabile di argomenti su :
+// The C programming language di B. W. Kernighan e D. M. Ritchie
 void log_event(int id, log_event_type_t type, char *format, ...) { 	
 	if(!is_log_event_type_to_log(type)) 							// se l'evento non è da loggare non si logga 
 		return;	

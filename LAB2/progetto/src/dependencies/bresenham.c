@@ -6,11 +6,13 @@ bresenham_trajectory_t *mallocate_bresenham_trajectory(){
 	return b;
 }
 
-
 // funzione riciclabile per ogni entità che segue la linea di bresenham. 
+// calcola un passo lungo la linea che percorre al massimo cells_per_step celle in totale
+// cammina una cella alla volta finchè o è arrivata o ha camminato esattamente cells_per_step celle
+// ritorna se siamo arrivati a destinazione o no
 int compute_bresenham_step(int x, int y, bresenham_trajectory_t *trajectory, int cells_per_step, int *x_step, int *y_step){
-	if(!trajectory) return NO;
-	if(cells_per_step < 0) return YES;
+	if(!trajectory) return NO;										// senza traiettoria non si fa nulla
+	if(cells_per_step < 0) return YES; 						
 
 	int xA = x;
 	int yA = y;

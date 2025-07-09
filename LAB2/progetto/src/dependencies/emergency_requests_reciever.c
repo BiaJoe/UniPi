@@ -5,6 +5,7 @@
 // thread function che riceve le emergenze
 // le scarta se sbagliate
 // le inserisce nella queue
+// sarà eseguita nel main thread del server
 int emergency_requests_reciever(server_context_t *ctx){
 	log_event(NON_APPLICABLE_LOG_ID, MESSAGE_QUEUE_SERVER, "inizio della ricezione delle emergenze!");
 	char buffer[MAX_EMERGENCY_QUEUE_MESSAGE_LENGTH];
@@ -15,18 +16,20 @@ int emergency_requests_reciever(server_context_t *ctx){
 			ctx -> server_must_stop = true;
 			return 0;
 		}
+
 		ctx->emergency_requests_count++;
 		char *name; int x, y; time_t time;
 		if(!parse_emergency_request(buffer, name, &x, &y, &time) || emergency_request_values_are_illegal(ctx, name, x, y, time)){ 
 			log_event(ctx->emergency_requests_count, WRONG_EMERGENCY_REQUEST_IGNORED_SERVER, "emergenza %s (%d, %d) %ld rifiutata perchè conteneva valori illegali", name, x, y, time);
 			continue;
 		}
-		ctx->valid_emergency_request_count++;
 		
+		ctx->valid_emergency_request_count++;
 		emergency_queue_t *q = ctx->waiting_queue;
 		emergency_t *e = mallocate_emergency(ctx, name, x, y, time);
 		emergency_node_t *n = mallocate_emergency_node(e); 	
 		n->emergency->time_since_started_waiting = 0; // il timer dell'emergenza inizia a scorrere
+		
 		lock_queue(q);
 		enqueue_emergency_node(q, n);
 		unlock_queue(q);										

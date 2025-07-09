@@ -1,10 +1,12 @@
 #ifndef SERVER_H
 #define SERVER_H
 
+#include "log.h"
+#include "utils.h"
+#include "server_utils.h"
+#include "server_clock.h"
 #include "server_updater.h"
 #include "emergency_handler.h"
-#include "parsers.h"
-
 
 #define THREAD_POOL_SIZE 10
 

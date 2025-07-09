@@ -3,9 +3,6 @@
 
 #include "utils.h"
 
-#define INVALID_EMERGENCY_PROPERTY_NUMBER 	-1
-#define INVALID_EMERGENCY_PROPERTY_POINTER 	NULL
-
 emergency_t *mallocate_emergency(server_context_t *ctx, char* name, int x, int y, time_t timestamp);
 void free_emergency(emergency_t* e);
 emergency_node_t* mallocate_emergency_node(emergency_t *e);
@@ -29,21 +26,7 @@ void enqueue_emergency_node(emergency_queue_t* q, emergency_node_t *n);
 emergency_node_t* dequeue_emergency_node(emergency_queue_t* q);
 void change_node_priority_list(emergency_queue_t* q, emergency_node_t* n, int newp);
 
-int get_emergency_x(emergency_t* e);
-int get_emergency_y(emergency_t* e);
-time_t get_emergency_time(emergency_t* e);
-emergency_status_t get_emergency_status(emergency_t* e);
-int get_emergency_rescuer_req_number(emergency_t* e);
-rescuer_request_t **get_emergency_rescuer_requests(emergency_t* e);
 
-void lock_queue(emergency_queue_t *q);
-void unlock_queue(emergency_queue_t *q);
-void lock_list(emergency_list_t *l);
-void unlock_list(emergency_list_t *l);
-void lock_node(emergency_node_t *n);
-void unlock_node(emergency_node_t *n);
-
-
-
+ 
 
 #endif

@@ -17,10 +17,10 @@
 	} while(0)
 
 // scorciatoria solo per il main() di client.c
-#define DIE(last_words) \
+#define DIE(argv0, last_words) \
 	do { \
 		LOG_IGNORING_ERROR(last_words); \
-		PRINT_CLIENT_USAGE(argv[0]); \
+		PRINT_CLIENT_USAGE(argv0); \
 		exit(EXIT_FAILURE); \
 	} while(0)
 

@@ -207,59 +207,7 @@ void change_node_priority_list(emergency_queue_t* q, emergency_node_t* n, int ne
 	append_emergency_node(q->lists[newp], n);
 }
 
-int get_emergency_x(emergency_t* e){
-	if(!e) return INVALID_EMERGENCY_PROPERTY_NUMBER;
-	return e -> x ;
-}
 
-int get_emergency_y(emergency_t* e){
-	if(!e) return INVALID_EMERGENCY_PROPERTY_NUMBER;
-	return e -> y ;
-}
-
-time_t get_emergency_time(emergency_t* e){
-	if(!e) return INVALID_EMERGENCY_PROPERTY_NUMBER;
-	return (time_t) e -> time ;
-}
-
-emergency_status_t get_emergency_status(emergency_t* e){
-	if(!e) return INVALID_EMERGENCY_PROPERTY_NUMBER;
-	return (emergency_status_t) (e -> status) ;
-}
-
-int get_emergency_rescuer_req_number(emergency_t* e){
-	if(!e) return INVALID_EMERGENCY_PROPERTY_NUMBER;
-	return (int) ((e -> type) -> rescuers_req_number);
-}
-
-rescuer_request_t **get_emergency_rescuer_requests(emergency_t* e){
-	if(!e) return INVALID_EMERGENCY_PROPERTY_POINTER;
-	return (rescuer_request_t **) ((e -> type) -> rescuers);
-}
-
-void lock_queue(emergency_queue_t *q){
-	LOCK(q->mutex);
-}
-
-void unlock_queue(emergency_queue_t *q){
-	UNLOCK(q->mutex);
-}
-
-void lock_list(emergency_list_t *l){
-	LOCK(l->mutex);
-}
-
-void unlock_list(emergency_list_t *l){
-	UNLOCK(l->mutex);
-}
-
-void lock_node(emergency_node_t *n){
-	if(n) LOCK(n->mutex);									// se il nodo è NULL non faccio il lock
-}
-
-void unlock_node(emergency_node_t *n){
-	if(n) UNLOCK(n->mutex);
-}
 
 
 

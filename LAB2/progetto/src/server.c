@@ -18,18 +18,18 @@ void server(void){
 	thrd_t receiver_thread;
 	thrd_t worker_threads[THREAD_POOL_SIZE];
 
-	if (thrd_create(&clock_thread, thread_clock, ctx) != thrd_success) {
+	if (thrd_create(&clock_thread, server_clock, ctx) != thrd_success) {
 		log_fatal_error("errore durante la creazione di del clock nel server");
 		return;
 	}
 
-	if (thrd_create(&updater_thread, thread_updater, ctx) != thrd_success) {
+	if (thrd_create(&updater_thread, server_updater, ctx) != thrd_success) {
 		log_fatal_error("errore durante la creazione di dell'updater nel server");
 		return;
 	}
 	
 	for (int i = 0; i < THREAD_POOL_SIZE; i++) {
-		if (thrd_create(&worker_threads[i], thread_worker_function, ctx) != thrd_success) {
+		if (thrd_create(&worker_threads[i], emergency_handler, ctx) != thrd_success) {
 			log_fatal_error("errore durante la creazione di un elaboratore di emergenze nel server");
 			return;
 		}

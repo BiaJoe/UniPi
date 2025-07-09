@@ -7,14 +7,12 @@
 mqd_t mq;
 
 int main(int argc, char* argv[]){
-
 	// controllo il numero di argomenti
-	if(argc != 3 && argc != 5) DIE("numero di argomenti dati al programma sbagliato");
+	if(argc != 3 && argc != 5) DIE(argv[0], "numero di argomenti dati al programma sbagliato");
 
 	// capisco in quale modalità mi trovo
 	// in questo caso le modalità sono 2 + undefined, 
 	// ma non sarebbe difficile espandere il codice ed aggiungerne di più in futuro
-
 	int mode = UNDEFINED_MODE;
 
 	if(argc == 5)
@@ -25,11 +23,8 @@ int main(int argc, char* argv[]){
 			case FILE_MODE_CHAR: mode = FILE_MODE; break;
 			case STOP_MODE_CHAR: mode = STOP_MODE; break;
 			// ...espandibile ad altre modalità del tipo ./client -<mode> <arg>
-			default: DIE("opzione inesistente richiesta");
+			default: DIE(argv[0], "opzione inesistente richiesta");
 		}
-
-	
-	
 
 	// apro la coda su cui manderò la/le emergenza/e
 	check_error_mq_open(mq = mq_open(EMERGENCY_QUEUE_NAME, O_WRONLY));
@@ -38,14 +33,13 @@ int main(int argc, char* argv[]){
 		case NORMAL_MODE: handle_normal_mode_input(argv); break;
 		case FILE_MODE: 	handle_file_mode_input(argv); break;
 		case STOP_MODE: 	handle_stop_mode_client(); break;
-		default: 					DIE("modalità di inserimento non trovata");
+		default: 					DIE(argv[0], "modalità di inserimento non trovata");
 	}
 
 	// a questo punto l'emergenza o le emergenze sono state inviate.
 	// sono tutte emergenze SINTATTICAMENTE valide
 	// spetta al server controllare la SEMANTICA (se i valori x,y,timestamo sono nei limiti)
 	// se non lo sono l'emergenza viene ignorata nel server
-
 	log_event(AUTOMATIC_LOG_ID, MESSAGE_QUEUE_CLIENT, "il lavoro del client è finito. Il processo si chiude");
 
 	return 0;
@@ -79,7 +73,7 @@ int send_emergency_request_message(char *name, char *x_string, char *y_string, c
 		return 0;
 	}
 
-	if(snprintf(buffer, sizeof(buffer), "%s %d %d %ld", name, x, y, d) >= sizeof(buffer)){
+	if(snprintf(buffer, sizeof(buffer), "%s %d %d %ld", name, x, y, d) >= MAX_EMERGENCY_REQUEST_LENGTH + 1){
 		LOG_IGNORING_ERROR("messaggio di emergenza troppo lungo");
 		return 0;
 	}
@@ -140,5 +134,7 @@ void handle_file_mode_input(char* args[]){
 
 	free(line);
 	fclose(emergency_requests_file);
+
+	log_event(AUTOMATIC_LOG_ID, MESSAGE_QUEUE_CLIENT, "Invio di emergency_request da file %s completato: %d emergenze lette, %d inviate", args[2], line_count, emergency_count);
 }
 

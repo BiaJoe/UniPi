@@ -13,6 +13,9 @@ void untick(server_context_t *ctx);
 void wait_for_a_tick(server_context_t *ctx);
 int server_is_ticking(server_context_t *ctx);
 
+
+// lock accessibili solo a clock e a chi altro ha #include "server_clock.h" volutamente 
+
 void lock_server_clock(server_context_t *ctx);
 void unlock_server_clock(server_context_t *ctx);
 

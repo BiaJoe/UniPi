@@ -94,30 +94,13 @@ rescuer_digital_twin_t *mallocate_rescuer_digital_twin(rescuer_type_t* r){
 	t->y 								= r->y;
 	t->rescuer 					= r;
 	t->status 					= IDLE;
-	t->emergency_node 	= NULL; 
 	t->trajectory				= mallocate_bresenham_trajectory(); 		// non inizializzato perchè nessun valore è sensato prima di aver dato una destinazione reale
+	t->emergency_node 	= NULL; 
 	t->is_travelling 		= NO;
 	t->has_arrived			= YES;																	// il gemello viene messo nella base all'inizio, quindi in effetti è arrivato
-	t->time_of_arrival 	= INVALID_TIME;
 	t->time_to_manage		= INVALID_TIME;
+	t->time_left_before_it_can_leave_the_scene = INVALID_TIME;
+
 	return t;
 }
 
-rescuer_digital_twin_t *mallocate_rescuer_digital_twin(rescuer_type_t* r){
-	bresenham_trajectory_t *t = (bresenham_trajectory_t *)malloc(sizeof(bresenham_trajectory_t));
-	check_error_memory_allocation(t);
-	return t;
-}
-
-void free_rescuer_types(rescuer_type_t **rescuer_types){
-	for(int i = 0; rescuer_types[i] != NULL; i++){
-		free(rescuer_types[i]->rescuer_type_name);					//libero il puntatore al nome 
-		for(int j = 0; j < rescuer_types[i]->amount; j++){	// libero ogni gemello digitale
-			free(rescuer_types[i]->twins[j]->trajectory);			// libero la struttura usata per gestire i suoi movimenti
-			free(rescuer_types[i]->twins[j]);
-		}
-		free(rescuer_types[i]->twins);											// libero l'array di puntatori ai gemelli digitali		
-		free(rescuer_types[i]);															// libero il puntatore al rescuer_type_t 
-	}	
-	free(rescuer_types);																	// libero l'array di puntatori ai rescuer_types
-}

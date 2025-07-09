@@ -8,6 +8,17 @@
 #include <stdbool.h>
 #include "costants.h"
 
+// STRUTTURA HELPER PER IL PARSING
+
+typedef struct {
+	FILE *fp;
+	char* filename;			
+	char* line;						// la linea che stiamo parsando (init a NULL perchè sarà analizzata da getline())
+	size_t len;						// per getline()
+	int 	line_number;		// il suo numero		
+	int 	parsed_so_far;	// quante entità abbiamo raccolto fin ora
+}	parsing_state_t;
+
 
 // STRUTTURE PER IL LOGGING
 

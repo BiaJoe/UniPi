@@ -2,16 +2,11 @@
 
 static FILE *log_file = NULL;
 
-/*
-Processo che riceve messaggi con message queue e li logga con log.c
-*/
 
+// Processo che riceve messaggi da log.c con message queue e li logga con 
 void logger(void){
-
-	//inizializza il loggging
 	log_init(); 
 
-	//riceve i messaggi
 	mqd_t mq;
 	struct mq_attr attr;
 	char buffer[MAX_LOG_EVENT_LENGTH];
@@ -24,7 +19,7 @@ void logger(void){
 	check_error_mq_open(mq = mq_open(LOG_QUEUE_NAME, O_CREAT | O_RDONLY, 0644, &attr));
 
 	// ricevo i messaggi
-	// se sono il messaggio di stop esco perché per qualche motivo ho finito
+	// se arriva il messaggio di stop esco perché per qualche motivo ho finito
 	// altrimenti li scrivo nel logfile
 	while (1) {
 		check_error_mq_recieve(mq_receive(mq, buffer, MAX_LOG_EVENT_LENGTH, NULL));

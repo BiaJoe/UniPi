@@ -2,8 +2,14 @@
 
 // ----------- funzioni per il thread updater -----------
 
+// funzione che gira ogni tick del clock
+// fa l'update di tutte le strutture del server
+// blocca tutti i mutex principali 
+// per non fare inserimenti o rimozioni dalle queue e le liste durante l'update
+// blocca i singoli nodi quando li sta usando
 int server_updater(void *arg){
 	server_context_t *ctx = arg;
+
 	while(!ctx->server_must_stop){
 		lock_server_clock(ctx); 																					
 		while(!server_is_ticking(ctx)) 
@@ -12,7 +18,8 @@ int server_updater(void *arg){
 		unlock_server_clock(ctx); 																				
 		
 		log_event(AUTOMATIC_LOG_ID, SERVER, "inizio aggiornamento #%d del server...", ctx->tick_count_since_start);
-		lock_rescuers(ctx);
+	
+		lock_rescuers(ctx);										// blocco tutto
 		lock_queue(ctx->waiting_queue);
 		lock_queue(ctx->working_queue);
 		
@@ -20,41 +27,23 @@ int server_updater(void *arg){
 		update_working_emergencies_statuses_blocking(ctx);
 		update_waiting_emergency_statuses_blocking(ctx);
 		
-		unlock_queue(ctx->working_queue);
+		unlock_queue(ctx->working_queue);			
 		unlock_queue(ctx->waiting_queue);
-		unlock_rescuers(ctx);
+		unlock_rescuers(ctx);									// sblocco tutto
+
 		log_event(AUTOMATIC_LOG_ID, SERVER, "aggiornamento #%d del server eseguito con successo", ctx->tick_count_since_start);
 	}
+
 	cancel_all_working_emergencies_signaling(ctx);	// il server si è fermato, devo cancellare le emergenze ancora in elaborazione
 	return 0;
 }
 
-void send_rescuer_digital_twin_back_to_base_logging(rescuer_digital_twin_t *t){			
-	switch (t->status) {
-		case IDLE: return;									// se è già alla base non faccio nulla
-		case RETURNING_TO_BASE: return;
-		case ON_SCENE: 
-			log_event(t->id, RESCUER_STATUS, "il rescuer  %s [%d] parte dalla scena dell'emergenza per tornare alla base", t->rescuer->rescuer_type_name, t->id);
-			break;
-		case EN_ROUTE_TO_SCENE:
-			log_event(t->id, RESCUER_STATUS, "il rescuer  %s [%d] stava andando su una scena ma ora torna alla base", t->rescuer->rescuer_type_name, t->id);
-			break;
-		default: 
-			log_event(t->id, RESCUER_STATUS, "il rescuer  %s [%d]  torna alla base", t->rescuer->rescuer_type_name, t->id);
-	}
-	t->status = RETURNING_TO_BASE; 				// cambio lo stato del twin
-	t->time_to_manage = INVALID_TIME;
-	
-	change_rescuer_digital_twin_destination(t, t->rescuer->x, t->rescuer->y);
-}
-
-
 void update_rescuers_states_and_positions_on_the_map_logging(server_context_t *ctx){
-	int amount = get_server_rescuer_types_count(ctx);
+	int amount = ctx->rescuer_types_count;
 	for(int i = 0; i < amount; i++){													// aggiorno le posizioni dei gemelli rescuers
 		rescuer_type_t *r = get_rescuer_type_by_index(ctx, i);
 		if(r == NULL) continue; 																// se il rescuer type è NULL non faccio nulla (precauzione)
-		for(int j = 0; j < get_rescuer_type_amount(r); j++){
+		for(int j = 0; j < r->amount; j++){
 			rescuer_digital_twin_t *dt = get_rescuer_digital_twin_by_index(r, j);
 			update_rescuer_digital_twin_state_and_position_logging(dt);
 		}
@@ -112,6 +101,26 @@ int update_rescuer_digital_twin_state_and_position_logging(rescuer_digital_twin_
 		default: log_fatal_error("spostamento rescuer dt");
 	}	
 }
+
+void send_rescuer_digital_twin_back_to_base_logging(rescuer_digital_twin_t *t){			
+	switch (t->status) {
+		case IDLE: return;									// se è già alla base non faccio nulla
+		case RETURNING_TO_BASE: return;
+		case ON_SCENE: 
+			log_event(t->id, RESCUER_STATUS, "il rescuer  %s [%d] parte dalla scena dell'emergenza per tornare alla base", t->rescuer->rescuer_type_name, t->id);
+			break;
+		case EN_ROUTE_TO_SCENE:
+			log_event(t->id, RESCUER_STATUS, "il rescuer  %s [%d] stava andando su una scena ma ora torna alla base", t->rescuer->rescuer_type_name, t->id);
+			break;
+		default: 
+			log_event(t->id, RESCUER_STATUS, "il rescuer  %s [%d]  torna alla base", t->rescuer->rescuer_type_name, t->id);
+	}
+	t->status = RETURNING_TO_BASE; 				// cambio lo stato del twin
+	t->time_to_manage = INVALID_TIME;
+	
+	change_rescuer_digital_twin_destination(t, t->rescuer->x, t->rescuer->y);
+}
+
 
 void timeout_emergency_if_needed_logging(emergency_node_t* n){
 	if(!n || n->emergency->status == TIMEOUT)
