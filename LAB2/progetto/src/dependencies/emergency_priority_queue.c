@@ -5,7 +5,7 @@
 emergency_t *mallocate_emergency(server_context_t *ctx, char* name, int x, int y, time_t timestamp){
 	emergency_t *e = (emergency_t *)malloc(sizeof(emergency_t));
 	check_error_memory_allocation(e);
-	emergency_type_t *type = get_emergency_type_by_name(name, get_emergency_types_from_server_context(ctx));
+	emergency_type_t *type = get_emergency_type_by_name(name, ctx->emergency_types);
 	emergency_status_t status = WAITING;
 	int rescuer_count = 0;
 	for(int i = 0; i < type->rescuers_req_number; i++)		// calcola il numero totale di rescuer che servono all'emergenza
@@ -22,6 +22,9 @@ emergency_t *mallocate_emergency(server_context_t *ctx, char* name, int x, int y
 	e->time = timestamp;
 	e->rescuer_count = rescuer_count;
 	e->rescuer_twins = rescuer_twins;
+	e->time_since_started_waiting = INVALID_TIME;
+	e->time_since_it_was_assigned = INVALID_TIME;
+	e->time_spent_existing = 0;
 
 	return e;
 }
@@ -50,6 +53,7 @@ emergency_node_t* mallocate_emergency_node(emergency_t *e){
 void free_emergency_node(emergency_node_t* n){
 	if(!n) return;
 	mtx_destroy(&(n->mutex));	// distruggo il mutex del nodo
+	free_emergency(n->emergency);
 	free(n);
 }
 
@@ -128,7 +132,7 @@ void push_emergency_node(emergency_list_t* list, emergency_node_t *node){
 	list -> head = node;									// il nuovo nodo diventa la nuova testa della lista
 	node -> list = list;									// la lista di appartenenza del nodo diventa list
 	node -> prev = NULL;									// il nuovo nodo non ha un precedente perchè è la testa
-	list->node_amount += 1;								// il numero di nodi aumenta di 1 !!!
+	list -> node_amount += 1;							// il numero di nodi aumenta di 1 !!!
 }
 
 int is_the_first_node_of_the_list(emergency_node_t* node){

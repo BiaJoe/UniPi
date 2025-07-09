@@ -23,7 +23,7 @@ $(CLIENT): $(CLIENT_SRC)
 	$(CC) $(CFLAGS) -o $(CLIENT) $(CLIENT_SRC) -lm
 
 run: $(LOGGER) $(SERVER) $(CLIENT)
-	./$(LOGGER) & ./$(SERVER) & 
+	./$(SERVER) & 
 
 clean:
 	rm -f $(LOGGER) $(SERVER) $(CLIENT)

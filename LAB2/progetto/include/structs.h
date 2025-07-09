@@ -5,6 +5,7 @@
 #include <mqueue.h>
 #include <threads.h>
 #include <stdatomic.h>
+#include <stdbool.h>
 #include "costants.h"
 
 
@@ -116,8 +117,8 @@ struct rescuer_digital_twin {
 	emergency_node_t *emergency_node;		// ogni gemello è legato all'emergenza che sta gestendo
 	int is_travelling;
 	int has_arrived;
-	time_t time_of_arrival;
 	int time_to_manage;
+	int time_left_before_it_can_leave_the_scene;
 };
 
 // STRUTTURE PER LE EMERGENZE
@@ -168,6 +169,9 @@ typedef struct {
 	time_t time;
 	int rescuer_count;
 	rescuer_digital_twin_t **rescuer_twins;
+	int time_since_started_waiting;
+	int time_since_it_was_assigned;
+	int time_spent_existing;
 } emergency_t;
 
 // emergency queue
@@ -226,8 +230,7 @@ typedef struct {
 	int tick_count_since_start;								// contatore dei tick del server, per tenere traccia di quanti tick sono stati fatti
 	mtx_t clock_mutex;												// mutex per proteggere l'accesso al tick del server
 	cnd_t clock_updated;											// condizione per comunicare al therad updater di fare l'update
-	
-
+	atomic_bool server_must_stop;							// flag che segnala ai thread di fermarsi
 } server_context_t;
 
 

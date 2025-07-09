@@ -9,7 +9,6 @@ int main(void){
 }
 
 void server(void){
-	
 	log_event(NON_APPLICABLE_LOG_ID, LOGGING_STARTED, "Inizio logging");		// si inizia a loggare
 	server_context_t *ctx = mallocate_server_context();											// estraggo le informazioni dai file conf, le metto tutte nel server context
 	log_event(NON_APPLICABLE_LOG_ID, SERVER, "tutte le variabili sono state ottenute dal server: adesso il sistema è a regime!");
@@ -17,35 +16,104 @@ void server(void){
 	thrd_t clock_thread;
 	thrd_t updater_thread;
 	thrd_t receiver_thread;
+	thrd_t worker_threads[THREAD_POOL_SIZE];
 
-	if (
-		thrd_create(&clock_thread, thread_clock, ctx) != thrd_success ||
-		thrd_create(&updater_thread, thread_updater, ctx) != thrd_success
-	)	{
-		log_fatal_error("errore durante la creazione di thread nel server");
+	if (thrd_create(&clock_thread, thread_clock, ctx) != thrd_success) {
+		log_fatal_error("errore durante la creazione di del clock nel server");
 		return;
 	}
 
-	thrd_t worker_threads[THREAD_POOL_SIZE];
+	if (thrd_create(&updater_thread, thread_updater, ctx) != thrd_success) {
+		log_fatal_error("errore durante la creazione di dell'updater nel server");
+		return;
+	}
+	
 	for (int i = 0; i < THREAD_POOL_SIZE; i++) {
 		if (thrd_create(&worker_threads[i], thread_worker_function, ctx) != thrd_success) {
-			log_fatal_error("errore durante la creazione di thread nel server");
+			log_fatal_error("errore durante la creazione di un elaboratore di emergenze nel server");
 			return;
 		}
 	}
 
-	thread_reciever(ctx);
+	recieve_emergency_requests(ctx);
+
+	// arrivati qui il server deve chiudersi faccio il join dei thread così quando hanno finito chiudo tutto
+	thrd_join(clock_thread, NULL);
+	thrd_join(updater_thread, NULL);
+	for (int i = 0; i < THREAD_POOL_SIZE; i++) {
+		thrd_join(worker_threads[i], NULL);
+	}
 
 	close_server(ctx);
 }
 
 
+// faccio il parsing dei file
+// ottengo numero e puntatore ad emergenze e rescuers
+// creo la coda di messaggi ricevuti dal client
+// inizializzo i mutex
+server_context_t *mallocate_server_context(){
+	server_context_t *ctx = (server_context_t *)malloc(sizeof(server_context_t));	
+	time_t current_time = time(NULL); 																							
+	int height = 0, width = 0, rescuer_count = 0, emergency_types_count = 0;
+	rescuer_type_t** rescuer_types = NULL;
+	emergency_type_t** emergency_types = NULL;
 
+	// Parsing dei file di configurazione
+	log_event(AUTOMATIC_LOG_ID, PARSING_STARTED, "Inizio parsing dei file di configurazione");
+	parse_env(ctx);
+	parse_rescuers(ctx);
+	parse_emergencies(ctx);
+	log_event(AUTOMATIC_LOG_ID, PARSING_ENDED, "Il parsing è terminato con successo!");
 
+	// popolo ctx
+	ctx -> current_time = current_time; 
+	ctx -> emergency_requests_count = 0; 	// all'inizio non ci sono state ancora richieste
+	ctx -> valid_emergency_request_count = 0;
+	ctx -> tick = NO;											
+	ctx -> tick_count_since_start = 0; 		// il server non ha ancora fatto nessun tick
+	ctx -> waiting_queue = mallocate_emergency_queue();
+	ctx -> working_queue = mallocate_emergency_queue();
+	ctx -> completed_emergencies = mallocate_emergency_list(); 
+	ctx -> canceled_emergencies = mallocate_emergency_list();
+	ctx -> server_must_stop = false;
+
+	struct mq_attr attr = {
+		.mq_flags = 0,
+		.mq_maxmsg = MAX_LOG_QUEUE_MESSAGES,
+		.mq_msgsize = MAX_LOG_EVENT_LENGTH,
+		.mq_curmsgs = 0
+	};
+
+	check_error_mq_open(ctx->mq = mq_open(EMERGENCY_QUEUE_NAME, O_CREAT | O_RDONLY, 0644, &attr));
+	check_error_mtx_init(mtx_init(&(ctx->clock_mutex), mtx_plain));
+	check_error_mtx_init(mtx_init(&(ctx->rescuers_mutex), mtx_plain));
+	check_error_cnd_init(cnd_init(&(ctx->clock_updated)));
+
+	return ctx; 																									// ritorno il contesto del server
+}
+
+// libera tutto ciò che è contenuto nel server context e il server context stesso
+void cleanup_server_context(server_context_t *ctx){
+	free_rescuer_types(ctx->rescuer_types);
+	free_emergency_types(ctx->emergency_types);
+	free_emergency_queue(ctx->waiting_queue);
+	free_emergency_queue(ctx->working_queue);
+	free_emergency_list(ctx->completed_emergencies);
+	free_emergency_list(ctx->canceled_emergencies);
+
+	mq_close(ctx->mq);
+	mq_unlink(EMERGENCY_QUEUE_NAME);
+	mtx_destroy(&(ctx->clock_mutex));
+	mtx_destroy(&(ctx->rescuers_mutex));
+	cnd_destroy(&(ctx->clock_updated));
+
+	free(ctx);
+}
 
 
 void close_server(server_context_t *ctx){
-	log_event(AUTOMATIC_LOG_ID, SERVER, "lavoro finito. Il server si avvia alla chiusura.");
+	log_event(AUTOMATIC_LOG_ID, SERVER, "dopo %d updates, il serve si chiud. Sono state elaborate %d emergenze, di cui %d completate", ctx->tick_count_since_start, ctx->valid_emergency_request_count, ctx->completed_emergencies->node_amount);
 	log_event(AUTOMATIC_LOG_ID, LOGGING_ENDED, "Fine del logging");
 	cleanup_server_context(ctx);
 	exit(EXIT_SUCCESS);

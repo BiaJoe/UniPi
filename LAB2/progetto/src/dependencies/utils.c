@@ -72,3 +72,11 @@ rescuer_request_t * get_rescuer_request_by_name(char *name, rescuer_request_t **
 			return rescuers[i];
 	return NULL;
 }
+
+int get_time_before_emergency_timeout_from_poriority(int p){
+	switch (p) {
+		case MEDIUM_EMERGENCY_PRIORITY: return MAX_TIME_IN_MEDIUM_PRIORITY_BEFORE_TIMEOUT; break;
+		case MAX_EMERGENCY_PRIORITY: 		return MAX_TIME_IN_MAX_PRIORITY_BEFORE_TIMEOUT; break;
+		default:												return INVALID_TIME;		
+	}
+}

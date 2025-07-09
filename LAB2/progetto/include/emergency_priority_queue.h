@@ -1,65 +1,49 @@
 #ifndef EMERGENCY_PRIORITY_QUEUE_H
 #define EMERGENCY_PRIORITY_QUEUE_H
 
-#include "parsers.h"
-#include "logger.h"
-
-#define MAX_TIME_IN_MIN_PRIORITY_BEFORE_PROMOTION			120
-#define MAX_TIME_IN_MEDIUM_PRIORITY_BEFORE_TIMEOUT		30
-#define MAX_TIME_IN_MAX_PRIORITY_BEFORE_TIMEOUT				10
-
-
-// valori della richiesta -> puntatore a struttura emergenza
-emergency_t *mallocate_emergency(server_context_t *ctx, char* name, int x, int y, time_t timestamp);
-void free_emergency(emergency_t* e);
+#include "utils.h"
 
 #define INVALID_EMERGENCY_PROPERTY_NUMBER 	-1
 #define INVALID_EMERGENCY_PROPERTY_POINTER 	NULL
 
-int get_emergency_priority(emergency_t* e);
-int get_emergency_x(emergency_t* e);
-int get_emergency_y(emergency_t* e);
-int get_emergency_rescuer_req_number(emergency_t* e);
-rescuer_request_t **get_emergency_resquer_requests(emergency_t* e);
-emergency_status_t get_emergency_status(emergency_t* e);
-time_t get_emergency_time(emergency_t* e);
-
-// emergenza -> nodo della lista
+emergency_t *mallocate_emergency(server_context_t *ctx, char* name, int x, int y, time_t timestamp);
+void free_emergency(emergency_t* e);
 emergency_node_t* mallocate_emergency_node(emergency_t *e);
 void free_emergency_node(emergency_node_t* n);
-
 emergency_list_t *mallocate_emergency_list();
-void free_emergency_list(emergency_list_t *el);
-
+void free_emergency_list(emergency_list_t *list);
 emergency_queue_t *mallocate_emergency_queue();
 void free_emergency_queue(emergency_queue_t *q);
 
+int is_queue_empty(emergency_queue_t *q);
 
-// inserisce il nodo nella lista
-void append_emergency_node(emergency_list_t* el, emergency_node_t* node);
-void enqueue_emergency_node(emergency_queue_t *q, emergency_node_t* node);
-
-emergency_node_t* decapitate_emergency_list(emergency_list_t* el);
-
+void append_emergency_node(emergency_list_t* list, emergency_node_t* node);
+void push_emergency_node(emergency_list_t* list, emergency_node_t *node);
 int is_the_first_node_of_the_list(emergency_node_t* node);
 int is_the_last_node_of_the_list(emergency_node_t* node);
-
-// estrae il nodo richiesto dalla coda
 void remove_emergency_node_from_its_list(emergency_node_t* node);
+void change_emergency_node_list_append(emergency_node_t *n, emergency_list_t *new_list);
+void change_emergency_node_list_push(emergency_node_t *n, emergency_list_t *new_list);
+emergency_node_t* decapitate_emergency_list(emergency_list_t* list);
+void enqueue_emergency_node(emergency_queue_t* q, emergency_node_t *n);
+emergency_node_t* dequeue_emergency_node(emergency_queue_t* q);
+void change_node_priority_list(emergency_queue_t* q, emergency_node_t* n, int newp);
 
-// inserisce l'emergenza nella queue
-void enqueue_emergency(emergency_queue_t* eq, emergency_t *e);
+int get_emergency_x(emergency_t* e);
+int get_emergency_y(emergency_t* e);
+time_t get_emergency_time(emergency_t* e);
+emergency_status_t get_emergency_status(emergency_t* e);
+int get_emergency_rescuer_req_number(emergency_t* e);
+rescuer_request_t **get_emergency_rescuer_requests(emergency_t* e);
 
-// tira fuori l'emergenza più urgente
-emergency_t* dequeue_emergency(emergency_queue_t* eq);
+void lock_queue(emergency_queue_t *q);
+void unlock_queue(emergency_queue_t *q);
+void lock_list(emergency_list_t *l);
+void unlock_list(emergency_list_t *l);
+void lock_node(emergency_node_t *n);
+void unlock_node(emergency_node_t *n);
 
-// ritorna la lista richiesta contenuta nella coda
-emergency_list_t* get_list_by_priority(emergency_queue_t* eq, short priority);
 
-void change_node_priority_list(emergency_queue_t* eq, emergency_node_t* node, short new_priority);
 
-int promote_to_medium_priority_if_needed(emergency_queue_t* eq, emergency_node_t* node); // solo da 0 a 1 e non diversamente
-
-int timeout_emergency_if_needed(emergency_queue_t* q, emergency_node_t* n);
 
 #endif
