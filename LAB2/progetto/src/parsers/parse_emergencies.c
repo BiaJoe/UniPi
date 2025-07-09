@@ -168,14 +168,3 @@ void free_emergency_types(emergency_type_t **emergency_types){
 	free(emergency_types);	// libero l'array di puntatori agli emergency_types
 }
 
-
-
-emergency_request_t* mallocate_and_populate_emergency_request(char* name, int x, int y, time_t d){
-	emergency_request_t *e = (emergency_request_t *)malloc(sizeof(emergency_request_t));
-	check_error_memory_allocation(e);
-	strcpy(e->emergency_name, name);
-	e->x = x;
-	e->y = y;
-	e->timestamp = d;
-	return e;
-}

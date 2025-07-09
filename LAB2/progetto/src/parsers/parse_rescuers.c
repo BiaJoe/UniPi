@@ -89,15 +89,17 @@ rescuer_digital_twin_t **callocate_and_populate_rescuer_digital_twins(rescuer_ty
 rescuer_digital_twin_t *mallocate_rescuer_digital_twin(rescuer_type_t* r){
 	rescuer_digital_twin_t *t = (rescuer_digital_twin_t *)malloc(sizeof(rescuer_digital_twin_t));
 	check_error_memory_allocation(t);
-	t->id 						= rescuer_digital_twins_total_count++;			// in questo modo ogni gemello è unico
-	t->x 							= r->x;
-	t->y 							= r->y;
-	t->rescuer 				= r;
-	t->status 				= IDLE;
-	t->is_travelling 	= NO;
-	t->emergency 			= NULL; 
-	t->trajectory			= (bresenham_trajectory_t *)malloc(sizeof(bresenham_trajectory_t)); 	// non inizializzato perchè nessun valore è sensato prima di aver dato una destinazione reale
-	check_error_memory_allocation(t->trajectory);
+	t->id 							= rescuer_digital_twins_total_count++;	// in questo modo ogni gemello è unico
+	t->x 								= r->x;
+	t->y 								= r->y;
+	t->rescuer 					= r;
+	t->status 					= IDLE;
+	t->emergency_node 	= NULL; 
+	t->trajectory				= mallocate_bresenham_trajectory(); 		// non inizializzato perchè nessun valore è sensato prima di aver dato una destinazione reale
+	t->is_travelling 		= NO;
+	t->has_arrived			= YES;																	// il gemello viene messo nella base all'inizio, quindi in effetti è arrivato
+	t->time_of_arrival 	= INVALID_TIME;
+	t->time_to_manage		= INVALID_TIME;
 	return t;
 }
 

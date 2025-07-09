@@ -162,22 +162,3 @@ long get_time() {
 	return (long) time(NULL);
 } 
 
-
-
-// funzione per loggare un errore fatale e far terminare il programma
-void log_fatal_error_temporaneo(char *message, log_event_type_t event) {
-	// AUTOMATIC_LOG_ID perchè un errore fatale può accadere una sola volta
-	// non si esce nè si fa log_close perchè ci pensa la funzione log_event
-	// la funzione non fa molto ma è qui per essere espansa eventualmente in futuro
-	// e per permettere a chi leggere il codice di capire cosa sta succedendo
-	// non genera errori in caso di errore non fatale loggato perchè è solo un wrap di log_event
-	log_event(AUTOMATIC_LOG_ID, event, message); 
-
-	// solo se l'evento è sicuramente fatale per l'applicazione 
-	// allora si termina il processo che ha loggato l'evento
-	if(is_log_event_type_terminating(event)){
-		perror(message);
-		exit(EXIT_FAILURE);
-	}
-}
-

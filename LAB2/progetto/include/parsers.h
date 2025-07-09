@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <threads.h>
 #include "log.h"
+#include "bresenham.h"
 
 typedef struct {
 	FILE *fp;

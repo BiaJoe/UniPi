@@ -93,8 +93,8 @@ typedef struct {	// struttura per la computazione del percorso di ogni rescuer
 } bresenham_trajectory_t;
 
 // Foreward declaration per rescuer_digital_twin
-// per evitare dipendenze circolari
-struct rescuer_digital_twin; 
+
+typedef struct emergency_node emergency_node_t;
 typedef struct rescuer_digital_twin rescuer_digital_twin_t;
 
 typedef struct {
@@ -112,9 +112,12 @@ struct rescuer_digital_twin {
 	int y;
 	rescuer_type_t *rescuer;
 	rescuer_status_t status;
+	bresenham_trajectory_t *trajectory; // serve per tenere traccia di dove il gemello sta andando e del percorso che fa 
+	emergency_node_t *emergency_node;		// ogni gemello è legato all'emergenza che sta gestendo
 	int is_travelling;
-	bresenham_trajectory_t *trajectory;
-	emergency_t *emergency;
+	int has_arrived;
+	time_t time_of_arrival;
+	int time_to_manage;
 };
 
 // STRUTTURE PER LE EMERGENZE
@@ -136,6 +139,7 @@ typedef enum {
 	WAITING,
 	ASSIGNED,
 	ASKING_FOR_RESCUERS,
+	WAITING_FOR_RESCUERS,
 	IN_PROGRESS,
 	PAUSED,
 	COMPLETED,
@@ -157,6 +161,7 @@ typedef struct {
 typedef struct {
 	emergency_type_t *type;
 	int id;
+	int priority;
 	emergency_status_t status;
 	int x;
 	int y;
@@ -168,60 +173,59 @@ typedef struct {
 // emergency queue
 
 // forward declaration per node e list
-struct emergency_list;
 typedef struct emergency_list emergency_list_t;
 
 #define UNDEFINED_TIME_FOR_RESCUERS_TO_ARRIVE -1
 
-typedef struct emergency_node{
-	emergency_list_t *list;
-	int priority; 						// campo già presente in emergency_type, ma può cambiare
-	int rescuers_are_arriving;
-	int rescuers_have_arrived;
-	int asks_for_rescuers_from_lower_priorities;
-	time_t time_estimated_for_rescuers_to_arrive;
-	emergency_t *emergency;
-	struct emergency_node *prev;
-	struct emergency_node *next;
-	mtx_t mutex;			
-	cnd_t has_been_paused;
-} emergency_node_t;
-
-typedef struct {
+struct emergency_list {
 	emergency_node_t *head;
 	emergency_node_t *tail;
 	int node_amount; 
 	mtx_t mutex;
-} emergency_list_t;
+};
+
+struct emergency_node {
+	emergency_list_t *list;
+	int rescuers_found;
+	int rescuers_are_arriving;
+	int rescuers_have_arrived;
+	int time_estimated_for_rescuers_to_arrive;
+	emergency_t *emergency;
+	struct emergency_node *prev;
+	struct emergency_node *next;
+	mtx_t mutex;			
+	cnd_t waiting;
+};
 
 typedef struct {
 	emergency_list_t* lists[PRIORITY_LEVELS]; 
 	int is_empty;
 	cnd_t not_empty;									// condizione per notificare che la coda non è vuota
-	mtx_t mutex;
+	mtx_t mutex; 
 } emergency_queue_t;
 
 // server
 
 typedef struct {
-	int height;														// interi per tenere traccia di cosa succede
+	int height;																// interi per tenere traccia di cosa succede
 	int width;
 	int rescuer_types_count;
 	int emergency_types_count;
 	int emergency_requests_count;
 	int valid_emergency_request_count;
-	rescuer_type_t** rescuer_types;				// puntatori alle strutture rescuers
-	mtx_t rescuers_mutex;									// mutex per proteggere l'accesso ai rescuer types
-  emergency_type_t** emergency_types;		// puntatori alle strutture emergency_types
-	emergency_queue_t* waiting_queue;			// coda per contenere le emergenze da processare
-	emergency_queue_t* working_queue;			// coda per contenere le emergenze assegnate a un thread
-	emergency_list_t* completed_emergencies;				// lista per tenere traccia di tutte le emergenze completate
-	mqd_t mq;															// message queue per ricevere le emergenze dai client	
-	time_t current_time;									// tempo corrente del server
-	int tick;															// tick del server, per sincronizzare i thread
-	int tick_count_since_start;						// contatore dei tick del server, per tenere traccia di quanti tick sono stati fatti
-	mtx_t clock_mutex;										// mutex per proteggere l'accesso al tick del server
-	cnd_t clock_updated;									// condizione per comunicare al therad updater di fare l'update
+	rescuer_type_t** rescuer_types;						// puntatori alle strutture rescuers
+	mtx_t rescuers_mutex;											// mutex per proteggere l'accesso ai rescuer types
+  emergency_type_t** emergency_types;				// puntatori alle strutture emergency_types
+	emergency_queue_t* waiting_queue;					// coda per contenere le emergenze da processare
+	emergency_queue_t* working_queue;					// coda per contenere le emergenze assegnate a un thread
+	emergency_list_t* completed_emergencies;	// lista per tenere traccia di tutte le emergenze completate
+	emergency_list_t* canceled_emergencies; 	// lista delle emergenze cancellate
+	mqd_t mq;																	// message queue per ricevere le emergenze dai client	
+	time_t current_time;											// tempo corrente del server
+	int tick;																	// tick del server, per sincronizzare i thread
+	int tick_count_since_start;								// contatore dei tick del server, per tenere traccia di quanti tick sono stati fatti
+	mtx_t clock_mutex;												// mutex per proteggere l'accesso al tick del server
+	cnd_t clock_updated;											// condizione per comunicare al therad updater di fare l'update
 	
 
 } server_context_t;

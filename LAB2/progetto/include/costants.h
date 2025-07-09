@@ -61,7 +61,7 @@
 // #define MAX_EMERGENCY_QUEUE_CAPACITY 64
 
 #define LONG_LENGTH 20
-#define INVALID_TIME (time_t)(-1)
+#define INVALID_TIME -1
 
 // sintassi varie
 
