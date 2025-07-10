@@ -4,7 +4,7 @@
 #define _GNU_SOURCE // per usare getline
 
 #include <unistd.h>
-#include "logger.h"
+#include "log.h"
 
 #define LOG_IGNORING_ERROR(m) \
 	do { log_event(AUTOMATIC_LOG_ID, WRONG_EMERGENCY_REQUEST_IGNORED_CLIENT, "il Client ignora una emergency request: " #m); } while (0)
@@ -28,9 +28,9 @@
 
 #define UNDEFINED_MODE -1
 #define NORMAL_MODE 1
-#define FILE_MODE_CHAR 'f'
+#define FILE_MODE_STRING "-f"
 #define FILE_MODE 2
-#define STOP_MODE_CHAR 's'
+#define STOP_MODE_STRING "-s"
 #define STOP_MODE 99
 
 #define MAX_EMERGENCY_REQUEST_COUNT 256 
@@ -41,4 +41,3 @@ void handle_file_mode_input(char* args[]);
 int  send_emergency_request_message(char *name, char *x_string, char *y_string, char *delay_string);
 void handle_stop_mode_client(void);
 #endif
-

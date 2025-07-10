@@ -15,7 +15,7 @@ void parse_emergencies(server_context_t *ctx){
 		if (!check_and_extract_emergency_type_fields_from_line(ps, emergency_types, rescuer_types, &fields))
 			continue;
 		emergency_types[ps->parsed_so_far++] = mallocate_and_populate_emergency_type(&fields); // metto l'emergenza nell'array di emergenze
-		log_event(ps->parsed_so_far, EMERGENCY_PARSED, "Emergenza %s di priorità %hd con %d tipi di rescuer registrata tra i tipi di emergenze", fields.emergency_desc,  fields.priority,  fields.resquers_req_number);
+		log_event(ps->parsed_so_far, EMERGENCY_PARSED, "Emergenza %s di priorità %hd con %d tipi di rescuer registrata tra i tipi di emergenze", fields.emergency_desc,  fields.priority,  fields.rescuers_req_number);
 	}
 	ctx -> emergency_types_count = ps->parsed_so_far; // restituisco il numero di emergenze lette
 	ctx -> emergency_types = emergency_types;	
@@ -71,7 +71,7 @@ void check_if_rescuer_requested_is_available(parsing_state_t *ps, rescuer_type_t
 }
 
 void check_and_extract_rescuer_requests_from_string(parsing_state_t *ps, rescuer_type_t **rescuer_types, emergency_type_fields_t *fields){
-	rescuer_request_t **requests = callocate_resquer_requests();
+	rescuer_request_t **requests = callocate_rescuer_requests();
 	char name[MAX_RESCUER_NAME_LENGTH];			// buffer per il nome del rescuer
 	int required_count, time_to_manage; 		// variabili temporanee per i campi del rescuer
 	int requests_parsed_so_far = 0;					// aumenta ad ogni rescuer registrato e rappresenta anche l'indice dove mettere la richiesta nell'array
@@ -80,12 +80,12 @@ void check_and_extract_rescuer_requests_from_string(parsing_state_t *ps, rescuer
 		if(check_and_log_if_rescuer_request_already_parsed(ps, requests, name))
 			continue;
 		check_if_rescuer_requested_is_available(ps, rescuer_types, name, required_count);
-		requests[requests_parsed_so_far] = mallocate_and_populate_rescuer_request(name, required_count, time_to_manage, get_rescuer_type_by_name(name, rescuer_types));	
+		requests[requests_parsed_so_far] = mallocate_and_populate_rescuer_request(required_count, time_to_manage, get_rescuer_type_by_name(name, rescuer_types));	
 		log_event(rescuer_requests_total_count, RESCUER_REQUEST_ADDED, "Richiesta di %d unità di %s registrate a linea %d del file %s", required_count, name, ps->line_number, ps->filename);
 		requests_parsed_so_far++;														
 		rescuer_requests_total_count++;
 	}
-	fields->resquers_req_number = requests_parsed_so_far;
+	fields->rescuers_req_number = requests_parsed_so_far;
 	fields->rescuers = requests;
 }
 
@@ -139,12 +139,12 @@ emergency_type_t *mallocate_and_populate_emergency_type(emergency_type_fields_t 
 	check_error_memory_allocation(e->emergency_desc);							// alloco il nome dell'emergency_type_t e lo copio
 	strcpy(e->emergency_desc, fields->emergency_desc);
 	e->priority = fields->priority;																				// popolo il resto dei campi
-	e->rescuers_req_number = fields->resquers_req_number;
+	e->rescuers_req_number = fields->rescuers_req_number;
 	e->rescuers = fields->rescuers;																				// assegno i rescuer richiesti
 	return e;
 }
 
-rescuer_request_t *mallocate_and_populate_rescuer_request(char *name, int required_count, int time_to_manage, rescuer_type_t *type){
+rescuer_request_t *mallocate_and_populate_rescuer_request(int required_count, int time_to_manage, rescuer_type_t *type){
 	rescuer_request_t *r = (rescuer_request_t *)malloc(sizeof(rescuer_request_t));
 	check_error_memory_allocation(r);
 	r->type = type;

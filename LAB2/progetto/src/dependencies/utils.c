@@ -55,12 +55,6 @@ int my_atoi(char a[]){
 	return sign * res;									
 }
 
-void write_line(FILE *f, char *s) {
-	if (!f) return;
-	fprintf(f, "%s", s);
-	fflush(f);
-}
-
 // funzioni per accedere a strutture
 
 rescuer_type_t * get_rescuer_type_by_name(char *name, rescuer_type_t **rescuer_types){
@@ -92,14 +86,14 @@ rescuer_request_t * get_rescuer_request_by_name(char *name, rescuer_request_t **
 }
 
 rescuer_type_t *get_rescuer_type_by_index(server_context_t *ctx, int i){
-	return ctx->rescuer_types[i % get_server_rescuer_types_count(ctx)];
+	return ctx->rescuer_types[i % ctx->rescuer_types_count];
 }
 
 rescuer_digital_twin_t *get_rescuer_digital_twin_by_index(rescuer_type_t *r, int rescuer_digital_twin_index){
 	return (r == NULL) ? NULL : r->twins[rescuer_digital_twin_index];
 }
 
-int get_time_before_emergency_timeout_from_poriority(int p){
+int get_time_before_emergency_timeout_from_priority(int p){
 	switch (p) {
 		case MEDIUM_EMERGENCY_PRIORITY: return MAX_TIME_IN_MEDIUM_PRIORITY_BEFORE_TIMEOUT; break;
 		case MAX_EMERGENCY_PRIORITY: 		return MAX_TIME_IN_MAX_PRIORITY_BEFORE_TIMEOUT; break;
@@ -139,37 +133,3 @@ void free_emergency_types(emergency_type_t **emergency_types){
 }
 
 
-// lock e unlock di strutture per facilitare la lettura del codice
-
-void lock_rescuer_types(server_context_t *ctx){
-	LOCK(ctx->rescuers_mutex);
-}
-
-void unlock_rescuer_types(server_context_t *ctx){
-	UNLOCK(ctx->rescuers_mutex);
-}
-
-
-void lock_queue(emergency_queue_t *q){
-	if(q) LOCK(q->mutex);
-}
-
-void unlock_queue(emergency_queue_t *q){
-	if(q) UNLOCK(q->mutex);
-}
-
-void lock_list(emergency_list_t *l){
-	if(l) LOCK(l->mutex);
-}
-
-void unlock_list(emergency_list_t *l){
-	if(l) UNLOCK(l->mutex);
-}
-
-void lock_node(emergency_node_t *n){
-	if(n) LOCK(n->mutex);									
-}
-
-void unlock_node(emergency_node_t *n){
-	if(n) UNLOCK(n->mutex);
-}

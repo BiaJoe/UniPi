@@ -19,7 +19,7 @@ int server_updater(void *arg){
 		
 		log_event(AUTOMATIC_LOG_ID, SERVER, "inizio aggiornamento #%d del server...", ctx->tick_count_since_start);
 	
-		lock_rescuers(ctx);										// blocco tutto
+		lock_rescuer_types(ctx);										// blocco tutto
 		lock_queue(ctx->waiting_queue);
 		lock_queue(ctx->working_queue);
 		
@@ -29,7 +29,7 @@ int server_updater(void *arg){
 		
 		unlock_queue(ctx->working_queue);			
 		unlock_queue(ctx->waiting_queue);
-		unlock_rescuers(ctx);									// sblocco tutto
+		unlock_rescuer_types(ctx);									// sblocco tutto
 
 		log_event(AUTOMATIC_LOG_ID, SERVER, "aggiornamento #%d del server eseguito con successo", ctx->tick_count_since_start);
 	}
@@ -100,6 +100,7 @@ int update_rescuer_digital_twin_state_and_position_logging(rescuer_digital_twin_
 			return YES;
 		default: log_fatal_error("spostamento rescuer dt");
 	}	
+	return NO; // non si arriva qui, si fallisce prima
 }
 
 void send_rescuer_digital_twin_back_to_base_logging(rescuer_digital_twin_t *t){			
@@ -126,7 +127,7 @@ void timeout_emergency_if_needed_logging(emergency_node_t* n){
 	if(!n || n->emergency->status == TIMEOUT)
 		return;
 
-	int time_limit = get_time_before_emergency_timeout_from_poriority(n->emergency->priority);
+	int time_limit = get_time_before_emergency_timeout_from_priority(n->emergency->priority);
 	if(n->emergency->time_spent_existing >= time_limit){
 		log_event(AUTOMATIC_LOG_ID, EMERGENCY_STATUS, "Emergenza %d: %s (%d) [%d, %d] messa in timeout perchè il tempo limite è stato superato e non si sono ancora liberate risorse per gestirla!", n->emergency->id, n->emergency->type->emergency_desc, n->emergency->priority, n->emergency->x, n->emergency->y);
 		n->emergency->status = TIMEOUT;
@@ -197,8 +198,8 @@ void update_working_emergency_node_status_signaling_logging(emergency_node_t *n)
 	}
 }
 
-int promote_to_medium_priority_if_needed_logging(emergency_queue_t* q, emergency_node_t* n){ // solo da 0 a 1 e non diversamente
-	if(!n->emergency->priority == MIN_EMERGENCY_PRIORITY)
+void promote_to_medium_priority_if_needed_logging(emergency_queue_t* q, emergency_node_t* n){ // solo da 0 a 1 e non diversamente
+	if(n->emergency->priority != MIN_EMERGENCY_PRIORITY)
 		return;
 	if(n->emergency->time_spent_existing >= MAX_TIME_IN_MIN_PRIORITY_BEFORE_PROMOTION){
 		change_node_priority_list(q, n, MEDIUM_EMERGENCY_PRIORITY);
@@ -253,7 +254,7 @@ void update_waiting_emergency_statuses_blocking(server_context_t *ctx){
 // il mutex è libero ogni volta che il thread che elabora il nodo sta aspettando qualcosa
 // magari sta aspettando che arrivino i rescuers, questo interrompe l'attesa
 void cancel_all_working_emergencies_signaling(server_context_t *ctx){
-	emergency_queue_t *q = get_working_emergency_queue_from_context(ctx);
+	emergency_queue_t *q = ctx->working_queue;
 	lock_queue(q);
 	for (int i = MIN_EMERGENCY_PRIORITY; i <= MAX_EMERGENCY_PRIORITY; i++){
 		emergency_node_t *n = q->lists[i]->head;

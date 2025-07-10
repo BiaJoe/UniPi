@@ -2,10 +2,15 @@
 
 // ----------- funzioni per il thread clock e chi deve avere accesso ai tick del server ----------- 
 
+static const struct timespec server_tick_time = {
+	.tv_sec = SERVER_TICK_INTERVAL_SECONDS,
+	.tv_nsec = SERVER_TICK_INTERVAL_NANOSECONDS
+};
+
 int server_clock(void *arg){
 	server_context_t *ctx = arg;
 	while(!ctx->server_must_stop){
-		thrd_sleep(SERVER_TICK_TIME, NULL); 	// attendo un tick di tempo del server
+		thrd_sleep(&server_tick_time, NULL); 	// attendo un tick di tempo del server
 		lock_server_clock(ctx);								// blocco il mutex per il tempo del server
 		tick(ctx); 														// il sterver ha tickato
 		cnd_broadcast(&ctx->clock_updated);		// segnalo al thread updater che il tempo è stato aggiornato
@@ -30,8 +35,6 @@ void wait_for_a_tick(server_context_t *ctx){
 int server_is_ticking(server_context_t *ctx){
 	return ctx->tick;
 }
-
-
 
 void lock_server_clock(server_context_t *ctx){
 	LOCK(ctx->clock_mutex);

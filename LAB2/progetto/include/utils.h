@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <threads.h>
 #include <ctype.h>
+#include <unistd.h>
+#include <time.h>
 
 #include "structs.h"
 
@@ -20,6 +22,7 @@
 #define MANHATTAN(x1,y1,x2,y2) (ABS((x1) - (x2)) + ABS((y1) - (y2)))
 #define MAX(a,b) ((a) > (b) ? (a) : (b))
 
+#define I_HAVE_TO_CLOSE_THE_LOG(m) ((strcmp(m, STOP_LOGGING_MESSAGE) == 0) ? 1 : 0 )
 #define TRUNCATE_STRING_AT_MAX_LENGTH(s,maxlen) \
 	do { \
 		if(strlen(s) >= (maxlen)) \
@@ -49,44 +52,54 @@
 
 #define check_error_mq_open(mq) 					check_error((mq) == (mqd_t)-1, "mq_open") 
 #define check_error_mq_send(b) 						check_error((b) == -1, "mq_send")
-#define check_error_mq_recieve(b) 				check_error((b) == -1, "mq_receive")
-		
+#define check_error_mq_receive(b) 				check_error((b) == -1, "mq_receive")
+#define try_to_open_queue(mq, queue_name, max_attempts, nanoseconds_interval) 		\
+	do {																																\
+		if ((mq) == (mqd_t)-1) { 																					\
+			int attempts = 0; 																							\
+			while (attempts < (max_attempts)) { 														\
+				mq = mq_open(queue_name, O_WRONLY); 													\
+				if (mq != (mqd_t)-1) 																					\
+					break; 																											\
+				struct timespec req = {																				\
+						.tv_sec = 0,																							\
+						.tv_nsec = (nanoseconds_interval)													\
+				};																														\
+				nanosleep(&req, NULL);																				\
+				attempts++; 																									\
+			} 																															\
+			if (mq == (mqd_t)-1) {																					\
+				perror("mq_open fallita dopo 10 tentativi"); 									\
+				exit(EXIT_FAILURE); 																					\
+			} 																															\
+		}																																	\
+	} while (0);
+
+
+
 #define check_error_fork(pid) 						check_error((pid) < 0, "fork_failed")
 #define check_error_syscall(call, m)			check_error((call) == -1, m)
 #define check_error_mtx_init(call)  			check_error((call) != thrd_success, "mutex init")
-#define check_error_cnd_init(call)  			check_error((call) != thrd_success, "mutex init")
+#define check_error_cnd_init(call)  			check_error((call) != thrd_success, "cnd init")
 
 // funzioni di utilità generale
 int is_line_empty(char *line);
 int my_atoi(char a[]);
-void write_line(FILE *f, char *s);
 
 // funzioni di accesso a strutture
 rescuer_type_t * get_rescuer_type_by_name(char *name, rescuer_type_t **rescuer_types);
 emergency_type_t * get_emergency_type_by_name(char *name, emergency_type_t **emergency_types);
 rescuer_request_t * get_rescuer_request_by_name(char *name, rescuer_request_t **rescuers);
 char* get_name_of_rescuer_requested(rescuer_request_t *rescuer_request);
-int get_time_before_emergency_timeout_from_poriority(int p);
+int get_time_before_emergency_timeout_from_priority(int p);
 rescuer_type_t *get_rescuer_type_by_index(server_context_t *ctx, int i);
-rescuer_digital_twin_t *get_rescuer_digital_twin_by_index(rescuer_type_t *r, int rescuer_digital_twin_index){
+rescuer_digital_twin_t *get_rescuer_digital_twin_by_index(rescuer_type_t *r, int rescuer_digital_twin_index);
 
 // funzioni per liberare strutture allocate dinamicamente che non sono ad uso specifico del processo in cui sono allocate
 // esempio: i rescuer types sono allocati dal parser ma liberati dal server
 void free_rescuer_types(rescuer_type_t **rescuer_types);
 void free_emergency_types(emergency_type_t **emergency_types);
 void free_rescuer_requests(rescuer_request_t **rescuer_requests);
-
-//funzioni per lockare e unlockare mutex 
-
-void lock_rescuer_types(server_context_t *ctx);
-void unlock_rescuer_types(server_context_t *ctx);
-
-void lock_queue(emergency_queue_t *q);
-void unlock_queue(emergency_queue_t *q);
-void lock_list(emergency_list_t *l);
-void unlock_list(emergency_list_t *l);
-void lock_node(emergency_node_t *n);
-void unlock_node(emergency_node_t *n);
 
 
 #endif

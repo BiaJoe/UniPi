@@ -3,10 +3,12 @@
 
 #include <time.h>
 #include <mqueue.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <threads.h>
 #include <stdatomic.h>
 #include <stdbool.h>
-#include "costants.h"
+#include "constants.h"
 
 // STRUTTURA HELPER PER IL PARSING
 
@@ -29,6 +31,12 @@ typedef struct {
 	int is_terminating;								// se loggarlo vuol dire terminare il programma		
 	int is_to_log;										// se va scritto o no nel file di log
 } log_event_info_t;
+
+
+typedef struct {
+	long long timestamp;
+	char message[MAX_LOG_EVENT_LENGTH / 8];
+} log_message_t;
 
 #define LOG_EVENT_TYPES_COUNT 32
 
@@ -236,7 +244,6 @@ typedef struct {
 	emergency_list_t* completed_emergencies;	// lista per tenere traccia di tutte le emergenze completate
 	emergency_list_t* canceled_emergencies; 	// lista delle emergenze cancellate
 	mqd_t mq;																	// message queue per ricevere le emergenze dai client	
-	time_t current_time;											// tempo corrente del server
 	int tick;																	// tick del server, per sincronizzare i thread
 	int tick_count_since_start;								// contatore dei tick del server, per tenere traccia di quanti tick sono stati fatti
 	mtx_t clock_mutex;												// mutex per proteggere l'accesso al tick del server

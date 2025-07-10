@@ -11,14 +11,14 @@ int emergency_requests_reciever(server_context_t *ctx){
 	char buffer[MAX_EMERGENCY_QUEUE_MESSAGE_LENGTH];
 
 	while (1) {
-		check_error_mq_recieve(mq_receive(ctx->mq, buffer, MAX_EMERGENCY_QUEUE_MESSAGE_LENGTH, NULL));
-		if (IS_STOP_MESSAGE(buffer)) {		// se è il messaggio di stop devo uscire!
+		check_error_mq_receive(mq_receive(ctx->mq, buffer, MAX_EMERGENCY_QUEUE_MESSAGE_LENGTH, NULL));
+		if (strcmp(buffer, STOP_MESSAGE_FROM_CLIENT) == 0) {		// se è il messaggio di stop devo uscire!
 			ctx -> server_must_stop = true;
 			return 0;
 		}
 
 		ctx->emergency_requests_count++;
-		char *name; int x, y; time_t time;
+		char name[EMERGENCY_NAME_LENGTH]; int x, y; time_t time;
 		if(!parse_emergency_request(buffer, name, &x, &y, &time) || emergency_request_values_are_illegal(ctx, name, x, y, time)){ 
 			log_event(ctx->emergency_requests_count, WRONG_EMERGENCY_REQUEST_IGNORED_SERVER, "emergenza %s (%d, %d) %ld rifiutata perchè conteneva valori illegali", name, x, y, time);
 			continue;
@@ -47,9 +47,9 @@ int parse_emergency_request(char *message, char* name, int *x, int *y, time_t *t
 
 int emergency_request_values_are_illegal(server_context_t *ctx, char* name, int x, int y, time_t timestamp){
 	if(strlen(name) <= 0) return YES;
-	int h = get_server_height(ctx);
-	int w = get_server_width(ctx);
-	if(!get_emergency_type_by_name(name, get_emergency_types_from_server_context(ctx))) return YES;
+	int h = ctx->height;
+	int w = ctx->width;
+	if(!get_emergency_type_by_name(name, ctx->emergency_types)) return YES;
 	if(ABS(x) < MIN_X_COORDINATE_ABSOLUTE_VALUE || ABS(x) > ABS(w)) return YES;
 	if(ABS(y) < MIN_Y_COORDINATE_ABSOLUTE_VALUE || ABS(y) > ABS(h)) return YES;
 	if(timestamp == INVALID_TIME) return YES;

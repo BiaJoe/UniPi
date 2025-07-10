@@ -39,5 +39,5 @@ int check_and_log_if_line_is_empty(parsing_state_t *ps){
 void log_and_fail_if_file_line_cant_be_processed(parsing_state_t *ps, int max_lines, int max_parsable_lines, int max_line_length){
 	if(ps->line_number > max_lines)							log_fatal_error("Numero massimo di linee superato in %s", ps->filename);
 	if(ps->parsed_so_far > max_parsable_lines)	log_fatal_error("Numero massimo di linee elaborate superato in %s", ps->filename);
-	if(strlen(ps->line) > max_line_length)			log_fatal_error(LINE_FILE_ERROR_STRING "Linea troppo lunga", ps->line_number, ps->filename);
+	if((int) strlen(ps->line) > max_line_length)			log_fatal_error(LINE_FILE_ERROR_STRING "Linea troppo lunga", ps->line_number, ps->filename);
 }

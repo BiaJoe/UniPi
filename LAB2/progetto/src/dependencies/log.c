@@ -42,13 +42,14 @@ static log_event_info_t log_event_lookup_table[LOG_EVENT_TYPES_COUNT] = {
 			[RESCUER_TRAVELLING_STATUS]               = { "RESCUER_TRAVELLING_STATUS",                  "rtst", 						0, 					NO, 													NO 				},
 			[EMERGENCY_REQUEST]               				= { "EMERGENCY_REQUEST",               						"erre", 						0, 					NO, 													YES 			},
 			[PROGRAM_ENDED_SUCCESSFULLY]							= { "PROGRAM_ENDED_SUCCESSFULLY",									"pesu", 						0,					YES,  												YES				}
-	};
+};
+
 
 // funzione che invia il messaggio da loggare al processo logger.c 
 // attraverso la message queue
 // se si vuol far terminare il logging è sufficiente loggare un evento "terminatore"
 // ad esempio PROGRAM_ENDED_SUCCESSFULLY fa terminare il programma
-void send_log_message(char message[]) {
+void send_log_message(char buffer[], long long time) {
 	// per non dover aprire e chiudere la coda di log ad OGNI chiamata
 	// la dichiarop statica nella funzione, cioè verrà ricordata anche tra chiamate
 	// dovrò aprirla quindi una sola volta (la prima, quando if(mq == -1){...} è vero)
@@ -56,15 +57,16 @@ void send_log_message(char message[]) {
 
 	// entra solo la prima volta
 	if(mq == (mqd_t)-1)
-		check_error_mq_open(mq = mq_open(LOG_QUEUE_NAME, O_WRONLY));
+		try_to_open_queue(mq, LOG_QUEUE_NAME, HOW_MANY_ATTEMPTS_FOR_OPENING_LOG_QUEUE, NANOSECONDS_BETWEN_LOG_QUEUE_OPENING_ATTEMPTS)
 
-	// mi assicuro che il messaggio non sia troppo lungo prima di inviarlo
-	TRUNCATE_STRING_AT_MAX_LENGTH(message, MAX_LOG_EVENT_LENGTH);
+	
+	log_message_t msg;
+	msg.timestamp = time;
+	strncpy(msg.message, buffer, sizeof(msg.message)); // buffer è il messaggio formattato
 
-	// invio il messaggio
-	check_error_mq_send(mq_send(mq, message, strlen(message) + 1, 0));
+	check_error_mq_send(mq_send(mq, (char*)&msg, sizeof(msg), 0));
 
-	if(I_HAVE_TO_CLOSE_THE_LOG(message)){
+	if(I_HAVE_TO_CLOSE_THE_LOG(buffer)){
 		mq_close(mq); // non faccio unlink perchè lo fa il ricevitore	
 		mq = (mqd_t)-1;
 	}
@@ -90,22 +92,30 @@ void log_event(int id, log_event_type_t type, char *format, ...) {
 		default:										snprintf(id_string, sizeof(id_string), "%d", id);
 	}
 		
-	char buffer[MAX_LOG_EVENT_LENGTH];				
+	char buffer[MAX_LOG_EVENT_LENGTH];
+	long long time_nanoseconds;
+	
+	struct timespec ts;	// calcolo in che momento esatto stiamo loggando
+	clock_gettime(CLOCK_REALTIME, &ts);
+	time_nanoseconds = ts.tv_sec * 1000000000LL + ts.tv_nsec; // scrivo i nanosecondi
+
 	snprintf(			
-		buffer, 													// stringa che invierò a logger (message queue)
-		MAX_LOG_EVENT_LENGTH, 						// lunghezza massima fino a cui scrivere
-		LOG_EVENT_STRING_SYNTAX,					// formato da dare alla stringa
-		get_time(),												// timestamp		
-		id_string, 												// id dell'evento già elaborato sopra
-		get_log_event_type_string(type), 	// nome dell'evento
-		message														// messaggio da loggare				
+		buffer, 																// stringa che invierò a logger (message queue)
+		MAX_LOG_EVENT_LENGTH / sizeof(char), 		// lunghezza massima fino a cui scrivere
+		LOG_EVENT_STRING_SYNTAX,								// formato da dare alla stringa
+		time(NULL),															// timestamp al momento esatto del log
+		id_string, 															// id dell'evento già elaborato sopra
+		get_log_event_type_string(type), 				// nome dell'evento
+		message																	// messaggio da loggare				
 	);
 
-	send_log_message(buffer);
+	printf("%s", buffer);
+
+	send_log_message(buffer, time_nanoseconds);
 	increment_log_event_type_counter(type);
 
 	if(is_log_event_type_terminating(type)) // se l'evento fa terminare il programma si invia anche il messaggio di stop logging per far terminare il logger
-		send_log_message(STOP_LOGGING_MESSAGE);
+		send_log_message(STOP_LOGGING_MESSAGE, time_nanoseconds);
 }
 
 void log_fatal_error(char *format, ...){

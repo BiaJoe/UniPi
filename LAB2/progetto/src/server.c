@@ -10,12 +10,13 @@ int main(void){
 
 void server(void){
 	log_event(NON_APPLICABLE_LOG_ID, LOGGING_STARTED, "Inizio logging");		// si inizia a loggare
+	log_event(NON_APPLICABLE_LOG_ID, PARSING_STARTED, "Inizio parsing dei file di configurazione");
 	server_context_t *ctx = mallocate_server_context();											// estraggo le informazioni dai file conf, le metto tutte nel server context
+	log_event(NON_APPLICABLE_LOG_ID, PARSING_ENDED, "Il parsing è terminato con successo!");
 	log_event(NON_APPLICABLE_LOG_ID, SERVER, "tutte le variabili sono state ottenute dal server: adesso il sistema è a regime!");
-	
+
 	thrd_t clock_thread;
 	thrd_t updater_thread;
-	thrd_t receiver_thread;
 	thrd_t worker_threads[THREAD_POOL_SIZE];
 
 	if (thrd_create(&clock_thread, server_clock, ctx) != thrd_success) {
@@ -29,13 +30,13 @@ void server(void){
 	}
 	
 	for (int i = 0; i < THREAD_POOL_SIZE; i++) {
-		if (thrd_create(&worker_threads[i], emergency_handler, ctx) != thrd_success) {
+		if (thrd_create(&worker_threads[i], server_emergency_handler, ctx) != thrd_success) {
 			log_fatal_error("errore durante la creazione di un elaboratore di emergenze nel server");
 			return;
 		}
 	}
 
-	recieve_emergency_requests(ctx);
+	emergency_requests_reciever(ctx);
 
 	// arrivati qui il server deve chiudersi faccio il join dei thread così quando hanno finito chiudo tutto
 	thrd_join(clock_thread, NULL);
@@ -54,20 +55,14 @@ void server(void){
 // inizializzo i mutex
 server_context_t *mallocate_server_context(){
 	server_context_t *ctx = (server_context_t *)malloc(sizeof(server_context_t));	
-	time_t current_time = time(NULL); 																							
-	int height = 0, width = 0, rescuer_count = 0, emergency_types_count = 0;
-	rescuer_type_t** rescuer_types = NULL;
-	emergency_type_t** emergency_types = NULL;
+	check_error_memory_allocation(ctx);
 
 	// Parsing dei file di configurazione
-	log_event(AUTOMATIC_LOG_ID, PARSING_STARTED, "Inizio parsing dei file di configurazione");
 	parse_env(ctx);
 	parse_rescuers(ctx);
 	parse_emergencies(ctx);
-	log_event(AUTOMATIC_LOG_ID, PARSING_ENDED, "Il parsing è terminato con successo!");
-
+	
 	// popolo ctx
-	ctx -> current_time = current_time; 
 	ctx -> emergency_requests_count = 0; 	// all'inizio non ci sono state ancora richieste
 	ctx -> valid_emergency_request_count = 0;
 	ctx -> tick = NO;											

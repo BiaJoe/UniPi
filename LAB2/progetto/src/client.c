@@ -8,23 +8,25 @@ mqd_t mq;
 
 int main(int argc, char* argv[]){
 	// controllo il numero di argomenti
-	if(argc != 3 && argc != 5) DIE(argv[0], "numero di argomenti dati al programma sbagliato");
+	if(argc != 3 && argc != 5 && argc != 2) 
+		DIE(argv[0], "numero di argomenti dati al programma sbagliato");
 
 	// capisco in quale modalità mi trovo
 	// in questo caso le modalità sono 2 + undefined, 
 	// ma non sarebbe difficile espandere il codice ed aggiungerne di più in futuro
 	int mode = UNDEFINED_MODE;
 
-	if(argc == 5)
-		mode = NORMAL_MODE;
+	switch (argc) {
+		case 5: mode = NORMAL_MODE;  break;	
+		case 3: if (strcmp(argv[1], FILE_MODE_STRING) == 0) mode = FILE_MODE;
+						// espandibile
+			break;
+		case 2: if (strcmp(argv[1], STOP_MODE_STRING) == 0) mode = STOP_MODE;
+						// espandibile
+			break;
+		default: DIE(argv[0], "modalità di inserimento dati non riconosciuta");
+	}
 
-	if(argv[1][0] == '-')
-		switch(argv[1][1]) {
-			case FILE_MODE_CHAR: mode = FILE_MODE; break;
-			case STOP_MODE_CHAR: mode = STOP_MODE; break;
-			// ...espandibile ad altre modalità del tipo ./client -<mode> <arg>
-			default: DIE(argv[0], "opzione inesistente richiesta");
-		}
 
 	// apro la coda su cui manderò la/le emergenza/e
 	check_error_mq_open(mq = mq_open(EMERGENCY_QUEUE_NAME, O_WRONLY));
@@ -33,7 +35,7 @@ int main(int argc, char* argv[]){
 		case NORMAL_MODE: handle_normal_mode_input(argv); break;
 		case FILE_MODE: 	handle_file_mode_input(argv); break;
 		case STOP_MODE: 	handle_stop_mode_client(); break;
-		default: 					DIE(argv[0], "modalità di inserimento non trovata");
+		default: 					DIE(argv[0], "modalità di inserimento dati non valida");
 	}
 
 	// a questo punto l'emergenza o le emergenze sono state inviate.
@@ -46,7 +48,7 @@ int main(int argc, char* argv[]){
 }
 
 
-void handle_stop_mode_client(void){
+void handle_stop_mode_client(){
 	char *buffer = STOP_MESSAGE_FROM_CLIENT;
 	check_error_mq_send(mq_send(mq, buffer, strlen(buffer) + 1, 0));
 	log_event(AUTOMATIC_LOG_ID, MESSAGE_QUEUE_CLIENT, "inviato messaggio di stop dal client");
@@ -68,12 +70,12 @@ int send_emergency_request_message(char *name, char *x_string, char *y_string, c
 		return 0;
 	}
 
-	if(strlen(name) > EMERGENCY_NAME_LENGTH){
+	if(strlen(name) >= EMERGENCY_NAME_LENGTH){
 		LOG_IGNORING_ERROR("nome emergenza troppo lungo");
 		return 0;
 	}
 
-	if(snprintf(buffer, sizeof(buffer), "%s %d %d %ld", name, x, y, d) >= MAX_EMERGENCY_REQUEST_LENGTH + 1){
+	if(snprintf(buffer, sizeof(buffer), "%s %d %d %d", name, x, y, d) >= MAX_EMERGENCY_REQUEST_LENGTH + 1){
 		LOG_IGNORING_ERROR("messaggio di emergenza troppo lungo");
 		return 0;
 	}
@@ -111,9 +113,9 @@ void handle_file_mode_input(char* args[]){
 		line_count++;
 
 		if(line_count > MAX_FILE_LINES)
-			log_fatal_error_temporaneo("linee massime superate nel client. Interruzione della lettura emergenze", FATAL_ERROR_PARSING);
+			log_fatal_error("linee massime superate nel client. Interruzione della lettura emergenze");
 		if(emergency_count > MAX_EMERGENCY_REQUEST_COUNT)
-			log_fatal_error_temporaneo("numero di emergenze richieste massime superate nel client. Interruzione della lettura emergenze", FATAL_ERROR_PARSING);
+			log_fatal_error("numero di emergenze richieste massime superate nel client. Interruzione della lettura emergenze");
 		
 		name 					= strtok(line, EMERGENCY_REQUEST_ARGUMENT_SEPARATOR);
 		x 						= strtok(NULL, EMERGENCY_REQUEST_ARGUMENT_SEPARATOR);

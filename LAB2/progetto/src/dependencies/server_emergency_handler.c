@@ -1,4 +1,4 @@
-#include "emergency_handler.h"
+#include "server_emergency_handler.h"
 
 // ----------- funzioni per il thread worker -----------
 
@@ -8,11 +8,11 @@
 // esegue i processi necessari per la sua elaborazione
 // ad ogni "step" controlla che l'emergenza non sia stata cancellata o messa in pausa
 // se lo è stata agisce di conseguenza e passa alla prossima, altrimenti va avanti su quella
-int emergency_handler(void *arg){
+int server_emergency_handler(void *arg){
 	server_context_t *ctx = arg;
 	emergency_node_t *n = NULL;
-	emergency_queue_t *waiting_queue = get_waiting_emergency_queue_from_context(ctx); 	// estraggo la coda delle emergenze in attesa
-	emergency_queue_t *working_queue = get_working_emergency_queue_from_context(ctx); 	// estraggo la coda delle emergenze in che sto processando
+	emergency_queue_t *waiting_queue = ctx->waiting_queue; 	// estraggo la coda delle emergenze in attesa
+	emergency_queue_t *working_queue = ctx->working_queue; 	// estraggo la coda delle emergenze in che sto processando
 
 	while(!ctx->server_must_stop){		
 		// attendo che ci sia qualcosa da processare	
@@ -56,9 +56,8 @@ int handle_search_for_rescuers(server_context_t *ctx, emergency_node_t *n){
 	log_event(n->emergency->id, EMERGENCY_STATUS, "Inizia la ricerca dei %d rescuers per l'emergenza %d: %s (%d) [%d, %d]",n->emergency->rescuer_count, n->emergency->id, n->emergency->type->emergency_desc, n->emergency->priority, n->emergency->x, n->emergency->y);
 	while (!n->rescuers_found && n->emergency->status != CANCELED) {		// cerco i rescuers ogni tot secondi finchè o li ho trovati o l'emergenza è stata cancellata
 		lock_rescuer_types(ctx); 																						
-		find_and_send_nearest_rescuers(n, RESCUER_SERARCHING_STEAL_MODE); // cerco rescuer, posso anche rubarli da emergenze meno importanti se ce ne sono
+		find_and_send_nearest_rescuers(n, RESCUER_SEARCHING_STEAL_MODE); // cerco rescuer, posso anche rubarli da emergenze meno importanti se ce ne sono
 		unlock_rescuer_types(ctx); 		
-		timeout_working_emergency_if_needed_logging(n);
 		if (n->rescuers_found || n->emergency->status == CANCELED) 
 			break; 									
 		log_event(n->emergency->id, EMERGENCY_STATUS, "L'emergenza %d: %s (%d) [%d, %d] non puó essere gestita subito, attende di trovare altri rescuers", n->emergency->id, n->emergency->type->emergency_desc, n->emergency->priority, n->emergency->x, n->emergency->y);
@@ -111,7 +110,7 @@ void cancel_and_unlock_working_node_blocking(server_context_t *ctx, emergency_no
 	unlock_node(n);
 }
 
-int pause_and_unlock_working_node_blocking(server_context_t *ctx, emergency_node_t *n){
+void pause_and_unlock_working_node_blocking(server_context_t *ctx, emergency_node_t *n){
 	lock_queue(ctx->waiting_queue);
 	lock_queue(ctx->working_queue);													
 	// lock_list(ctx->working_queue->lists[n->emergency->priority]);
@@ -184,7 +183,7 @@ rescuer_digital_twin_t *find_nearest_available_rescuer_digital_twin(rescuer_type
 	return nearest_dt;																				
 }
 
-int is_rescuer_digital_twin_stealable(rescuer_digital_twin_t *dt, emergency_type_t *stealer_emergency){
+int is_rescuer_digital_twin_stealable(rescuer_digital_twin_t *dt, emergency_t *stealer_emergency){
 	return (
 		(dt->status == EN_ROUTE_TO_SCENE || dt->status == ON_SCENE) &&
 		dt->emergency_node->emergency->priority < stealer_emergency->priority
@@ -243,8 +242,8 @@ void pause_emergency_blocking_signaling_logging(emergency_node_t *n){
 int find_and_send_nearest_rescuers(emergency_node_t *n, char mode){	
 	int we_can_steal;
 	switch (mode) {
-		case RESCUER_SERARCHING_FAIR_MODE: 	we_can_steal = NO; 	break;
-		case RESCUER_SERARCHING_STEAL_MODE: we_can_steal = YES; break;
+		case RESCUER_SEARCHING_FAIR_MODE: 	we_can_steal = NO; 	break;
+		case RESCUER_SEARCHING_STEAL_MODE: we_can_steal = YES; break;
 		default: we_can_steal = NO;
 	}
 
@@ -260,9 +259,9 @@ int find_and_send_nearest_rescuers(emergency_node_t *n, char mode){
 		rescuer_type_t *rt = n->emergency->type->rescuers[i]->type; 												// prendo il rescuer type i-esimo
 		for(int j = 0; j < rescuer_dt_amount; j++){																					// per ognuno, devo trovare i gemelli richiesti
 			rescuer_digital_twin_t *dt = find_nearest_available_rescuer_digital_twin(rt, n);
-			// un rescuer libero non l'ho trovato, magari posso rubarne uno se sono nella modalitàRESCUER_SERARCHING_STEAL_MODE 
+			// un rescuer libero non l'ho trovato, magari posso rubarne uno se sono nella modalitàRESCUER_SEARCHING_STEAL_MODE 
 			if(we_can_steal && dt == NULL)
-				dt = find_nearest_stealable_rescuer_digital_twin(rt, n);
+				dt = try_to_find_nearest_rescuer_from_less_important_emergency(rt, n);
 			if (dt == NULL) {
 				n->rescuers_are_arriving = NO;
 				n->rescuers_found = NO;
@@ -276,7 +275,7 @@ int find_and_send_nearest_rescuers(emergency_node_t *n, char mode){
 	for(int i = 0; i < rescuer_index; i++){ 	
 		rescuer_digital_twin_t *dt = rescuers[i];
 		if (we_can_steal && rescuer_digital_twin_must_be_stolen(dt))
-			pause_emergency_blocking_signaling_logging(n);
+			pause_emergency_blocking_signaling_logging(dt->emergency_node);
 		int s = MANHATTAN(dt->x, dt->y, n->emergency->x, n->emergency->y);			
 		int v = dt->rescuer->speed; 			
 		time_to_arrive = ABS(s / v) + 1;

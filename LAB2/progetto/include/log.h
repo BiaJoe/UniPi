@@ -1,14 +1,17 @@
 #ifndef LOG_H
 #define LOG_H
 
+#ifndef _POSIX_C_SOURCE
+#define _POSIX_C_SOURCE 199309L
+#endif 
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 #include <threads.h>
+#include <unistd.h>
 
-
-#include "logger.h"
 #include "utils.h"
 
 #define check_opened_file_error_log(fp) \
@@ -32,9 +35,8 @@ int is_log_event_type_terminating(log_event_type_t event_type);
 int is_log_event_type_to_log(log_event_type_t event_type);
 
 void log_event(int id, log_event_type_t event_type, char *message, ...);
-void log_fatal_error_temporaneo(char *message, log_event_type_t event);
-
-void send_log_message(char message[]);
+void log_fatal_error(char *format, ...);
+void send_log_message(char buffer[], long long time);
 
 
 #endif

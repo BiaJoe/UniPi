@@ -1,5 +1,5 @@
-#ifndef COSTANTS_H
-#define COSTANTS_H
+#ifndef CONSTANTS_H
+#define CONSTANTS_H
 
 #define RESCUERS_CONF        "conf/rescuers.conf"
 #define EMERGENCY_TYPES_CONF "conf/emergency_types.conf"
@@ -26,11 +26,21 @@
 #define MAX_ENV_FIELD_LENGTH 32
 
 // log
-#define MAX_LOG_EVENT_LENGTH 512			// lungezza massima totale di un evento di log
+#define MAX_LOG_EVENT_LENGTH 2048			// lungezza massima totale di un evento di log
 #define MAX_LOG_EVENT_ID_STRING_LENGTH 16
 #define LOG_EVENT_NAME_LENGTH 64
 #define LOG_EVENT_CODE_LENGTH 5
-#define LOG_EVENT_MESSAGE_LENGTH 256
+#define LOG_EVENT_MESSAGE_LENGTH 1024
+
+#define LOG_FILE "log.txt"
+#define LOG_QUEUE_NAME "/log_queue"
+#define MAX_LOG_QUEUE_MESSAGES 8
+#define AUTOMATIC_LOG_ID -1
+#define NON_APPLICABLE_LOG_ID -2
+#define NON_APPLICABLE_LOG_ID_STRING "N/A"
+#define STOP_LOGGING_MESSAGE "-stop"
+#define HOW_MANY_ATTEMPTS_FOR_OPENING_LOG_QUEUE 20
+#define NANOSECONDS_BETWEN_LOG_QUEUE_OPENING_ATTEMPTS 100000000 //0.1 secondi
 
 // le priorità possono essere anche diverse, ma ci sono delle condizioni da rispettare
 // 1. devono essere in ordine crescente
@@ -75,9 +85,9 @@
 #define RESCUER_REQUESTS_SEPARATOR ";"
 
 #define ENV_CONF_VALID_LINES_COUNT 3
-#define ENV_CONF_QUEUE_SYNTAX 	"queue=%" STR(EMERGENCY_QUEUE_NAME_LENGTH) "s"
-#define ENV_CONF_HEIGHT_SYNTAX 	"height=%d"
-#define ENV_CONF_WIDTH_SYNTAX 	"width=%d"
+#define ENV_CONF_QUEUE_SYNTAX 	"queue= %" STR(EMERGENCY_QUEUE_NAME_LENGTH) "s"
+#define ENV_CONF_HEIGHT_SYNTAX 	"height= %d"
+#define ENV_CONF_WIDTH_SYNTAX 	"width= %d"
 #define ENV_CONF_QUEUE_TURN			0
 #define ENV_CONF_HEIGHT_TURN		1
 #define ENV_CONF_WIDTH_TURN			2

@@ -38,6 +38,7 @@ void free_emergency(emergency_t* e){
 
 emergency_node_t* mallocate_emergency_node(emergency_t *e){
 	emergency_node_t* n = (emergency_node_t*)malloc(sizeof(emergency_node_t));
+	check_error_memory_allocation(n);
 	n -> list = NULL;
 	n -> rescuers_found = NO;
 	n -> rescuers_are_arriving = NO;
@@ -58,7 +59,8 @@ void free_emergency_node(emergency_node_t* n){
 }
 
 emergency_list_t *mallocate_emergency_list(){
-	emergency_list_t *el = (emergency_list_t *)malloc(sizeof(emergency_list_t));	
+	emergency_list_t *el = (emergency_list_t *)malloc(sizeof(emergency_list_t));
+	check_error_memory_allocation(el);	
 	el -> head = NULL;
 	el -> tail = NULL;
 	el -> node_amount = 0;
@@ -89,7 +91,7 @@ emergency_queue_t *mallocate_emergency_queue(){
 }
 
 int is_queue_empty(emergency_queue_t *q){
-	return q-> is_empty;
+	return q->is_empty;
 }
 
 void free_emergency_queue(emergency_queue_t *q){
@@ -144,18 +146,18 @@ int is_the_last_node_of_the_list(emergency_node_t* node){
 }
 
 void remove_emergency_node_from_its_list(emergency_node_t* node){
-	if(!node || !(node->list)) return;										// se il nodo non è in nessuna lista non c'è niente da fare
-		if (is_the_first_node_of_the_list(node)) {					// trattamento del primo nodo:
-			node->list->head = node->next;										// - aggiorno la testa della lista
-			node->list->head->prev = NULL;										// - la testa ha NULL come precedente
-		} else node->prev->next = node->next; 							// tutti gli altri collegano il precedente al successivo
-		if (is_the_last_node_of_the_list(node)) {						// trattamento della coda del nodo:
-			node->list->tail = node->prev;										// - aggiorno la coda della lista
-			node->list->tail->next = NULL;										// - il next della coda è sempre NULL
-		} else node->next->prev = node->prev;								// tutti i nodi tranne l'ultimo
-	node->prev = NULL;																		// annullo i puntatori del nodo 
-	node->next = NULL;																		// per non rischiare di accedervi quando è fuori
-	node->list->node_amount -= 1;													// decremento il numero di nodi nella lista
+	if(!node || !(node->list)) return;												// se il nodo non è in nessuna lista non c'è niente da fare
+		if (is_the_first_node_of_the_list(node)) {							// trattamento del primo nodo:
+			node->list->head = node->next;												// - aggiorno la testa della lista
+			if (node->list->head) node->list->head->prev = NULL;	// - la testa ha NULL come precedente
+		} else node->prev->next = node->next; 									// tutti gli altri collegano il precedente al successivo
+		if (is_the_last_node_of_the_list(node)) {								// trattamento della coda del nodo:
+			node->list->tail = node->prev;												// - aggiorno la coda della lista
+			if (node->list->tail) node->list->tail->next = NULL;	// - il next della coda è sempre NULL
+		} else node->next->prev = node->prev;										// tutti i nodi tranne l'ultimo
+	node->prev = NULL;																				// annullo i puntatori del nodo 
+	node->next = NULL;																				// per non rischiare di accedervi quando è fuori
+	node->list->node_amount -= 1;															// decremento il numero di nodi nella lista
 }
 
 void change_emergency_node_list_append(emergency_node_t *n, emergency_list_t *new_list){
