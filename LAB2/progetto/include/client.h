@@ -7,7 +7,7 @@
 #include "debug.h"
 #include "log.h"
 
-#define LOG_IGNORING_ERROR(m) log_event(AUTOMATIC_LOG_ID, WRONG_EMERGENCY_REQUEST_IGNORED_CLIENT, #m); 
+#define LOG_IGNORING_ERROR(m) log_event(AUTOMATIC_LOG_ID, WRONG_EMERGENCY_REQUEST_IGNORED_CLIENT, m) 
 
 #define PRINT_CLIENT_USAGE(argv0)  \
 	do { \

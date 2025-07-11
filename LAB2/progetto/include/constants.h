@@ -26,7 +26,7 @@
 #define MAX_ENV_FIELD_LENGTH 32
 
 // log
-#define MAX_LOG_EVENT_LENGTH 256			// lungezza dei messaggi inviati da message queue a logger
+#define MAX_LOG_EVENT_LENGTH 1024			// lungezza dei messaggi inviati da message queue a logger
 #define MAX_LOG_EVENT_ID_STRING_LENGTH 16
 #define LOG_EVENT_NAME_LENGTH 64
 #define LOG_EVENT_CODE_LENGTH 5

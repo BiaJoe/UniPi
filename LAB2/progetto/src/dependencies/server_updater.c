@@ -17,21 +17,27 @@ int server_updater(void *arg){
 		untick(ctx); 													// il server ha tickato, lo sblocco		
 		unlock_server_clock(ctx); 																				
 		
-		log_event(AUTOMATIC_LOG_ID, SERVER_UPDATE, "inizio aggiornamento #%d del server...", ctx->tick_count_since_start);
-	
-		lock_rescuer_types(ctx);										// blocco tutto
+		log_event(AUTOMATIC_LOG_ID, SERVER_UPDATE, "🔄 inizio aggiornamento #%d del server...", ctx->tick_count_since_start);
+
+		DEBUG("lock rescuers");
+		lock_rescuer_types(ctx);										
+		DEBUG("lock waiting queue");
 		lock_queue(ctx->waiting_queue);
+		DEBUG("lock working queue");
 		lock_queue(ctx->working_queue);
 		
 		update_rescuers_states_and_positions_on_the_map_logging(ctx); 							
 		update_working_emergencies_statuses_blocking(ctx);
 		update_waiting_emergency_statuses_blocking(ctx);
 
-		unlock_queue(ctx->working_queue);			
+		unlock_queue(ctx->working_queue);		
+		DEBUG("unlock rescuers");
 		unlock_queue(ctx->waiting_queue);
-		unlock_rescuer_types(ctx);									// sblocco tutto
+		DEBUG("unlock waiting queue");
+		unlock_rescuer_types(ctx);								
+		DEBUG("unlock working queue");
 
-		log_event(AUTOMATIC_LOG_ID, SERVER_UPDATE, "aggiornamento #%d del server eseguito con successo", ctx->tick_count_since_start);
+		// log_event(AUTOMATIC_LOG_ID, SERVER_UPDATE, "aggiornamento #%d del server eseguito con successo", ctx->tick_count_since_start);
 	}
 
 	cancel_all_working_emergencies_signaling(ctx);	// il server si è fermato, devo cancellare le emergenze ancora in elaborazione
@@ -45,6 +51,7 @@ void update_rescuers_states_and_positions_on_the_map_logging(server_context_t *c
 		if(r == NULL) continue; 																// se il rescuer type è NULL non faccio nulla (precauzione)
 		for(int j = 0; j < r->amount; j++){
 			rescuer_digital_twin_t *dt = get_rescuer_digital_twin_by_index(r, j);
+			log_event(dt->id, DEBUG, "%s [%d] stato = %d", dt->rescuer->rescuer_type_name, dt->id, dt->status);
 			update_rescuer_digital_twin_state_and_position_logging(dt, MIN_X_COORDINATE_ABSOLUTE_VALUE, MIN_Y_COORDINATE_ABSOLUTE_VALUE, ctx->height, ctx->width);
 		}
 	}
@@ -65,9 +72,11 @@ int update_rescuer_digital_twin_state_and_position_logging(rescuer_digital_twin_
 	
 	int xA = t->x;
 	int yA = t->y;
-	int cells_to_walk_on_the_X_axis;
-	int cells_to_walk_on_the_Y_axis;
+	int cells_to_walk_on_the_X_axis = 0;
+	int cells_to_walk_on_the_Y_axis = 0;
 	
+	DEBUG("paola~1");
+
 	int we_have_arrived = compute_bresenham_step(
 		t->x,
 		t->y,
@@ -76,6 +85,8 @@ int update_rescuer_digital_twin_state_and_position_logging(rescuer_digital_twin_
 		&cells_to_walk_on_the_X_axis,
 		&cells_to_walk_on_the_Y_axis
 	);
+
+	DEBUG("paola~2");
 
 	t->x += cells_to_walk_on_the_X_axis;		// faccio il passo
 	t->y += cells_to_walk_on_the_Y_axis;
@@ -86,7 +97,7 @@ int update_rescuer_digital_twin_state_and_position_logging(rescuer_digital_twin_
 	) log_fatal_error("srescuer uscito dalla mappa");
 
 	if (!we_have_arrived){
-		log_event(t->id, RESCUER_TRAVELLING_STATUS, "(%d, %d) -> (%d, %d) %s [%d] il rescuer si è spostato", t->rescuer->rescuer_type_name, t->id, xA, yA, t->x, t->y);
+		log_event(t->id, RESCUER_TRAVELLING_STATUS, "📍 %s [%d] : [%d, %d] -> [%d, %d] il rescuer si è spostato", t->rescuer->rescuer_type_name, t->id, xA, yA, t->x, t->y);
 		return YES; 													// ho aggiornato la posizione
 	}
 
@@ -97,11 +108,11 @@ int update_rescuer_digital_twin_state_and_position_logging(rescuer_digital_twin_
 		case EN_ROUTE_TO_SCENE:
 			t->time_left_before_it_can_leave_the_scene = t->time_to_manage;
 			t->status = ON_SCENE;
-			log_event(t->id, RESCUER_STATUS, "%s [%d] -> (%d, %d) il rescuer è arrivato alla scena dell'emergenza  !!!!", t->rescuer->rescuer_type_name, t->id, t->x, t->x);
+			log_event(t->id, RESCUER_STATUS, "🚨 %s [%d] -> [%d, %d] il rescuer è arrivato alla scena dell'emergenza  !!!!", t->rescuer->rescuer_type_name, t->id, t->x, t->x);
 			return YES;		
 		case RETURNING_TO_BASE:
 			t->status = IDLE;
-			log_event(t->id, RESCUER_STATUS, "%s [%d] -> (%d, %d) il rescuer è tornato sano e salvo alla base  :)", t->rescuer->rescuer_type_name, t->id, t->x, t->x);
+			log_event(t->id, RESCUER_STATUS, "⛑️ %s [%d] -> [%d, %d] il rescuer è tornato sano e salvo alla base  :)", t->rescuer->rescuer_type_name, t->id, t->x, t->x);
 			return YES;
 		default: log_fatal_error("spostamento rescuer dt");
 	}	
@@ -113,13 +124,13 @@ void send_rescuer_digital_twin_back_to_base_logging(rescuer_digital_twin_t *t){
 		case IDLE: return;									// se è già alla base non faccio nulla
 		case RETURNING_TO_BASE: return;
 		case ON_SCENE: 
-			log_event(t->id, RESCUER_STATUS, "il rescuer  %s [%d] parte dalla scena dell'emergenza per tornare alla base", t->rescuer->rescuer_type_name, t->id);
+			log_event(t->id, RESCUER_STATUS, "⬅ %s [%d] : ⚠️ [%d, %d] ... [%d, %d] 🏠 - il rescuer parte dalla scena dell'emergenza per tornare alla base", t->rescuer->rescuer_type_name, t->id, t->x, t-> y, t->rescuer->x, t->rescuer->y);
 			break;
 		case EN_ROUTE_TO_SCENE:
-			log_event(t->id, RESCUER_STATUS, "il rescuer  %s [%d] stava andando su una scena ma ora torna alla base", t->rescuer->rescuer_type_name, t->id);
+			log_event(t->id, RESCUER_STATUS, "⬅ %s [%d] : 🚀 [%d, %d] ... [%d, %d] 🏠 - il rescuer stava andando su una scena ma ora torna alla base", t->rescuer->rescuer_type_name, t->id, t->x, t-> y, t->rescuer->x, t->rescuer->y);
 			break;
 		default: 
-			log_event(t->id, RESCUER_STATUS, "il rescuer  %s [%d]  torna alla base", t->rescuer->rescuer_type_name, t->id);
+			log_event(t->id, RESCUER_STATUS, "⬅ %s [%d] : 📍 [%d, %d] ... [%d, %d] 🏠- il rescuer  torna alla base", t->rescuer->rescuer_type_name, t->id, t->x, t-> y, t->rescuer->x, t->rescuer->y);
 	}
 	t->status = RETURNING_TO_BASE; 				// cambio lo stato del twin
 	t->time_to_manage = INVALID_TIME;
@@ -134,7 +145,7 @@ void timeout_emergency_if_needed_logging(emergency_node_t* n){
 
 	int time_limit = get_time_before_emergency_timeout_from_priority(n->emergency->priority);
 	if(n->emergency->time_spent_existing >= time_limit){
-		log_event(AUTOMATIC_LOG_ID, EMERGENCY_STATUS, "Emergenza %d: %s (%d) [%d, %d] messa in timeout perchè il tempo limite è stato superato e non si sono ancora liberate risorse per gestirla!", n->emergency->id, n->emergency->type->emergency_desc, n->emergency->priority, n->emergency->x, n->emergency->y);
+		log_event(AUTOMATIC_LOG_ID, EMERGENCY_STATUS, "🛑 %s [%d] (%d) [%d, %d] messa in timeout perchè il tempo limite è stato superato e non si sono ancora liberate risorse per gestirla!",  n->emergency->type->emergency_desc,n->emergency->id, n->emergency->priority, n->emergency->x, n->emergency->y);
 		n->emergency->status = TIMEOUT;
 		return;
 	}
@@ -143,7 +154,7 @@ void timeout_emergency_if_needed_logging(emergency_node_t* n){
 		n->emergency->status == WAITING_FOR_RESCUERS && 
 		n->emergency->time_spent_existing + n->time_estimated_for_rescuers_to_arrive > time_limit
 	) {
-		log_event(AUTOMATIC_LOG_ID, EMERGENCY_STATUS, "Emergenza %d: %s (%d) [%d, %d] messa in timeout perchè i rescuers non faranno in tempo ad arrivarci! Sono troppo lontani.", n->emergency->id, n->emergency->type->emergency_desc, n->emergency->priority, n->emergency->x, n->emergency->y);
+		log_event(AUTOMATIC_LOG_ID, EMERGENCY_STATUS, "⛔️ %s [%d] (%d) [%d, %d] messa in timeout perchè i rescuers non faranno in tempo ad arrivarci! Sono troppo lontani.", n->emergency->type->emergency_desc, n->emergency->id, n->emergency->priority, n->emergency->x, n->emergency->y);
 		n->emergency->status = TIMEOUT;
 	}
 	return;

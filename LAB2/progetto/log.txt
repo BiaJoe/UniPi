@@ -1,24 +1,157 @@
-1752215733      N/A   LOGGING_STARTED                     Inizio logging
-1752215733      N/A   PARSING_STARTED                     Inizio parsing dei file di configurazione
-1752215733      0     RESCUER_DIGITAL_TWIN_ADDED          Pompieri #0 [100, 200] Aggiunto ai gemelli digitali 
-1752215733      1     RESCUER_DIGITAL_TWIN_ADDED          Pompieri #1 [100, 200] Aggiunto ai gemelli digitali 
-1752215733      2     RESCUER_DIGITAL_TWIN_ADDED          Pompieri #2 [100, 200] Aggiunto ai gemelli digitali 
-1752215733      3     RESCUER_DIGITAL_TWIN_ADDED          Pompieri #3 [100, 200] Aggiunto ai gemelli digitali 
-1752215733      4     RESCUER_DIGITAL_TWIN_ADDED          Pompieri #4 [100, 200] Aggiunto ai gemelli digitali 
-1752215733      1     RESCUER_TYPE_PARSED                 Rescuer Pompieri con base in (100, 200) e 5 gemelli digitali aggiunto!
-1752215733      0     RESCUER_REQUEST_ADDED               Richiesta di 2 unità di Pompieri registrate a linea 1 del file conf/emergency_types.conf
-1752215733      1     EMERGENCY_PARSED                    Emergenza Incendio di priorità 2 con 1 tipi di rescuer registrata tra i tipi di emergenze
-1752215733      0     EMPTY_CONF_LINE_IGNORED             linea 2 in conf/emergency_types.conf vuota, ignorata
-1752215733      1     EMPTY_CONF_LINE_IGNORED             linea 3 in conf/emergency_types.conf vuota, ignorata
-1752215733      N/A   PARSING_ENDED                       Il parsing è terminato con successo!
-1752215733      N/A   SERVER                              tutte le variabili sono state ottenute dal server: adesso il sistema è a regime!
-1752215733      N/A   MESSAGE_QUEUE_SERVER                inizio della ricezione delle emergenze!
-1752215767      0     MESSAGE_QUEUE_CLIENT                avvio della modalità di inserimento diretta
-1752215768      1     MESSAGE_QUEUE_CLIENT                inviata emergenza al server
-1752215768      2     MESSAGE_QUEUE_CLIENT                il lavoro del client è finito. Il processo si chiude
-1752215768      1     EMERGENCY_REQUEST_RECEIVED          emergenza Incendio (110, 215) 1 ricevuta e messa in attesa di essere processata!
-1752215768      1     EMERGENCY_STATUS                    inizio a lavorare sull'emergenza 1: Incendio (2) [110, 215] 
-1752215768      1     EMERGENCY_STATUS                    Inizia la ricerca dei 2 rescuers per l'emergenza 1: Incendio (2) [110, 215]
-1752215768      0     RESCUER_STATUS                      Pompieri [0]: [100,200] . . .  [110,215] Incendio il rescuer parte dalla base verso le  la scena dell'emergenza
-1752215768      0     RESCUER_STATUS                      Pompieri [0]: [100,200] ->  -> [110,215] Incendio il rescuer cambia destinazione verso le la scena di un'altra emergenza
-1752215768      1     EMERGENCY_STATUS                    L'emergenza 1: Incendio (2) [110, 215] adesso ha i rescuer necessari in arrivo, si aspetta che arrivino
+1752249387      N/A   LOGGING_STARTED                     Inizio logging
+1752249387      N/A   PARSING_STARTED                     Inizio parsing dei file di configurazione
+1752249387      0     RESCUER_DIGITAL_TWIN_ADDED          Pompieri #0 [100, 200] Aggiunto ai gemelli digitali 
+1752249387      1     RESCUER_DIGITAL_TWIN_ADDED          Pompieri #1 [100, 200] Aggiunto ai gemelli digitali 
+1752249387      2     RESCUER_DIGITAL_TWIN_ADDED          Pompieri #2 [100, 200] Aggiunto ai gemelli digitali 
+1752249387      3     RESCUER_DIGITAL_TWIN_ADDED          Pompieri #3 [100, 200] Aggiunto ai gemelli digitali 
+1752249387      4     RESCUER_DIGITAL_TWIN_ADDED          Pompieri #4 [100, 200] Aggiunto ai gemelli digitali 
+1752249387      1     RESCUER_TYPE_PARSED                 Rescuer Pompieri con base in (100, 200) e 5 gemelli digitali aggiunto!
+1752249387      0     RESCUER_REQUEST_ADDED               Richiesta di 2 unità di Pompieri registrate a linea 1 del file conf/emergency_types.conf
+1752249387      1     EMERGENCY_PARSED                    Emergenza Incendio di priorità 2 con 1 tipi di rescuer registrata tra i tipi di emergenze
+1752249387      0     EMPTY_CONF_LINE_IGNORED             linea 2 in conf/emergency_types.conf vuota, ignorata
+1752249387      1     EMPTY_CONF_LINE_IGNORED             linea 3 in conf/emergency_types.conf vuota, ignorata
+1752249387      N/A   PARSING_ENDED                       Il parsing è terminato con successo!
+1752249387      N/A   SERVER                              tutte le variabili sono state ottenute dal server: adesso il sistema è a regime!
+1752249387      N/A   MESSAGE_QUEUE_SERVER                inizio della ricezione delle emergenze!
+1752249388      0     DEBUG                               lock rescuers | line: 22 | file: src/dependencies/server_updater.c 
+1752249388      1     DEBUG                               lock waiting queue | line: 24 | file: src/dependencies/server_updater.c 
+1752249388      2     DEBUG                               lock working queue | line: 26 | file: src/dependencies/server_updater.c 
+1752249388      0     DEBUG                               Pompieri [0] stato = 0
+1752249388      1     DEBUG                               Pompieri [1] stato = 0
+1752249388      2     DEBUG                               Pompieri [2] stato = 0
+1752249388      3     DEBUG                               Pompieri [3] stato = 0
+1752249388      4     DEBUG                               Pompieri [4] stato = 0
+1752249388      8     DEBUG                               unlock rescuers | line: 34 | file: src/dependencies/server_updater.c 
+1752249388      9     DEBUG                               unlock waiting queue | line: 36 | file: src/dependencies/server_updater.c 
+1752249388      10    DEBUG                               unlock working queue | line: 38 | file: src/dependencies/server_updater.c 
+1752249389      11    DEBUG                               lock rescuers | line: 22 | file: src/dependencies/server_updater.c 
+1752249389      12    DEBUG                               lock waiting queue | line: 24 | file: src/dependencies/server_updater.c 
+1752249389      13    DEBUG                               lock working queue | line: 26 | file: src/dependencies/server_updater.c 
+1752249389      0     DEBUG                               Pompieri [0] stato = 0
+1752249389      1     DEBUG                               Pompieri [1] stato = 0
+1752249389      2     DEBUG                               Pompieri [2] stato = 0
+1752249389      3     DEBUG                               Pompieri [3] stato = 0
+1752249389      4     DEBUG                               Pompieri [4] stato = 0
+1752249389      19    DEBUG                               unlock rescuers | line: 34 | file: src/dependencies/server_updater.c 
+1752249389      20    DEBUG                               unlock waiting queue | line: 36 | file: src/dependencies/server_updater.c 
+1752249389      21    DEBUG                               unlock working queue | line: 38 | file: src/dependencies/server_updater.c 
+1752249390      22    DEBUG                               lock rescuers | line: 22 | file: src/dependencies/server_updater.c 
+1752249390      23    DEBUG                               lock waiting queue | line: 24 | file: src/dependencies/server_updater.c 
+1752249390      24    DEBUG                               lock working queue | line: 26 | file: src/dependencies/server_updater.c 
+1752249390      0     DEBUG                               Pompieri [0] stato = 0
+1752249390      1     DEBUG                               Pompieri [1] stato = 0
+1752249390      2     DEBUG                               Pompieri [2] stato = 0
+1752249390      3     DEBUG                               Pompieri [3] stato = 0
+1752249390      4     DEBUG                               Pompieri [4] stato = 0
+1752249390      30    DEBUG                               unlock rescuers | line: 34 | file: src/dependencies/server_updater.c 
+1752249390      31    DEBUG                               unlock waiting queue | line: 36 | file: src/dependencies/server_updater.c 
+1752249390      32    DEBUG                               unlock working queue | line: 38 | file: src/dependencies/server_updater.c 
+1752249391      33    DEBUG                               lock rescuers | line: 22 | file: src/dependencies/server_updater.c 
+1752249391      34    DEBUG                               lock waiting queue | line: 24 | file: src/dependencies/server_updater.c 
+1752249391      35    DEBUG                               lock working queue | line: 26 | file: src/dependencies/server_updater.c 
+1752249391      0     DEBUG                               Pompieri [0] stato = 0
+1752249391      1     DEBUG                               Pompieri [1] stato = 0
+1752249391      2     DEBUG                               Pompieri [2] stato = 0
+1752249391      3     DEBUG                               Pompieri [3] stato = 0
+1752249391      4     DEBUG                               Pompieri [4] stato = 0
+1752249391      41    DEBUG                               unlock rescuers | line: 34 | file: src/dependencies/server_updater.c 
+1752249391      42    DEBUG                               unlock waiting queue | line: 36 | file: src/dependencies/server_updater.c 
+1752249391      43    DEBUG                               unlock working queue | line: 38 | file: src/dependencies/server_updater.c 
+1752249392      44    DEBUG                               lock rescuers | line: 22 | file: src/dependencies/server_updater.c 
+1752249392      45    DEBUG                               lock waiting queue | line: 24 | file: src/dependencies/server_updater.c 
+1752249392      46    DEBUG                               lock working queue | line: 26 | file: src/dependencies/server_updater.c 
+1752249392      0     DEBUG                               Pompieri [0] stato = 0
+1752249392      1     DEBUG                               Pompieri [1] stato = 0
+1752249392      2     DEBUG                               Pompieri [2] stato = 0
+1752249392      3     DEBUG                               Pompieri [3] stato = 0
+1752249392      4     DEBUG                               Pompieri [4] stato = 0
+1752249392      52    DEBUG                               unlock rescuers | line: 34 | file: src/dependencies/server_updater.c 
+1752249392      53    DEBUG                               unlock waiting queue | line: 36 | file: src/dependencies/server_updater.c 
+1752249392      54    DEBUG                               unlock working queue | line: 38 | file: src/dependencies/server_updater.c 
+1752249393      55    DEBUG                               lock rescuers | line: 22 | file: src/dependencies/server_updater.c 
+1752249393      56    DEBUG                               lock waiting queue | line: 24 | file: src/dependencies/server_updater.c 
+1752249393      57    DEBUG                               lock working queue | line: 26 | file: src/dependencies/server_updater.c 
+1752249393      0     DEBUG                               Pompieri [0] stato = 0
+1752249393      1     DEBUG                               Pompieri [1] stato = 0
+1752249393      2     DEBUG                               Pompieri [2] stato = 0
+1752249393      3     DEBUG                               Pompieri [3] stato = 0
+1752249393      4     DEBUG                               Pompieri [4] stato = 0
+1752249393      63    DEBUG                               unlock rescuers | line: 34 | file: src/dependencies/server_updater.c 
+1752249393      64    DEBUG                               unlock waiting queue | line: 36 | file: src/dependencies/server_updater.c 
+1752249393      65    DEBUG                               unlock working queue | line: 38 | file: src/dependencies/server_updater.c 
+1752249394      66    DEBUG                               lock rescuers | line: 22 | file: src/dependencies/server_updater.c 
+1752249394      67    DEBUG                               lock waiting queue | line: 24 | file: src/dependencies/server_updater.c 
+1752249394      68    DEBUG                               lock working queue | line: 26 | file: src/dependencies/server_updater.c 
+1752249394      0     DEBUG                               Pompieri [0] stato = 0
+1752249394      1     DEBUG                               Pompieri [1] stato = 0
+1752249394      2     DEBUG                               Pompieri [2] stato = 0
+1752249394      3     DEBUG                               Pompieri [3] stato = 0
+1752249394      4     DEBUG                               Pompieri [4] stato = 0
+1752249394      74    DEBUG                               unlock rescuers | line: 34 | file: src/dependencies/server_updater.c 
+1752249394      75    DEBUG                               unlock waiting queue | line: 36 | file: src/dependencies/server_updater.c 
+1752249394      76    DEBUG                               unlock working queue | line: 38 | file: src/dependencies/server_updater.c 
+1752249395      77    DEBUG                               lock rescuers | line: 22 | file: src/dependencies/server_updater.c 
+1752249395      78    DEBUG                               lock waiting queue | line: 24 | file: src/dependencies/server_updater.c 
+1752249395      79    DEBUG                               lock working queue | line: 26 | file: src/dependencies/server_updater.c 
+1752249395      0     DEBUG                               Pompieri [0] stato = 0
+1752249395      1     DEBUG                               Pompieri [1] stato = 0
+1752249395      2     DEBUG                               Pompieri [2] stato = 0
+1752249395      3     DEBUG                               Pompieri [3] stato = 0
+1752249395      4     DEBUG                               Pompieri [4] stato = 0
+1752249395      85    DEBUG                               unlock rescuers | line: 34 | file: src/dependencies/server_updater.c 
+1752249395      86    DEBUG                               unlock waiting queue | line: 36 | file: src/dependencies/server_updater.c 
+1752249395      87    DEBUG                               unlock working queue | line: 38 | file: src/dependencies/server_updater.c 
+1752249396      88    DEBUG                               lock rescuers | line: 22 | file: src/dependencies/server_updater.c 
+1752249396      89    DEBUG                               lock waiting queue | line: 24 | file: src/dependencies/server_updater.c 
+1752249396      90    DEBUG                               lock working queue | line: 26 | file: src/dependencies/server_updater.c 
+1752249396      0     DEBUG                               Pompieri [0] stato = 0
+1752249396      1     DEBUG                               Pompieri [1] stato = 0
+1752249396      2     DEBUG                               Pompieri [2] stato = 0
+1752249396      3     DEBUG                               Pompieri [3] stato = 0
+1752249396      4     DEBUG                               Pompieri [4] stato = 0
+1752249396      96    DEBUG                               unlock rescuers | line: 34 | file: src/dependencies/server_updater.c 
+1752249396      97    DEBUG                               unlock waiting queue | line: 36 | file: src/dependencies/server_updater.c 
+1752249396      98    DEBUG                               unlock working queue | line: 38 | file: src/dependencies/server_updater.c 
+1752249397      99    DEBUG                               lock rescuers | line: 22 | file: src/dependencies/server_updater.c 
+1752249397      100   DEBUG                               lock waiting queue | line: 24 | file: src/dependencies/server_updater.c 
+1752249397      101   DEBUG                               lock working queue | line: 26 | file: src/dependencies/server_updater.c 
+1752249397      0     DEBUG                               Pompieri [0] stato = 0
+1752249397      1     DEBUG                               Pompieri [1] stato = 0
+1752249397      2     DEBUG                               Pompieri [2] stato = 0
+1752249397      3     DEBUG                               Pompieri [3] stato = 0
+1752249397      4     DEBUG                               Pompieri [4] stato = 0
+1752249397      107   DEBUG                               unlock rescuers | line: 34 | file: src/dependencies/server_updater.c 
+1752249397      108   DEBUG                               unlock waiting queue | line: 36 | file: src/dependencies/server_updater.c 
+1752249397      109   DEBUG                               unlock working queue | line: 38 | file: src/dependencies/server_updater.c 
+1752249398      110   DEBUG                               lock rescuers | line: 22 | file: src/dependencies/server_updater.c 
+1752249398      111   DEBUG                               lock waiting queue | line: 24 | file: src/dependencies/server_updater.c 
+1752249398      112   DEBUG                               lock working queue | line: 26 | file: src/dependencies/server_updater.c 
+1752249398      0     DEBUG                               Pompieri [0] stato = 0
+1752249398      1     DEBUG                               Pompieri [1] stato = 0
+1752249398      2     DEBUG                               Pompieri [2] stato = 0
+1752249398      3     DEBUG                               Pompieri [3] stato = 0
+1752249398      4     DEBUG                               Pompieri [4] stato = 0
+1752249398      118   DEBUG                               unlock rescuers | line: 34 | file: src/dependencies/server_updater.c 
+1752249398      119   DEBUG                               unlock waiting queue | line: 36 | file: src/dependencies/server_updater.c 
+1752249398      120   DEBUG                               unlock working queue | line: 38 | file: src/dependencies/server_updater.c 
+1752249399      121   DEBUG                               lock rescuers | line: 22 | file: src/dependencies/server_updater.c 
+1752249399      122   DEBUG                               lock waiting queue | line: 24 | file: src/dependencies/server_updater.c 
+1752249399      123   DEBUG                               lock working queue | line: 26 | file: src/dependencies/server_updater.c 
+1752249399      0     DEBUG                               Pompieri [0] stato = 0
+1752249399      1     DEBUG                               Pompieri [1] stato = 0
+1752249399      2     DEBUG                               Pompieri [2] stato = 0
+1752249399      3     DEBUG                               Pompieri [3] stato = 0
+1752249399      4     DEBUG                               Pompieri [4] stato = 0
+1752249399      0     MESSAGE_QUEUE_CLIENT                avvio della modalità di inserimento diretta
+1752249399      129   DEBUG                               unlock rescuers | line: 34 | file: src/dependencies/server_updater.c 
+1752249399      130   DEBUG                               unlock waiting queue | line: 36 | file: src/dependencies/server_updater.c 
+1752249399      131   DEBUG                               unlock working queue | line: 38 | file: src/dependencies/server_updater.c 
+1752249400      132   DEBUG                               lock rescuers | line: 22 | file: src/dependencies/server_updater.c 
+1752249400      133   DEBUG                               lock waiting queue | line: 24 | file: src/dependencies/server_updater.c 
+1752249400      134   DEBUG                               lock working queue | line: 26 | file: src/dependencies/server_updater.c 
+1752249400      0     DEBUG                               Pompieri [0] stato = 0
+1752249400      1     MESSAGE_QUEUE_CLIENT                inviata emergenza al server
+1752249400      2     MESSAGE_QUEUE_CLIENT                il lavoro del client è finito. Il processo si chiude
+1752249416      0     MESSAGE_QUEUE_CLIENT                avvio della modalità di inserimento diretta
+1752249417      1     MESSAGE_QUEUE_CLIENT                inviata emergenza al server
+1752249417      2     MESSAGE_QUEUE_CLIENT                il lavoro del client è finito. Il processo si chiude

@@ -1,4 +1,5 @@
 #include "bresenham.h"
+#include "log.h"
 
 bresenham_trajectory_t *mallocate_bresenham_trajectory(){
 	bresenham_trajectory_t *b = (bresenham_trajectory_t *)malloc(sizeof(bresenham_trajectory_t));
@@ -12,7 +13,10 @@ bresenham_trajectory_t *mallocate_bresenham_trajectory(){
 // ritorna se siamo arrivati a destinazione o no
 int compute_bresenham_step(int x, int y, bresenham_trajectory_t *trajectory, int cells_per_step, int *x_step, int *y_step){
 	if(!trajectory) return NO;										// senza traiettoria non si fa nulla
-	if(cells_per_step < 0) return YES; 						
+	if(cells_per_step < 0) return YES; 		
+	
+	*x_step = 0;
+	*y_step = 0;
 
 	int distance_x = ABS(x - trajectory->x_target);
 	int distance_y = ABS(y - trajectory->y_target);
@@ -32,20 +36,26 @@ int compute_bresenham_step(int x, int y, bresenham_trajectory_t *trajectory, int
 	int dy = trajectory->dy;
 	int sx = trajectory->sx;
 	int sy = trajectory->sy;
-	
-	for (int i = 0; i < cells_per_step; i++){			// faccio un passo alla volta percorrendo la linea di Bresenham 
-		if (xA == xB && yA == yB) 									// siamo arrivati
+	int i = 0;
+
+	while (i < cells_per_step) {			// faccio un passo alla volta percorrendo la linea di Bresenham 
+		log_event(69, DEBUG, "step = (%d, %d)", *x_step, *y_step);
+		if (xA == xB && yA == yB) 			// siamo arrivati
 			return YES;				
-		int e2 = 2 * trajectory->err;								// l'errore serve a dirci se siamo più lontani sulla x o sulla y 
-		if (e2 >= -dy) {														// se siamo più lontani sulla x facciamo un passo sulla x
-			trajectory->err -= dy;										// aggiorno l'errore 
-			xA += sx;																	// faccio un passo sull'asse x
-			(*x_step) += sx;													// aggiorno il numero di passi fatti sull'asse x
+		int e2 = 2 * trajectory->err;		// l'errore serve a dirci se siamo più lontani sulla x o sulla y 
+		if (e2 >= -dy) {								// se siamo più lontani sulla x facciamo un passo sulla x
+			trajectory->err -= dy;				// aggiorno l'errore 
+			xA += sx;											// faccio un passo sull'asse x
+			(*x_step) += sx;	
+			i++;													// aggiorno il numero di passi fatti sull'asse x
 		}
-		else if (e2 <= dx) {												// se invece siamo più lontani sulla y si fa la stessa cosa ma sulla y
+		if(i >= cells_per_step)					// potremmo aver raggiunto adesso i == cells_per_step
+			break;
+		if (e2 <= dx) {									// se invece siamo più lontani sulla y si fa la stessa cosa ma sulla y
 			trajectory->err += dx;
 			yA += sy;		
-			(*y_step) += sy;					
+			(*y_step) += sy;	
+			i++;				
 		}
 	}
 

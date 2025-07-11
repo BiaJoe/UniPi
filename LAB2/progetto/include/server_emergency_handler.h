@@ -18,10 +18,12 @@ void pause_and_unlock_working_node_blocking(server_context_t *ctx, emergency_nod
 void move_working_node_to_completed_blocking(server_context_t *ctx, emergency_node_t *n);
 void send_rescuer_digital_twin_to_scene_logging(rescuer_digital_twin_t *t, emergency_node_t *n);
 int is_rescuer_digital_twin_available(rescuer_digital_twin_t *dt);
-rescuer_digital_twin_t *find_nearest_available_rescuer_digital_twin(rescuer_type_t *r, emergency_node_t *n);
+
+int is_rescuer_digital_twin_already_chosen(rescuer_digital_twin_t *dt, rescuer_digital_twin_t **chosen, int count);
+rescuer_digital_twin_t *find_nearest_available_rescuer_digital_twin(rescuer_type_t *r, emergency_node_t *n, rescuer_digital_twin_t **chosen, int count);
 int is_rescuer_digital_twin_available(rescuer_digital_twin_t *dt);
 int rescuer_digital_twin_must_be_stolen(rescuer_digital_twin_t *dt);
-rescuer_digital_twin_t *try_to_find_nearest_rescuer_from_less_important_emergency(rescuer_type_t *r, emergency_node_t *n);
+rescuer_digital_twin_t *try_to_find_nearest_rescuer_from_less_important_emergency(rescuer_type_t *r, emergency_node_t *n, rescuer_digital_twin_t **chosen, int count);
 void pause_emergency_blocking_signaling_logging(emergency_node_t *n);
 int find_and_send_nearest_rescuers(emergency_node_t *n, char mode);
 
