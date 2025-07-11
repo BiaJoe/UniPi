@@ -44,8 +44,10 @@ $(BIN_DIR):
 
 # === Pulizia ===
 clean:
+	clear
 	rm -rf $(BIN_DIR)
 	> log.txt
+	
 
 # === Run server in background ===
 run: all

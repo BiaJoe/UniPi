@@ -10,28 +10,28 @@
 int server_updater(void *arg){
 	server_context_t *ctx = arg;
 
-	while(!ctx->server_must_stop){
+	while(!ctx->server_must_stop){		
 		lock_server_clock(ctx); 																					
 		while(!server_is_ticking(ctx)) 
 			wait_for_a_tick(ctx); 							// attendo che il server ticki				
 		untick(ctx); 													// il server ha tickato, lo sblocco		
 		unlock_server_clock(ctx); 																				
 		
-		log_event(AUTOMATIC_LOG_ID, SERVER, "inizio aggiornamento #%d del server...", ctx->tick_count_since_start);
+		log_event(AUTOMATIC_LOG_ID, SERVER_UPDATE, "inizio aggiornamento #%d del server...", ctx->tick_count_since_start);
 	
 		lock_rescuer_types(ctx);										// blocco tutto
 		lock_queue(ctx->waiting_queue);
 		lock_queue(ctx->working_queue);
 		
-		update_rescuers_states_and_positions_on_the_map_logging(ctx); 										
+		update_rescuers_states_and_positions_on_the_map_logging(ctx); 							
 		update_working_emergencies_statuses_blocking(ctx);
 		update_waiting_emergency_statuses_blocking(ctx);
-		
+
 		unlock_queue(ctx->working_queue);			
 		unlock_queue(ctx->waiting_queue);
 		unlock_rescuer_types(ctx);									// sblocco tutto
 
-		log_event(AUTOMATIC_LOG_ID, SERVER, "aggiornamento #%d del server eseguito con successo", ctx->tick_count_since_start);
+		log_event(AUTOMATIC_LOG_ID, SERVER_UPDATE, "aggiornamento #%d del server eseguito con successo", ctx->tick_count_since_start);
 	}
 
 	cancel_all_working_emergencies_signaling(ctx);	// il server si è fermato, devo cancellare le emergenze ancora in elaborazione
@@ -45,12 +45,12 @@ void update_rescuers_states_and_positions_on_the_map_logging(server_context_t *c
 		if(r == NULL) continue; 																// se il rescuer type è NULL non faccio nulla (precauzione)
 		for(int j = 0; j < r->amount; j++){
 			rescuer_digital_twin_t *dt = get_rescuer_digital_twin_by_index(r, j);
-			update_rescuer_digital_twin_state_and_position_logging(dt);
+			update_rescuer_digital_twin_state_and_position_logging(dt, MIN_X_COORDINATE_ABSOLUTE_VALUE, MIN_Y_COORDINATE_ABSOLUTE_VALUE, ctx->height, ctx->width);
 		}
 	}
 }
 
-int update_rescuer_digital_twin_state_and_position_logging(rescuer_digital_twin_t *t){
+int update_rescuer_digital_twin_state_and_position_logging(rescuer_digital_twin_t *t, int minx, int miny, int height, int width){
 	if (!t || t->status == IDLE) 		// se non deve muoversi non faccio nulla
 		return NO; 										// la posizione non va aggiornata
 	
@@ -80,8 +80,13 @@ int update_rescuer_digital_twin_state_and_position_logging(rescuer_digital_twin_
 	t->x += cells_to_walk_on_the_X_axis;		// faccio il passo
 	t->y += cells_to_walk_on_the_Y_axis;
 
+	if (
+		t->x < minx || t->x > width ||
+		t->y < miny || t->y > height 
+	) log_fatal_error("srescuer uscito dalla mappa");
+
 	if (!we_have_arrived){
-		log_event(t->id, RESCUER_TRAVELLING_STATUS, "il rescuer %s [%d] si è spostato da (%d, %d) a (%d, %d)", t->rescuer->rescuer_type_name, t->id, xA, yA, t->x, t->y);
+		log_event(t->id, RESCUER_TRAVELLING_STATUS, "(%d, %d) -> (%d, %d) %s [%d] il rescuer si è spostato", t->rescuer->rescuer_type_name, t->id, xA, yA, t->x, t->y);
 		return YES; 													// ho aggiornato la posizione
 	}
 
@@ -92,11 +97,11 @@ int update_rescuer_digital_twin_state_and_position_logging(rescuer_digital_twin_
 		case EN_ROUTE_TO_SCENE:
 			t->time_left_before_it_can_leave_the_scene = t->time_to_manage;
 			t->status = ON_SCENE;
-			log_event(t->id, RESCUER_STATUS, "il rescuer %s [%d] è arrivato alla scena dell'emergenza (%d, %d) !!!!", t->rescuer->rescuer_type_name, t->id, t->x, t->x);
+			log_event(t->id, RESCUER_STATUS, "%s [%d] -> (%d, %d) il rescuer è arrivato alla scena dell'emergenza  !!!!", t->rescuer->rescuer_type_name, t->id, t->x, t->x);
 			return YES;		
 		case RETURNING_TO_BASE:
 			t->status = IDLE;
-			log_event(t->id, RESCUER_STATUS, "il rescuer %s [%d] è tornato sano e salvo alla base (%d, %d) :)", t->rescuer->rescuer_type_name, t->id, t->x, t->x);
+			log_event(t->id, RESCUER_STATUS, "%s [%d] -> (%d, %d) il rescuer è tornato sano e salvo alla base  :)", t->rescuer->rescuer_type_name, t->id, t->x, t->x);
 			return YES;
 		default: log_fatal_error("spostamento rescuer dt");
 	}	
@@ -209,7 +214,6 @@ void promote_to_medium_priority_if_needed_logging(emergency_queue_t* q, emergenc
 
 void update_working_emergencies_statuses_blocking(server_context_t *ctx){
 	emergency_queue_t *q = ctx->working_queue;
-	lock_queue(q);
 	for (int i = MIN_EMERGENCY_PRIORITY; i <= MAX_EMERGENCY_PRIORITY; i++){
 		emergency_node_t *n = q->lists[i]->head;
 		emergency_node_t *m = (n) ? n->next : NULL;
@@ -222,7 +226,6 @@ void update_working_emergencies_statuses_blocking(server_context_t *ctx){
 			n = m;			 // passo al successivo
 		}
 	}	
-	unlock_queue(q);
 }
 
 void update_waiting_emergency_node_status_logging(emergency_node_t *n){
@@ -233,7 +236,6 @@ void update_waiting_emergency_node_status_logging(emergency_node_t *n){
 
 void update_waiting_emergency_statuses_blocking(server_context_t *ctx){
 	emergency_queue_t *q = ctx->waiting_queue;
-	lock_queue(q);
 	for (int i = MIN_EMERGENCY_PRIORITY; i <= MAX_EMERGENCY_PRIORITY; i++){
 		emergency_node_t *n = q->lists[i]->head;
 		emergency_node_t *m = (n) ? n->next : NULL;
@@ -246,7 +248,6 @@ void update_waiting_emergency_statuses_blocking(server_context_t *ctx){
 			n = m;			// passo al successivo
 		}
 	}	
-	unlock_queue(q);
 }
 
 // scorre le emergenze su cui si sta lavorando 

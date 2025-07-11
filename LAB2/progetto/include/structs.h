@@ -32,18 +32,18 @@ typedef struct {
 	int is_to_log;										// se va scritto o no nel file di log
 } log_event_info_t;
 
-
+ 
 typedef struct {
 	long long timestamp;
-	char message[MAX_LOG_EVENT_LENGTH / 8];
+	char message[MAX_LOG_EVENT_LENGTH];
 } log_message_t;
 
-#define LOG_EVENT_TYPES_COUNT 32
+#define LOG_EVENT_TYPES_COUNT 34
 
 typedef enum {
 
 	NON_APPLICABLE, 								  //N/A
-	
+	DEBUG, 
 	// errori fatali
 	FATAL_ERROR, 											//FERR
 	FATAL_ERROR_PARSING, 							//FEPA
@@ -72,6 +72,7 @@ typedef enum {
 	EMERGENCY_PARSED,									//EMPA		
 	RESCUER_REQUEST_ADDED,						//RRAD
 
+	SERVER_UPDATE, // seup
 	SERVER, //srvr
 	CLIENT, //clnt
 

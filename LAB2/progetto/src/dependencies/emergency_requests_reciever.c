@@ -11,7 +11,7 @@ int emergency_requests_reciever(server_context_t *ctx){
 	char buffer[MAX_EMERGENCY_QUEUE_MESSAGE_LENGTH];
 
 	while (1) {
-		check_error_mq_receive(mq_receive(ctx->mq, buffer, MAX_EMERGENCY_QUEUE_MESSAGE_LENGTH, NULL));
+		check_error_mq_receive(mq_receive(ctx->mq, buffer, sizeof(buffer), NULL));
 		if (strcmp(buffer, STOP_MESSAGE_FROM_CLIENT) == 0) {		// se è il messaggio di stop devo uscire!
 			ctx -> server_must_stop = true;
 			return 0;

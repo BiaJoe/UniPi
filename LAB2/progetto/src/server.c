@@ -1,9 +1,15 @@
 #include "server.h"
 
+void funzione_per_sigchild(int sig) {
+	(void)sig; // per zittire il compilatore (unused parameter)
+	wait(NULL); 
+}
+
 // divido in due processi: logger e server
 // mentre il logger aspetta per messaggi da loggare
 // il server fa il parsing e aspetta per richieste di emergenza
 int main(void){
+	LOG_INIT_SERVER(); // creo la coda di messaggi per il logging
 	FORK_PROCESS(logger, server);
 	return 0;
 }
@@ -75,12 +81,15 @@ server_context_t *mallocate_server_context(){
 
 	struct mq_attr attr = {
 		.mq_flags = 0,
-		.mq_maxmsg = MAX_LOG_QUEUE_MESSAGES,
-		.mq_msgsize = MAX_LOG_EVENT_LENGTH,
+		.mq_maxmsg = 10,
+		.mq_msgsize = MAX_EMERGENCY_QUEUE_MESSAGE_LENGTH,
 		.mq_curmsgs = 0
 	};
 
-	check_error_mq_open(ctx->mq = mq_open(EMERGENCY_QUEUE_NAME, O_CREAT | O_RDONLY, 0644, &attr));
+	mq_unlink(EMERGENCY_QUEUE_NAME_BARRED);
+	ctx->mq = mq_open(EMERGENCY_QUEUE_NAME_BARRED, O_CREAT | O_RDONLY, 0644, &attr);
+	check_error_mq_open(ctx->mq);
+
 	check_error_mtx_init(mtx_init(&(ctx->clock_mutex), mtx_plain));
 	check_error_mtx_init(mtx_init(&(ctx->rescuers_mutex), mtx_plain));
 	check_error_cnd_init(cnd_init(&(ctx->clock_updated)));

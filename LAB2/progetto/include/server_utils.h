@@ -3,6 +3,7 @@
 
 #include "structs.h"
 #include "log.h"
+#include "debug.h"
 #include "emergency_priority_queue.h"
 #include "bresenham.h"
 

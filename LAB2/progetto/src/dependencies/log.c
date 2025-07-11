@@ -11,12 +11,13 @@
 static log_event_info_t log_event_lookup_table[LOG_EVENT_TYPES_COUNT] = {
 	//	TIPO																				STRINGA																					CODICE (per l'ID)		CONTEGGIO		FA TERMINARE IL PROGRAMMA?		DA LOGGARE?
 			[NON_APPLICABLE]                  				= { "NON_APPLICABLE",                  						"N/A ", 						0, 					NO, 													YES 			},
+			[DEBUG]                  									= { "DEBUG",                  										"DEH ", 						0, 					NO, 													YES 			},
 			[FATAL_ERROR]                     				= { "FATAL_ERROR",                     						"ferr", 						0, 					YES, 		 											YES 			},
 			[FATAL_ERROR_PARSING]             				= { "FATAL_ERROR_PARSING",             						"fepa", 						0, 					YES, 		 											YES 			},
 			[FATAL_ERROR_LOGGING]             				= { "FATAL_ERROR_LOGGING",             						"felo", 						0, 					YES, 		 											YES 			},
 			[FATAL_ERROR_MEMORY]              				= { "FATAL_ERROR_MEMORY",              						"feme", 						0, 					YES, 		 											YES 			},
 			[FATAL_ERROR_FILE_OPENING]        				= { "FATAL_ERROR_FILE_OPENING",        						"fefo", 						0, 					YES, 		 											YES 			},
-			[EMPTY_CONF_LINE_IGNORED]         				= { "EMPTY_CONF_LINE_IGNORED",         						"ecli", 						0, 					NO, 													NO 				},	
+			[EMPTY_CONF_LINE_IGNORED]         				= { "EMPTY_CONF_LINE_IGNORED",         						"ecli", 						0, 					NO, 													YES 				},	
 			[DUPLICATE_RESCUER_REQUEST_IGNORED] 			= { "DUPLICATE_RESCUER_REQUEST_IGNORED", 					"drri", 						0, 					NO, 													YES 			},
 			[WRONG_RESCUER_REQUEST_IGNORED] 					= { "WRONG_RESCUER_REQUEST_IGNORED", 							"wrri", 						0, 					NO, 													YES 			},
 			[DUPLICATE_EMERGENCY_TYPE_IGNORED] 				= { "DUPLICATE_EMERGENCY_TYPE_IGNORED",						"deti", 						0, 					NO, 													YES 			},
@@ -31,6 +32,7 @@ static log_event_info_t log_event_lookup_table[LOG_EVENT_TYPES_COUNT] = {
 			[RESCUER_DIGITAL_TWIN_ADDED]      				= { "RESCUER_DIGITAL_TWIN_ADDED",      						"rdta", 						0, 					NO, 													YES 			},
 			[EMERGENCY_PARSED]                				= { "EMERGENCY_PARSED",                						"empa", 						0, 					NO, 													YES 			},
 			[RESCUER_REQUEST_ADDED]           				= { "RESCUER_REQUEST_ADDED",           						"rrad", 						0, 					NO, 													YES 			},
+			[SERVER_UPDATE]           								= { "SERVER_UPDATE",           										"seup", 						0, 					NO, 													NO   			},
 			[SERVER]           												= { "SERVER",           													"srvr", 						0, 					NO, 													YES 			},
 			[CLIENT]           												= { "CLIENT",           													"clnt", 						0, 					NO, 													YES 			},
 			[EMERGENCY_REQUEST_RECEIVED]      				= { "EMERGENCY_REQUEST_RECEIVED",      						"errr", 						0, 					NO, 													YES 			},
@@ -39,37 +41,111 @@ static log_event_info_t log_event_lookup_table[LOG_EVENT_TYPES_COUNT] = {
 			[MESSAGE_QUEUE_SERVER]                   	= { "MESSAGE_QUEUE_SERVER",                   		"mqse", 						0, 					NO, 													YES 			},
 			[EMERGENCY_STATUS]                				= { "EMERGENCY_STATUS",                						"esta", 						0, 					NO, 													YES 			},
 			[RESCUER_STATUS]                  				= { "RESCUER_STATUS",                  						"rsta", 						0, 					NO, 													YES 			},
-			[RESCUER_TRAVELLING_STATUS]               = { "RESCUER_TRAVELLING_STATUS",                  "rtst", 						0, 					NO, 													NO 				},
+			[RESCUER_TRAVELLING_STATUS]               = { "RESCUER_TRAVELLING_STATUS",                  "rtst", 						0, 					NO, 													YES 				},
 			[EMERGENCY_REQUEST]               				= { "EMERGENCY_REQUEST",               						"erre", 						0, 					NO, 													YES 			},
 			[PROGRAM_ENDED_SUCCESSFULLY]							= { "PROGRAM_ENDED_SUCCESSFULLY",									"pesu", 						0,					YES,  												YES				}
 };
 
 
-// funzione che invia il messaggio da loggare al processo logger.c 
-// attraverso la message queue
-// se si vuol far terminare il logging è sufficiente loggare un evento "terminatore"
-// ad esempio PROGRAM_ENDED_SUCCESSFULLY fa terminare il programma
-void send_log_message(char buffer[], long long time) {
-	// per non dover aprire e chiudere la coda di log ad OGNI chiamata
-	// la dichiarop statica nella funzione, cioè verrà ricordata anche tra chiamate
-	// dovrò aprirla quindi una sola volta (la prima, quando if(mq == -1){...} è vero)
-	static mqd_t mq = (mqd_t)-1;
+// i messaggi da loggare sono tanti
+// la message queue ne prende pochi alla volta
+// quindi creo un buffer di messaggi già pronti da inviare ogni tot millisecondi
+// - il buffer è implementato come una coda circolare
+// - è più semplice di una lista concatenata
+// - è più che sufficiente per gli scopi del progetto
+// - potrebbe essere migliorata con una lista concatenata, eliminerebbe il limite di LOG_SENDER_BUFFER_CAPACITY
+// questo non altera il timestamp perchè è già stato calcolato
+// ma permette al sender (log.c) di non sovraccaricare la message queue
+// log_event compone i messaggi
+// enqueue_log_message li mette in coda per essere inviati
+// log_sender_thread li invia uno alla volta
 
-	// entra solo la prima volta
-	if(mq == (mqd_t)-1)
-		try_to_open_queue(mq, LOG_QUEUE_NAME, HOW_MANY_ATTEMPTS_FOR_OPENING_LOG_QUEUE, NANOSECONDS_BETWEN_LOG_QUEUE_OPENING_ATTEMPTS)
+static log_message_t log_messages_buffer[LOG_SENDER_BUFFER_CAPACITY];
+static int log_messages_buffer_head = 0;  // testa: è l'indice dell'elemento che deve uscire, quando esce va avanti di uno e se arriva in fondo riparte da cima
+static int log_messages_buffer_tail = 0;  // coda: è l'indice dell'ultimo elemento inserito, va avanti a ogni inserimento e quando arriva in fondo riparte dall'inizio
+static int log_messages_buffer_count = 0; 
+mtx_t log_messages_buffer_mutex;
+mqd_t log_mq = (mqd_t)-1;
+thrd_t log_sender_thread_id;
+static atomic_bool logging_finished = false;
 
-	
+// funzione che fa partire il logging nei processi
+// uno dei processi ha la responsabilità di crceare la queue
+void log_init(int has_creation_responsability) {
+	struct mq_attr attr;
+	if (has_creation_responsability) {
+		mq_unlink(LOG_QUEUE_NAME);
+		attr.mq_flags = 0;
+		attr.mq_maxmsg = MAX_LOG_QUEUE_MESSAGES;
+		attr.mq_msgsize = sizeof(log_message_t);
+		attr.mq_curmsgs = 0;
+		// log_mq = mq_open(LOG_QUEUE_NAME, O_CREAT | O_RDWR, 0644, &attr);
+		// check_error_mq_open(log_mq);
+		log_mq = mq_open(LOG_QUEUE_NAME, O_CREAT | O_EXCL | O_RDWR, 0644, &attr);
+		if (log_mq == -1 && errno == EEXIST)
+			log_mq = mq_open(LOG_QUEUE_NAME, O_RDWR);
+	} else {
+		int retries = 5;
+		while (retries-- > 0) {
+			log_mq = mq_open(LOG_QUEUE_NAME, O_RDWR);
+			if (log_mq != (mqd_t)-1)
+				break;
+			sleep(1);  
+		}
+	if (log_mq == (mqd_t)-1)
+		check_error_mq_open(log_mq); 
+	}
+
+	mtx_init(&log_messages_buffer_mutex, mtx_plain);
+	thrd_create(&log_sender_thread_id, log_sender_thread, NULL);
+}
+
+void log_close(){
+	printf("chiudo il log");
+	logging_finished = true;
+	thrd_join(log_sender_thread_id, NULL);
+	exit(0);
+}
+
+// thread function che invia i messaggi un po' alla volta aspettando qualche nanosecondo (o meglio millisecondo)
+int log_sender_thread() {
+	struct timespec sleep_time = { .tv_sec = 0, .tv_nsec = 100000000 }; // 100ms
+
+	// il thread gira se stiamo ancora loggando o se non abbiamo ancora svuotato il buffer
+	while (1) {
+		thrd_sleep(&sleep_time, NULL);
+		mtx_lock(&log_messages_buffer_mutex);
+		int to_send = MIN(log_messages_buffer_count, HOW_MANY_LOG_MESSAGES_TO_SEND_AT_A_TIME);
+
+		for (int i = 0; i < to_send; ++i) {
+			log_message_t *msg = &log_messages_buffer[log_messages_buffer_head];
+			int sent = mq_send(log_mq, (char *)msg, sizeof(log_message_t), 0);
+			check_error_mq_send(sent);
+			log_messages_buffer_head = (log_messages_buffer_head + 1) % LOG_SENDER_BUFFER_CAPACITY;
+			log_messages_buffer_count--;
+		}
+
+		int finished = (atomic_load(&logging_finished) && log_messages_buffer_count == 0) ? 1 : 0;
+		mtx_unlock(&log_messages_buffer_mutex);
+		if(finished) break;
+	}
+
+	return 0;
+}
+
+// se c'è spazio nel buffer, mette l'evento
+void enqueue_log_message(char buffer[], long long time) {
 	log_message_t msg;
 	msg.timestamp = time;
-	strncpy(msg.message, buffer, sizeof(msg.message)); // buffer è il messaggio formattato
-
-	check_error_mq_send(mq_send(mq, (char*)&msg, sizeof(msg), 0));
-
-	if(I_HAVE_TO_CLOSE_THE_LOG(buffer)){
-		mq_close(mq); // non faccio unlink perchè lo fa il ricevitore	
-		mq = (mqd_t)-1;
+	strncpy(msg.message, buffer, sizeof(msg.message));
+	msg.message[sizeof(msg.message) - 1] = '\0';					// per sicurezza
+	mtx_lock(&log_messages_buffer_mutex);
+	if (log_messages_buffer_count < LOG_SENDER_BUFFER_CAPACITY) {
+		log_messages_buffer[log_messages_buffer_tail] = msg;
+		log_messages_buffer_tail = (log_messages_buffer_tail + 1) % LOG_SENDER_BUFFER_CAPACITY;
+		log_messages_buffer_count++;
 	}
+	mtx_unlock(&log_messages_buffer_mutex);
 }
 
 // funzione chiamata dai processi client e server per loggare un evento
@@ -101,7 +177,7 @@ void log_event(int id, log_event_type_t type, char *format, ...) {
 
 	snprintf(			
 		buffer, 																// stringa che invierò a logger (message queue)
-		MAX_LOG_EVENT_LENGTH / sizeof(char), 		// lunghezza massima fino a cui scrivere
+		MAX_LOG_EVENT_LENGTH - 1,								// lunghezza massima fino a cui scrivere
 		LOG_EVENT_STRING_SYNTAX,								// formato da dare alla stringa
 		time(NULL),															// timestamp al momento esatto del log
 		id_string, 															// id dell'evento già elaborato sopra
@@ -109,13 +185,13 @@ void log_event(int id, log_event_type_t type, char *format, ...) {
 		message																	// messaggio da loggare				
 	);
 
-	printf("%s", buffer);
-
-	send_log_message(buffer, time_nanoseconds);
+	enqueue_log_message(buffer, time_nanoseconds);
 	increment_log_event_type_counter(type);
 
-	if(is_log_event_type_terminating(type)) // se l'evento fa terminare il programma si invia anche il messaggio di stop logging per far terminare il logger
-		send_log_message(STOP_LOGGING_MESSAGE, time_nanoseconds);
+	if(is_log_event_type_terminating(type)) {// se l'evento fa terminare il programma si invia anche il messaggio di stop logging per far terminare il logger
+		enqueue_log_message(STOP_LOGGING_MESSAGE, time_nanoseconds);
+		log_close();
+	}
 }
 
 void log_fatal_error(char *format, ...){

@@ -9,7 +9,7 @@
 
 int server_updater(void *arg);
 void update_rescuers_states_and_positions_on_the_map_logging(server_context_t *ctx);
-int update_rescuer_digital_twin_state_and_position_logging(rescuer_digital_twin_t *t);
+int update_rescuer_digital_twin_state_and_position_logging(rescuer_digital_twin_t *t, int minx, int miny, int height, int width);
 void send_rescuer_digital_twin_back_to_base_logging(rescuer_digital_twin_t *t);
 void timeout_emergency_if_needed_logging(emergency_node_t* n);
 void update_working_emergency_node_status_signaling_logging(emergency_node_t *n);

@@ -88,7 +88,7 @@ rescuer_request_t * get_rescuer_request_by_name(char *name, rescuer_request_t **
 rescuer_type_t *get_rescuer_type_by_index(server_context_t *ctx, int i){
 	return ctx->rescuer_types[i % ctx->rescuer_types_count];
 }
-
+ 
 rescuer_digital_twin_t *get_rescuer_digital_twin_by_index(rescuer_type_t *r, int rescuer_digital_twin_index){
 	return (r == NULL) ? NULL : r->twins[rescuer_digital_twin_index];
 }

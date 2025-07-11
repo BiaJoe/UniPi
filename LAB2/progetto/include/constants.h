@@ -26,21 +26,19 @@
 #define MAX_ENV_FIELD_LENGTH 32
 
 // log
-#define MAX_LOG_EVENT_LENGTH 2048			// lungezza massima totale di un evento di log
+#define MAX_LOG_EVENT_LENGTH 256			// lungezza dei messaggi inviati da message queue a logger
 #define MAX_LOG_EVENT_ID_STRING_LENGTH 16
 #define LOG_EVENT_NAME_LENGTH 64
 #define LOG_EVENT_CODE_LENGTH 5
-#define LOG_EVENT_MESSAGE_LENGTH 1024
-
+#define LOG_EVENT_MESSAGE_LENGTH 128
+ 
 #define LOG_FILE "log.txt"
 #define LOG_QUEUE_NAME "/log_queue"
-#define MAX_LOG_QUEUE_MESSAGES 8
+#define MAX_LOG_QUEUE_MESSAGES 10
 #define AUTOMATIC_LOG_ID -1
 #define NON_APPLICABLE_LOG_ID -2
 #define NON_APPLICABLE_LOG_ID_STRING "N/A"
 #define STOP_LOGGING_MESSAGE "-stop"
-#define HOW_MANY_ATTEMPTS_FOR_OPENING_LOG_QUEUE 20
-#define NANOSECONDS_BETWEN_LOG_QUEUE_OPENING_ATTEMPTS 100000000 //0.1 secondi
 
 // le priorità possono essere anche diverse, ma ci sono delle condizioni da rispettare
 // 1. devono essere in ordine crescente
@@ -66,6 +64,7 @@
 
 #define EMERGENCY_QUEUE_NAME_LENGTH 16
 #define EMERGENCY_QUEUE_NAME "emergenze676722" // lunghezza 16
+#define EMERGENCY_QUEUE_NAME_BARRED "/emergenze676722" // lunghezza 16
 #define MAX_EMERGENCY_QUEUE_MESSAGE_LENGTH 512
 #define STOP_MESSAGE_FROM_CLIENT "-stop"
 // #define MAX_EMERGENCY_QUEUE_CAPACITY 64

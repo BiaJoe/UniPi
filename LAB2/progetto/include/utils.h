@@ -21,6 +21,7 @@
 #define ABS(x) ((x) < 0 ? -(x) : (x))
 #define MANHATTAN(x1,y1,x2,y2) (ABS((x1) - (x2)) + ABS((y1) - (y2)))
 #define MAX(a,b) ((a) > (b) ? (a) : (b))
+#define MIN(a,b) ((a) < (b) ? (a) : (b))
 
 #define I_HAVE_TO_CLOSE_THE_LOG(m) ((strcmp(m, STOP_LOGGING_MESSAGE) == 0) ? 1 : 0 )
 #define TRUNCATE_STRING_AT_MAX_LENGTH(s,maxlen) \
@@ -45,13 +46,21 @@
 #define UNLOCK(m) mtx_unlock(&(m))
 
 //error checking macros (le uniche macro del progetto che non sono in all caps)
-
-#define check_error(c, m) 								if ((c)) 	{ perror(m); exit(EXIT_FAILURE); }
+ 
+#define check_error(cond, msg)                            \
+  do {                                                    \
+    if (cond) {                                           \
+      fprintf(stderr, "\n[ERROR at %s: %d] ", __FILE__, __LINE__); \
+			perror(msg); \
+      exit(EXIT_FAILURE);                                 \
+    }                                                     \
+  } while (0)
+	
 #define check_error_fopen(fp) 						check_error((fp) == NULL, "fopen")
 #define check_error_memory_allocation(p) 	check_error(!(p), "memory allocation")
 
 #define check_error_mq_open(mq) 					check_error((mq) == (mqd_t)-1, "mq_open") 
-#define check_error_mq_send(b) 						check_error((b) == -1, "mq_send")
+#define check_error_mq_send(i) 						check_error((i) == -1, "mq_send")
 #define check_error_mq_receive(b) 				check_error((b) == -1, "mq_receive")
 #define try_to_open_queue(mq, queue_name, max_attempts, nanoseconds_interval) 		\
 	do {																																\

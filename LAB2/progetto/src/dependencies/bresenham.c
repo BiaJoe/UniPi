@@ -14,6 +14,16 @@ int compute_bresenham_step(int x, int y, bresenham_trajectory_t *trajectory, int
 	if(!trajectory) return NO;										// senza traiettoria non si fa nulla
 	if(cells_per_step < 0) return YES; 						
 
+	int distance_x = ABS(x - trajectory->x_target);
+	int distance_y = ABS(y - trajectory->y_target);
+	int manhattan_distance = distance_x + distance_y;
+
+	if(manhattan_distance <= cells_per_step){			// caso in cui in un passo o meno siamo arrivati
+		*x_step = distance_x;
+		*y_step = distance_y;
+		return YES;
+	}
+
 	int xA = x;
 	int yA = y;
 	int xB = trajectory->x_target;
@@ -39,7 +49,7 @@ int compute_bresenham_step(int x, int y, bresenham_trajectory_t *trajectory, int
 		}
 	}
 
-	return (xA == xB && yA == yB);								// siamo arrivati?
+	return (xA == xB && yA == yB) ? YES : NO;								// siamo arrivati?
 }
 
 void change_bresenham_trajectory(bresenham_trajectory_t *t, int current_x, int current_y, int new_x, int new_y){

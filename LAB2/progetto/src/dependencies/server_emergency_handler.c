@@ -141,29 +141,28 @@ void send_rescuer_digital_twin_to_scene_logging(rescuer_digital_twin_t *t, emerg
 
 	switch (t->status) {
 		case IDLE: 
-			t->status = EN_ROUTE_TO_SCENE;
-			log_event(t->id, RESCUER_STATUS, "il rescuer %s [%d] parte dalla base verso le [%d,%d] %s la scena dell'emergenza", t->rescuer->rescuer_type_name, t->id, x, y, e->type->emergency_desc);
+			log_event(t->id, RESCUER_STATUS, "%s [%d]: [%d,%d] . . .  [%d,%d] %s il rescuer parte dalla base verso le  la scena dell'emergenza", t->rescuer->rescuer_type_name, t->id, t->x, t->y, x, y, e->type->emergency_desc);
 			break;
 		case EN_ROUTE_TO_SCENE:
-			log_event(t->id, RESCUER_STATUS, "il rescuer %s [%d] cambia destinazione verso le [%d,%d] %s la scena di un'altra emergenza", t->rescuer->rescuer_type_name, t->id, x, y, e->type->emergency_desc);
+			log_event(t->id, RESCUER_STATUS, "%s [%d]: [%d,%d] ->  -> [%d,%d] %s il rescuer cambia destinazione verso le la scena di un'altra emergenza", t->rescuer->rescuer_type_name, t->id, t->x, t->y, x, y, e->type->emergency_desc);
 			break; 
 		case ON_SCENE:
-			log_event(t->id, RESCUER_STATUS, "il rescuer %s [%d] va via dall'emergenza attuale per gestire [%d,%d] %s", t->rescuer->rescuer_type_name, t->id, x, y, e->type->emergency_desc);
+			log_event(t->id, RESCUER_STATUS, "%s [%d]: [%d,%d] ->->-> [%d,%d] %s il rescuer va via dall'emergenza attuale per gestirne un'altra", t->rescuer->rescuer_type_name, t->id, t->x, t->y, x, y, e->type->emergency_desc);
 			break; 
 		case RETURNING_TO_BASE: // caso contemplato in questa funzione ma non verificato perchè le specifiche del progetto non lo contemplano. L'ho messo per completezza e per facilitare un eventuale cambio futuro delle regole
-			log_event(t->id, RESCUER_STATUS, "il rescuer %s [%d] sta tornando alla base ma cambia destinazione per andare a gestire [%d,%d] %s", t->rescuer->rescuer_type_name, t->id, x, y, e->type->emergency_desc);
+			log_event(t->id, RESCUER_STATUS, "%s [%d]: [%d,%d] ->  <- [%d,%d] %s il rescuer sta tornando alla base ma cambia destinazione per andare a gestire", t->rescuer->rescuer_type_name, t->id, t->x, t->y, x, y, e->type->emergency_desc);
 			break;
 		default:
-			log_event(t->id, FATAL_ERROR, "stato del rescuer %s [%d] non riconosciuto, impossibile mandarlo alla scena di un'emergenza", t->rescuer->rescuer_type_name, t->id);
+			log_event(t->id, FATAL_ERROR, "%s [%d] ??? stato del rescuer non riconosciuto, impossibile mandarlo alla scena di un'emergenza", t->rescuer->rescuer_type_name, t->id);
 			exit(EXIT_FAILURE);
 	}
-
+	t->status = EN_ROUTE_TO_SCENE;
 	change_rescuer_digital_twin_destination(t, x, y);
 }	
 
 
 int is_rescuer_digital_twin_available(rescuer_digital_twin_t *dt){			
-	return (dt->status == IDLE || dt->emergency_node->emergency->status == PAUSED) ? YES : NO;	// l'ho incapsulato in una funzione perchè così è più semplice cambiare i requisiti, ad esempio potremmo voler chiamare i rescuer anche quando tornano alla base 																																					
+	return (dt->status == IDLE) ? YES : NO;	// l'ho incapsulato in una funzione perchè così è più semplice cambiare i requisiti, ad esempio potremmo voler chiamare i rescuer anche quando tornano alla base 																																					
 }
 
 rescuer_digital_twin_t *find_nearest_available_rescuer_digital_twin(rescuer_type_t *r, emergency_node_t *n){

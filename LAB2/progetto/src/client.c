@@ -2,11 +2,11 @@
 
 // client.c prende in input le emergenze e fa un minimo di error handling
 // poi invia le emergenze, ma lascia al server il compito di finire il check dei valori
-
-// coda delle emergenze
 mqd_t mq;
 
 int main(int argc, char* argv[]){
+	LOG_INIT_CLIENT();
+
 	// controllo il numero di argomenti
 	if(argc != 3 && argc != 5 && argc != 2) 
 		DIE(argv[0], "numero di argomenti dati al programma sbagliato");
@@ -29,7 +29,8 @@ int main(int argc, char* argv[]){
 
 
 	// apro la coda su cui manderò la/le emergenza/e
-	check_error_mq_open(mq = mq_open(EMERGENCY_QUEUE_NAME, O_WRONLY));
+
+	check_error_mq_open(mq = mq_open(EMERGENCY_QUEUE_NAME_BARRED, O_WRONLY));
 
 	switch (mode) {
 		case NORMAL_MODE: handle_normal_mode_input(argv); break;
@@ -43,7 +44,7 @@ int main(int argc, char* argv[]){
 	// spetta al server controllare la SEMANTICA (se i valori x,y,timestamo sono nei limiti)
 	// se non lo sono l'emergenza viene ignorata nel server
 	log_event(AUTOMATIC_LOG_ID, MESSAGE_QUEUE_CLIENT, "il lavoro del client è finito. Il processo si chiude");
-
+	log_close();
 	return 0;
 }
 
@@ -101,6 +102,8 @@ void handle_normal_mode_input(char* args[]){
 void handle_file_mode_input(char* args[]){
 	log_event(AUTOMATIC_LOG_ID, MESSAGE_QUEUE_CLIENT, "avvio della modalità di inserimento da file");
 	FILE* emergency_requests_file = fopen(args[2], "r");
+	if(!emergency_requests_file) DIE(args[0], "file non trovato! :(");
+
 	check_error_fopen(emergency_requests_file);
 
 	char *name, *x, *y, *d, *must_be_null;

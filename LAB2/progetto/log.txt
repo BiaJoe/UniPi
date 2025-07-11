@@ -1,58 +1,24 @@
-1752164943      3     RESCUER_DIGITAL_TWIN_ADDED          Pompieri #3 [100, 200] Aggiunto ai gemelli digitali 
-1752164943      28    RESCUER_DIGITAL_TWIN_ADDED          Ambulanza #28 [150, 250] Aggiunto ai gemelli digitali 
-1752164943      2     RESCUER_TYPE_PARSED                 Rescuer Ambulanza con base in (150, 250) e 25 gemelli digitali aggiunto!
-1752164943      31    RESCUER_DIGITAL_TWIN_ADDED          Polizia #31 [200, 300] Aggiunto ai gemelli digitali 
-1752164943      33    RESCUER_DIGITAL_TWIN_ADDED          Polizia #33 [200, 300] Aggiunto ai gemelli digitali 
-1752164943      36    RESCUER_DIGITAL_TWIN_ADDED          Polizia #36 [200, 300] Aggiunto ai gemelli digitali 
-1752164943      2     EMERGENCY_PARSED                    Emergenza Incendio di prioritÃ  2 con 2 tipi di rescuer registrata tra i tipi di emergenze
-1752165004      0     RESCUER_DIGITAL_TWIN_ADDED          Pompieri #0 [100, 200] Aggiunto ai gemelli digitali 
-¶á9¯»ðP1752164943      5     RESCUER_DIGITAL_TWIN_ADDED          Ambulanza #5 [150, 250] Aggiunto ai gemelli digitali 
-óÃ:¯»ðP1752164943      38    RESCUER_DIGITAL_TWIN_ADDED          Polizia #38 [200, 300] Aggiunto ai gemelli digitali 
-nÝ>¯»ðP1752164943      2     RESCUER_REQUEST_ADDED               Richiesta di 2 unitÃ  di Pompieri registrate a linea 2 del file conf/emergency_types.conf
-·ÓãÉðP1752165004      2     RESCUER_DIGITAL_TWIN_ADDED          Pompieri #2 [100, 200] Aggiunto ai gemelli digitali 
-…ÎÔãÉðP1752165004      14    RESCUER_DIGITAL_TWIN_ADDED          Ambulanza #14 [150, 250] Aggiunto ai gemelli digitali 
-YÕãÉðP1752165004      21    RESCUER_DIGITAL_TWIN_ADDED          Ambulanza #21 [150, 250] Aggiunto ai gemelli digitali 
-ã^ÕãÉðP1752165004      22    RESCUER_DIGITAL_TWIN_ADDED          Ambulanza #22 [150, 250] Aggiunto ai gemelli digitali 
-#…ÕãÉðP1752165004      23    RESCUER_DIGITAL_TWIN_ADDED          Ambulanza #23 [150, 250] Aggiunto ai gemelli digitali 
-ŠÕãÉðP1752165004      24    RESCUER_DIGITAL_TWIN_ADDED          Ambulanza #24 [150, 250] Aggiunto ai gemelli digitali 
-@ŽÕãÉðP1752165004      25    RESCUER_DIGITAL_TWIN_ADDED          Ambulanza #25 [150, 250] Aggiunto ai gemelli digitali 
-Áð¹ô—ðP1752164790      1     RESCUER_REQUEST_ADDED               Richiesta di 1 unitÃ  di Ambulanza registrate a linea 1 del file conf/emergency_types.conf
-Éd5¯»ðP1752164943      N/A   PARSING_STARTED                     Inizio parsing dei file di configurazione
-Ùþ9¯»ðP1752164943      7     RESCUER_DIGITAL_TWIN_ADDED          Ambulanza #7 [150, 250] Aggiunto ai gemelli digitali 
-]½>¯»ðP1752164943      1     RESCUER_REQUEST_ADDED               Richiesta di 1 unitÃ  di Ambulanza registrate a linea 1 del file conf/emergency_types.conf
-½4ÎãÉðP1752165004      N/A   LOGGING_STARTED                     Inizio logging
-xaÔãÉðP1752165004      7     RESCUER_DIGITAL_TWIN_ADDED          Ambulanza #7 [150, 250] Aggiunto ai gemelli digitali 
-É’ÔãÉðP1752165004      11    RESCUER_DIGITAL_TWIN_ADDED          Ambulanza #11 [150, 250] Aggiunto ai gemelli digitali 
-ÕÕãÉðP1752165004      17    RESCUER_DIGITAL_TWIN_ADDED          Ambulanza #17 [150, 250] Aggiunto ai gemelli digitali 
- ½ÕãÉðP1752165004      29    RESCUER_DIGITAL_TWIN_ADDED          Ambulanza #29 [150, 250] Aggiunto ai gemelli digitali 
-öÃÕãÉðP1752165004      2     RESCUER_TYPE_PARSED                 Rescuer Ambulanza con base in (150, 250) e 25 gemelli digitali aggiunto!
-¸?¯»ðP1752164943      5     RESCUER_REQUEST_ADDED               Richiesta di 2 unitÃ  di Ambulanza registrate a linea 3 del file conf/emergency_types.conf
-Œ4ÔãÉðP1752165004      1     RESCUER_TYPE_PARSED                 Rescuer Pompieri con base in (100, 200) e 5 gemelli digitali aggiunto!
-¥’ÕãÉðP1752165004      26    RESCUER_DIGITAL_TWIN_ADDED          Ambulanza #26 [150, 250] Aggiunto ai gemelli digitali 
-Î™ÕãÉðP1752165004      27    RESCUER_DIGITAL_TWIN_ADDED          Ambulanza #27 [150, 250] Aggiunto ai gemelli digitali 
-{ ÕãÉðP1752165004      28    RESCUER_DIGITAL_TWIN_ADDED          Ambulanza #28 [150, 250] Aggiunto ai gemelli digitali 
-¶ÖãÉðP1752165004      34    RESCUER_DIGITAL_TWIN_ADDED          Polizia #34 [200, 300] Aggiunto ai gemelli digitali 
-[LÖãÉðP1752165004      38    RESCUER_DIGITAL_TWIN_ADDED          Polizia #38 [200, 300] Aggiunto ai gemelli digitali 
-CPÖãÉðP1752165004      39    RESCUER_DIGITAL_TWIN_ADDED          Polizia #39 [200, 300] Aggiunto ai gemelli digitali 
-+TÖãÉðP1752165004      3     RESCUER_TYPE_PARSED                 Rescuer Polizia con base in (200, 300) e 10 gemelli digitali aggiunto!
-a¶ÙãÉðP1752165004      0     RESCUER_REQUEST_ADDED               Richiesta di 1 unitÃ  di Pompieri registrate a linea 1 del file conf/emergency_types.conf
-C“9¯»ðP1752164943      1     RESCUER_DIGITAL_TWIN_ADDED          Pompieri #1 [100, 200] Aggiunto ai gemelli digitali 
-D:¯»ðP1752164943      8     RESCUER_DIGITAL_TWIN_ADDED          Ambulanza #8 [150, 250] Aggiunto ai gemelli digitali 
-ï:¯»ðP1752164943      11    RESCUER_DIGITAL_TWIN_ADDED          Ambulanza #11 [150, 250] Aggiunto ai gemelli digitali 
-ð…:¯»ðP1752164943      35    RESCUER_DIGITAL_TWIN_ADDED          Polizia #35 [200, 300] Aggiunto ai gemelli digitali 
-@­>¯»ðP1752164943      0     RESCUER_REQUEST_ADDED               Richiesta di 1 unitÃ  di Pompieri registrate a linea 1 del file conf/emergency_types.conf
-Ž?¯»ðP1752164943      3     EMERGENCY_PARSED                    Emergenza Sommossa di prioritÃ  2 con 2 tipi di rescuer registrata tra i tipi di emergenze
-¸
-ÔãÉðP1752165004      4     RESCUER_DIGITAL_TWIN_ADDED          Pompieri #4 [100, 200] Aggiunto ai gemelli digitali 
-‚ÿÔãÉðP1752165004      16    RESCUER_DIGITAL_TWIN_ADDED          Ambulanza #16 [150, 250] Aggiunto ai gemelli digitali 
-ULÕãÉðP1752165004      20    RESCUER_DIGITAL_TWIN_ADDED          Ambulanza #20 [150, 250] Aggiunto ai gemelli digitali 
-ÞDÖãÉðP1752165004      37    RESCUER_DIGITAL_TWIN_ADDED          Polizia #37 [200, 300] Aggiunto ai gemelli digitali 
-Ü?¯»ðP1752164943      4     RESCUER_REQUEST_ADDED               Richiesta di 3 unitÃ  di Polizia registrate a linea 3 del file conf/emergency_types.conf
-¯ÍÓãÉðP1752165004      3     RESCUER_DIGITAL_TWIN_ADDED          Pompieri #3 [100, 200] Aggiunto ai gemelli digitali 
-_÷ÔãÉðP1752165004      15    RESCUER_DIGITAL_TWIN_ADDED          Ambulanza #15 [150, 250] Aggiunto ai gemelli digitali 
-ÌÕãÉðP1752165004      30    RESCUER_DIGITAL_TWIN_ADDED          Polizia #30 [200, 300] Aggiunto ai gemelli digitali 
-ãÔÕãÉðP1752165004      31    RESCUER_DIGITAL_TWIN_ADDED          Polizia #31 [200, 300] Aggiunto ai gemelli digitali 
-ãÛÕãÉðP1752165004      32    RESCUER_DIGITAL_TWIN_ADDED          Polizia #32 [200, 300] Aggiunto ai gemelli digitali 
-âÕãÉðP1752165004      33    RESCUER_DIGITAL_TWIN_ADDED          Polizia #33 [200, 300] Aggiunto ai gemelli digitali 
-ûÙãÉðP1752165004      1     RESCUER_REQUEST_ADDED               Richiesta di 1 unitÃ  di Ambulanza registrate a linea 1 del file conf/emergency_types.conf
-FoÚãÉðP1752165004      3     EMERGENCY_PARSED                    Emergenza Sommossa di prioritÃ  2 con 2 tipi di rescuer registrata tra i tipi di emergenze
+1752215733      N/A   LOGGING_STARTED                     Inizio logging
+1752215733      N/A   PARSING_STARTED                     Inizio parsing dei file di configurazione
+1752215733      0     RESCUER_DIGITAL_TWIN_ADDED          Pompieri #0 [100, 200] Aggiunto ai gemelli digitali 
+1752215733      1     RESCUER_DIGITAL_TWIN_ADDED          Pompieri #1 [100, 200] Aggiunto ai gemelli digitali 
+1752215733      2     RESCUER_DIGITAL_TWIN_ADDED          Pompieri #2 [100, 200] Aggiunto ai gemelli digitali 
+1752215733      3     RESCUER_DIGITAL_TWIN_ADDED          Pompieri #3 [100, 200] Aggiunto ai gemelli digitali 
+1752215733      4     RESCUER_DIGITAL_TWIN_ADDED          Pompieri #4 [100, 200] Aggiunto ai gemelli digitali 
+1752215733      1     RESCUER_TYPE_PARSED                 Rescuer Pompieri con base in (100, 200) e 5 gemelli digitali aggiunto!
+1752215733      0     RESCUER_REQUEST_ADDED               Richiesta di 2 unitÃ  di Pompieri registrate a linea 1 del file conf/emergency_types.conf
+1752215733      1     EMERGENCY_PARSED                    Emergenza Incendio di prioritÃ  2 con 1 tipi di rescuer registrata tra i tipi di emergenze
+1752215733      0     EMPTY_CONF_LINE_IGNORED             linea 2 in conf/emergency_types.conf vuota, ignorata
+1752215733      1     EMPTY_CONF_LINE_IGNORED             linea 3 in conf/emergency_types.conf vuota, ignorata
+1752215733      N/A   PARSING_ENDED                       Il parsing Ã¨ terminato con successo!
+1752215733      N/A   SERVER                              tutte le variabili sono state ottenute dal server: adesso il sistema Ã¨ a regime!
+1752215733      N/A   MESSAGE_QUEUE_SERVER                inizio della ricezione delle emergenze!
+1752215767      0     MESSAGE_QUEUE_CLIENT                avvio della modalitÃ  di inserimento diretta
+1752215768      1     MESSAGE_QUEUE_CLIENT                inviata emergenza al server
+1752215768      2     MESSAGE_QUEUE_CLIENT                il lavoro del client Ã¨ finito. Il processo si chiude
+1752215768      1     EMERGENCY_REQUEST_RECEIVED          emergenza Incendio (110, 215) 1 ricevuta e messa in attesa di essere processata!
+1752215768      1     EMERGENCY_STATUS                    inizio a lavorare sull'emergenza 1: Incendio (2) [110, 215] 
+1752215768      1     EMERGENCY_STATUS                    Inizia la ricerca dei 2 rescuers per l'emergenza 1: Incendio (2) [110, 215]
+1752215768      0     RESCUER_STATUS                      Pompieri [0]: [100,200] . . .  [110,215] Incendio il rescuer parte dalla base verso le  la scena dell'emergenza
+1752215768      0     RESCUER_STATUS                      Pompieri [0]: [100,200] ->  -> [110,215] Incendio il rescuer cambia destinazione verso le la scena di un'altra emergenza
+1752215768      1     EMERGENCY_STATUS                    L'emergenza 1: Incendio (2) [110, 215] adesso ha i rescuer necessari in arrivo, si aspetta che arrivino
