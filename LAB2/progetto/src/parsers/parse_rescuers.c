@@ -17,7 +17,7 @@ void parse_rescuers(server_context_t *ctx){
 		if(!check_and_extract_rescuer_type_fields_from_line(ps, rescuer_types, &fields))
 			continue;
 		rescuer_types[ps->parsed_so_far++] = mallocate_and_populate_rescuer_type(&fields); 							// i campi sono validi e il nome non è presente, alloco il rescuer 
-		log_event(ps->line_number, RESCUER_TYPE_PARSED, "Rescuer %s con base in (%d, %d) e %d gemelli digitali aggiunto!", fields.name, fields.x, fields.y, fields.amount);
+		log_event(ps->line_number, RESCUER_TYPE_PARSED, "🚨 Rescuer %s con base in (%d, %d) e %d gemelli digitali aggiunto!", fields.name, fields.x, fields.y, fields.amount);
 	}
 	ctx -> rescuer_types_count = ps->parsed_so_far;
 	ctx -> rescuer_types = rescuer_types;
@@ -81,7 +81,7 @@ rescuer_digital_twin_t **callocate_and_populate_rescuer_digital_twins(rescuer_ty
 	check_error_memory_allocation(twins);
 	for(int i = 0; i < r->amount; i++){
 		twins[i] = mallocate_rescuer_digital_twin(r);
-		log_event(twins[i]->id, RESCUER_DIGITAL_TWIN_ADDED, "%s #%d [%d, %d] Aggiunto ai gemelli digitali ", r->rescuer_type_name, twins[i]->id, twins[i]->x, twins[i]->y);
+		log_event(twins[i]->id, RESCUER_DIGITAL_TWIN_ADDED, "⛑️ %s #%d [%d, %d] Aggiunto ai gemelli digitali ", r->rescuer_type_name, twins[i]->id, twins[i]->x, twins[i]->y);
 	}
 	return twins;
 }

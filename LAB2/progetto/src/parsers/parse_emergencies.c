@@ -15,7 +15,7 @@ void parse_emergencies(server_context_t *ctx){
 		if (!check_and_extract_emergency_type_fields_from_line(ps, emergency_types, rescuer_types, &fields))
 			continue;
 		emergency_types[ps->parsed_so_far++] = mallocate_and_populate_emergency_type(&fields); // metto l'emergenza nell'array di emergenze
-		log_event(ps->parsed_so_far, EMERGENCY_PARSED, "Emergenza %s di priorità %hd con %d tipi di rescuer registrata tra i tipi di emergenze", fields.emergency_desc,  fields.priority,  fields.rescuers_req_number);
+		log_event(ps->parsed_so_far, EMERGENCY_PARSED, "⚠️ Emergenza %s di priorità %hd con %d tipi di rescuer registrata tra i tipi di emergenze", fields.emergency_desc,  fields.priority,  fields.rescuers_req_number);
 	}
 	ctx -> emergency_types_count = ps->parsed_so_far; // restituisco il numero di emergenze lette
 	ctx -> emergency_types = emergency_types;	

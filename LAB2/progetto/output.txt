@@ -7,7 +7,7 @@ src/client.c:49:6: error: static declaration of 'handle_stop_mode_client' follow
    49 | void handle_stop_mode_client(void){
       |      ^~~~~~~~~~~~~~~~~~~~~~~
 In file included from src/client.c:1:
-include/client.h:42:6: note: previous declaration of 'handle_stop_mode_client' with type 'void(void)'
+include/client.h:42:6: note: prev ious declaration of 'handle_stop_mode_client' with type 'void(void)'
    42 | void handle_stop_mode_client(void);
       |      ^~~~~~~~~~~~~~~~~~~~~~~
 src/client.c:57:5: error: static declaration of 'send_emergency_request_message' follows non-static declaration
